@@ -1,0 +1,28 @@
+name: General
+aliases:
+  - Business
+  - Company
+  - Enterprise
+search_terms:
+  - company
+  - business supplier
+  - services provider
+  - local business
+positive_keywords:
+  - company
+  - services
+  - solutions
+  - contact
+  - about
+negative_keywords:
+  - spam
+  - directory scraper
+decision_maker_roles:
+  - Owner
+  - Founder
+  - Director
+  - Manager
+scoring_weights:
+  contactability: 40
+  digital_presence: 30
+  relevance: 30

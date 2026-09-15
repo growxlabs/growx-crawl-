@@ -1,0 +1,40 @@
+name: Jewellery
+aliases:
+  - Jewelry
+  - Jeweller
+  - Gold Merchant
+  - Diamond Merchant
+  - Silver Store
+search_terms:
+  - jewellery store
+  - jewellery showroom
+  - gold jewellery merchant
+  - diamond jewellery seller
+  - bridal jewellery showroom
+  - jewellery manufacturer
+  - wholesale jeweller
+positive_keywords:
+  - gold
+  - diamond
+  - silver
+  - platinum
+  - bridal
+  - solitaire
+  - ornaments
+  - gems
+  - hallmark
+negative_keywords:
+  - pawn shop
+  - scrap metal
+  - imitation jewellery
+  - plastic beads
+decision_maker_roles:
+  - Owner
+  - Founder
+  - Director
+  - Managing Director
+  - Store Manager
+scoring_weights:
+  contactability: 40
+  digital_presence: 30
+  relevance: 30

@@ -1,0 +1,39 @@
+name: Manufacturing
+aliases:
+  - Manufacturer
+  - Industrial Unit
+  - Fabricator
+  - Machining
+  - Supplier
+search_terms:
+  - manufacturing company
+  - industrial manufacturer
+  - sheet metal fabricator
+  - CNC machining supplier
+  - auto component manufacturer
+  - industrial equipment manufacturer
+positive_keywords:
+  - factory
+  - plant
+  - OEM
+  - fabrication
+  - machining
+  - casting
+  - molding
+  - industrial
+  - supplier
+negative_keywords:
+  - retail store
+  - shopping mall
+  - restaurant
+decision_maker_roles:
+  - Managing Director
+  - Owner
+  - Founder
+  - Plant Head
+  - Operations Manager
+  - Purchase Manager
+scoring_weights:
+  contactability: 30
+  b2b_signals: 40
+  relevance: 30

@@ -1,0 +1,41 @@
+industry: default
+
+decision_maker_tiers:
+  tier_1:
+    - Founder
+    - Co-Founder
+    - Owner
+    - Managing Director
+    - CEO
+    - President
+  tier_2:
+    - Director
+    - COO
+    - Vice President
+    - Head of Operations
+    - Head of Marketing
+    - Head of Sales
+  tier_3:
+    - General Manager
+    - Operations Manager
+    - Store Manager
+    - Business Development Manager
+
+products_services_keywords:
+  - Products
+  - Services
+  - Solutions
+  - Wholesale
+  - Manufacturing
+  - Retail
+
+weights:
+  target_fit: 30
+  contactability: 25
+  decision_maker: 20
+  data_quality: 15
+  digital_presence: 10
+
+priority_thresholds:
+  high: 70
+  medium: 45

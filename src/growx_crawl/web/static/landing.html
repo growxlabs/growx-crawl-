@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowxLabs — Sovereign Web Intelligence & Autonomous AI Infrastructure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-card: rgba(18, 20, 26, 0.65);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.22);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-cyan: #38bdf8;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #07080a;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+            background-size: 24px 24px;
+            min-height: 100vh;
+        }
+
+        /* ─── Polished Designer Site Header ─── */
+        .site-header {
+            height: 68px;
+            background: rgba(7, 8, 10, 0.85);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+        }
+        .header-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .brand-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #38bdf8;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+        }
+        .brand-name {
+            font-size: 15.5px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .brand-pill {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            color: #38bdf8;
+            padding: 2px 8px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        /* Center Nav & Telemetry */
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+        .nav-link {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .nav-link:hover {
+            color: #ffffff;
+        }
+        .telemetry-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 9999px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #34d399;
+        }
+        .status-pulse {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #10b981; box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+
+        /* Right High-Tech Console Button */
+        .btn-header-console {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f4f4f5;
+            font-size: 12.5px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            padding: 7px 16px;
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+        .btn-header-console:hover {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* ─── Hero Section (100vh Full Viewport for Recording) ─── */
+        .hero-section {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px 40px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .hero-ascii-wrap {
+            margin-bottom: 26px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .ascii-art-hero {
+            font-family: var(--font-mono);
+            font-size: 13.5px;
+            line-height: 1.24;
+            color: #38bdf8;
+            font-weight: 700;
+            margin: 0 auto;
+            text-align: left;
+            white-space: pre;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+            user-select: none;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 9999px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #93c5fd;
+            margin-bottom: 20px;
+        }
+        .hero-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-emerald); box-shadow: 0 0 10px var(--accent-emerald); }
+        
+        .hero-title {
+            font-size: 44px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            background: linear-gradient(180deg, #ffffff 40%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ascii-specs-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            flex-wrap: wrap;
+        }
+        .ascii-tag {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.22);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        .ascii-sep {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .btn-launch {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: #ffffff; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: 8px;
+            text-decoration: none; transition: all 0.2s ease; box-shadow: 0 4px 24px rgba(59, 130, 246, 0.35);
+        }
+        .btn-launch:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(59, 130, 246, 0.5); }
+
+        /* ─── Capabilities Section ─── */
+        .section-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 96px 32px;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+        .section-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #38bdf8;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            margin-bottom: 14px;
+        }
+        .section-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .pillar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 32px 28px;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .pillar-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.08);
+        }
+        .pillar-card.highlight-card {
+            background: rgba(18, 24, 34, 0.85);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+        .pillar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .pillar-badge {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .pillar-badge.badge-blue {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+        .pillar-icon {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .pillar-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+        .pillar-desc {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+        .pillar-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .p-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* ─── Developer API Section ─── */
+        .api-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 36px;
+            align-items: stretch;
+        }
+        .api-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .api-spec-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 18px 20px;
+            transition: all 0.2s ease;
+        }
+        .api-spec-card:hover {
+            border-color: var(--border-hover);
+            background: rgba(24, 28, 38, 0.7);
+        }
+        .api-method-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .method-badge {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+        .method-badge.get {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .method-badge.post {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .endpoint-path {
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            color: #f1f5f9;
+        }
+        .api-spec-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+        .btn-api-docs {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            color: #09090b;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-api-docs:hover {
+            background: #e4e4e7;
+            transform: translateY(-1px);
+        }
+        .btn-api-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #f1f5f9;
+            border: 1px solid var(--border-subtle);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 9px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-api-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-hover);
+        }
+
+        /* API Terminal Pane */
+        .api-terminal-pane {
+            background: #06080b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        }
+        .pane-header {
+            background: rgba(16, 19, 26, 0.95);
+            padding: 11px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .pane-dots { display: flex; gap: 6px; }
+        .p-dot { width: 9px; height: 9px; border-radius: 50%; }
+        .p-dot.red { background: #ef4444; }
+        .p-dot.yellow { background: #f59e0b; }
+        .p-dot.green { background: #10b981; }
+        .pane-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .pane-latency {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+        .pane-body {
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            overflow-x: auto;
+            flex-grow: 1;
+        }
+        .c-dim { color: #64748b; }
+        .c-cyan { color: #38bdf8; }
+        .c-green { color: #34d399; }
+        .c-key { color: #60a5fa; }
+        .c-val { color: #34d399; }
+        .c-num { color: #f59e0b; }
+
+        /* ─── Minimal Obsidian Footer ─── */
+        .site-footer {
+            height: 60px;
+            border-top: 1px solid var(--border-subtle);
+            padding: 0 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 12.5px; color: var(--text-muted);
+            background: rgba(9, 9, 11, 0.8);
+            margin-top: 60px;
+        }
+
+        @media (max-width: 900px) {
+            .header-inner { padding: 0 20px; }
+            .header-center { display: none; }
+            .hero-title { font-size: 32px; }
+            .ascii-art-hero { font-size: 7px; }
+            .ascii-specs-strip { font-size: 10px; gap: 8px; }
+            .pillars-grid { grid-template-columns: 1fr; }
+            .api-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/home" class="brand-group">
+                <div class="brand-icon">GX</div>
+                <span class="brand-name">GrowxLabs</span>
+                <span class="brand-pill">STUDIO</span>
+            </a>
+
+            <div class="header-center">
+                <a href="#capabilities" class="nav-link">Capabilities</a>
+                <a href="#api" class="nav-link">Developer API</a>
+                <a href="/console" class="nav-link">Engine Console</a>
+                <div class="telemetry-capsule">
+                    <span class="status-pulse"></span>
+                    <span>EDGE: 94ms</span>
+                </div>
+            </div>
+
+            <div class="header-cta-group">
+                <a href="/console" class="btn-header-console">
+                    <span>Launch Console</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section (Fits 100vh on load for screen recording) -->
+    <main class="hero-section">
+        <!-- Raw Glowing ASCII Art Top (No Window) -->
+        <div class="hero-ascii-wrap">
+            <pre class="ascii-art-hero">
+  ██████╗ ██████╗  ██████╗ ██╗    ██╗██╗  ██╗    ██╗      █████╗ ██████╗ ███████╗
+ ██╔════╝ ██╔══██╗██╔═══██╗██║    ██║╚██╗██╔╝    ██║     ██╔══██╗██╔══██╗██╔════╝
+ ██║  ███╗██████╔╝██║   ██║██║ █╗ ██║ ╚███╔╝     ██║     ███████║██████╔╝███████╗
+ ██║   ██║██╔══██╗██║   ██║██║███╗██║ ██╔██╗     ██║     ██╔══██║██╔══██╗╚════██║
+ ╚██████╔╝██║  ██║╚██████╔╝╚███╔███╔╝██╔╝ ██╗    ███████╗██║  ██║██████╔╝███████║
+  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝</pre>
+        </div>
+
+        <!-- Lines Underneath -->
+        <div class="hero-pill">
+            <span class="hero-pill-dot"></span>
+            <span>ENTERPRISE AIR-GAPPED &bull; ZERO 3RD-PARTY VENDOR LOCK-IN</span>
+        </div>
+        
+        <h1 class="hero-title">
+            Sovereign Web Intelligence &<br/>Autonomous AI Infrastructure
+        </h1>
+
+        <div class="ascii-specs-strip">
+            <span class="ascii-tag">AIR-GAPPED DEDICATED</span>
+            <span class="ascii-sep">&bull;</span>
+            <span class="ascii-tag">&lt;100ms FAST CRAWL</span>
+            <span class="ascii-sep">&bull;</span>
+            <span class="ascii-tag">FTS5 INVERTED INDEX</span>
+            <span class="ascii-sep">&bull;</span>
+            <span class="ascii-tag">PORT 7411</span>
+        </div>
+
+        <div class="hero-actions">
+            <a href="/console" class="btn-launch">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Live Interactive Demo (Engine Console)</span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Capabilities Section -->
+    <section class="section-wrap" id="capabilities">
+        <div class="section-header">
+            <div class="section-eyebrow">// ENTERPRISE CAPABILITIES</div>
+            <h2 class="section-title">Engineered for Sovereign Web Scale</h2>
+            <p class="section-subtitle">Three air-gapped core systems running synchronously on private enterprise infrastructure.</p>
+        </div>
+
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <div class="pillar-top">
+                    <span class="pillar-badge">ACQUISITION LAYER</span>
+                    <span class="pillar-icon">01</span>
+                </div>
+                <h3 class="pillar-title">Anti-Detect Autonomous Crawling</h3>
+                <p class="pillar-desc">
+                    Hardware TLS fingerprint cloaking, canvas spoofing, and human mouse dynamics via Stealth Chromium and Ghost Camoufox. Spider thousands of protected targets with zero blocks.
+                </p>
+                <div class="pillar-tags">
+                    <span class="p-tag">JA4 Fingerprinting</span>
+                    <span class="p-tag">Multi-Page Spider</span>
+                    <span class="p-tag">Zero Captchas</span>
+                </div>
+            </div>
+
+            <div class="pillar-card highlight-card">
+                <div class="pillar-top">
+                    <span class="pillar-badge badge-blue">RETRIEVAL CORE</span>
+                    <span class="pillar-icon">02</span>
+                </div>
+                <h3 class="pillar-title">Sovereign FTS5 Search Engine</h3>
+                <p class="pillar-desc">
+                    Inverted full-text indexing, BM25 multi-factor relevance ranking, and inbound link authority scoring. Query millions of documents in sub-10ms with highlight extraction.
+                </p>
+                <div class="pillar-tags">
+                    <span class="p-tag">&lt;10ms Latency</span>
+                    <span class="p-tag">SQLite WAL Zero-DevOps</span>
+                    <span class="p-tag">BM25 Ranking</span>
+                </div>
+            </div>
+
+            <div class="pillar-card">
+                <div class="pillar-top">
+                    <span class="pillar-badge">COGNITIVE WORKERS</span>
+                    <span class="pillar-icon">03</span>
+                </div>
+                <h3 class="pillar-title">Autonomous AI Sourcing Agents</h3>
+                <p class="pillar-desc">
+                    Model-agnostic reasoning agents that autonomously digest unstructured web pages, extract candidate skills, and push qualified datasets directly to CSV, JSON, or CRM.
+                </p>
+                <div class="pillar-tags">
+                    <span class="p-tag">Model Agnostic</span>
+                    <span class="p-tag">Clean Structured Egress</span>
+                    <span class="p-tag">1-Click CSV</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Developer API Section -->
+    <section class="section-wrap" id="api">
+        <div class="section-header">
+            <div class="section-eyebrow">// DEVELOPER REST API</div>
+            <h2 class="section-title">Production Crawl &amp; Extraction API</h2>
+            <p class="section-subtitle">Authenticated HTTP/JSON endpoints running directly on your dedicated instance (Port 7411).</p>
+        </div>
+
+        <div class="api-grid">
+            <div class="api-info-box">
+                <div class="api-spec-card">
+                    <div class="api-method-row">
+                        <span class="method-badge post">POST</span>
+                        <code class="endpoint-path">/v1/scrape</code>
+                    </div>
+                    <p class="api-spec-desc">Single-page scrape with anti-detect stealth and full CSS stylesheet extraction.</p>
+                </div>
+
+                <div class="api-spec-card">
+                    <div class="api-method-row">
+                        <span class="method-badge post">POST</span>
+                        <code class="endpoint-path">/v1/crawl</code>
+                    </div>
+                    <p class="api-spec-desc">Dispatch an autonomous stealth worker with TLS JA4 spoofing to ingest targets.</p>
+                </div>
+
+                <div class="api-spec-card">
+                    <div class="api-method-row">
+                        <span class="method-badge get">GET</span>
+                        <code class="endpoint-path">/v1/search?q={query}&amp;limit=25</code>
+                    </div>
+                    <p class="api-spec-desc">Query the inverted FTS5 index with BM25 ranking and highlighted snippets.</p>
+                </div>
+
+                <div style="margin-top: 24px; display: flex; gap: 14px; flex-wrap: wrap;">
+                    <a href="/v1/docs" class="btn-api-docs">
+                        <span>Interactive Swagger Docs</span>
+                        <span>&rarr;</span>
+                    </a>
+                    <a href="/console" class="btn-api-secondary">
+                        <span>Launch Console</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="api-terminal-pane">
+                <div class="pane-header">
+                    <div class="pane-dots">
+                        <span class="p-dot red"></span>
+                        <span class="p-dot yellow"></span>
+                        <span class="p-dot green"></span>
+                    </div>
+                    <div class="pane-title">curl -s http://127.0.0.1:7411/v1/scrape</div>
+                    <div class="pane-latency">94ms</div>
+                </div>
+                <div class="pane-body">
+                    <div class="code-line"><span class="c-dim">// Execute single-page crawl with full CSS extraction</span></div>
+                    <div class="code-line"><span class="c-cyan">curl</span> -X POST <span class="c-green">"http://127.0.0.1:7411/v1/scrape"</span> \</div>
+                    <div class="code-line">&nbsp;&nbsp;-H <span class="c-green">"Authorization: Bearer gx_live_sovereign"</span> \</div>
+                    <div class="code-line">&nbsp;&nbsp;-H <span class="c-green">"Content-Type: application/json"</span> \</div>
+                    <div class="code-line">&nbsp;&nbsp;-d <span class="c-green">'{"url": "https://example.com", "fetcher": "auto"}'</span></div>
+                    <br/>
+                    <div class="code-line"><span class="c-dim">// JSON Response (Full-Page CSS Hydrated)</span></div>
+                    <div class="code-line">{</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="c-key">"status"</span>: <span class="c-val">"success"</span>,</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="c-key">"latency_ms"</span>: <span class="c-num">94</span>,</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="c-key">"fetcher_used"</span>: <span class="c-val">"fast_http"</span>,</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="c-key">"data"</span>: {</div>
+                    <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-key">"title"</span>: <span class="c-val">"Example Domain"</span>,</div>
+                    <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-key">"stylesheets_count"</span>: <span class="c-num">2</span>,</div>
+                    <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-key">"links_count"</span>: <span class="c-num">48</span></div>
+                    <div class="code-line">&nbsp;&nbsp;}</div>
+                    <div class="code-line">}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div>&copy; 2026 GrowxLabs Inc. Sovereign Web Intelligence.</div>
+        <div style="display: flex; gap: 24px;">
+            <a href="/console" style="color: var(--text-muted); text-decoration: none;">Launch Console</a>
+            <a href="/v1/docs" style="color: var(--text-muted); text-decoration: none;">API Documentation</a>
+        </div>
+    </footer>
+</body>
+</html>

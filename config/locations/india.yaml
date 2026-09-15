@@ -1,0 +1,53 @@
+country: India
+country_code: IN
+states:
+  Telangana:
+    capital: Hyderabad
+    cities:
+      - Hyderabad
+      - Warangal
+      - Karimnagar
+      - Nizamabad
+      - Khammam
+  Andhra Pradesh:
+    capital: Vijayawada
+    cities:
+      - Vijayawada
+      - Visakhapatnam
+      - Guntur
+      - Tirupati
+      - Nellore
+      - Rajahmundry
+  Karnataka:
+    capital: Bengaluru
+    cities:
+      - Bengaluru
+      - Mysuru
+      - Mangaluru
+      - Hubballi
+      - Belagavi
+  Maharashtra:
+    capital: Mumbai
+    cities:
+      - Mumbai
+      - Pune
+      - Nagpur
+      - Nashik
+      - Thane
+      - Aurangabad
+  Tamil Nadu:
+    capital: Chennai
+    cities:
+      - Chennai
+      - Coimbatore
+      - Madurai
+      - Tiruchirappalli
+      - Salem
+  Delhi NCR:
+    capital: New Delhi
+    cities:
+      - New Delhi
+      - Gurgaon
+      - Noida
+      - Faridabad
+      - Ghaziabad

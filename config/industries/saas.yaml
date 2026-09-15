@@ -1,0 +1,33 @@
+name: SaaS
+aliases:
+  - Software
+  - Tech Company
+  - Cloud Software
+search_terms:
+  - SaaS company
+  - B2B software vendor
+  - cloud software provider
+  - enterprise software startup
+positive_keywords:
+  - SaaS
+  - software
+  - platform
+  - API
+  - cloud
+  - B2B
+  - enterprise
+  - solution
+negative_keywords:
+  - computer repair shop
+  - internet cafe
+decision_maker_roles:
+  - Founder
+  - Co-Founder
+  - CEO
+  - Chief Technology Officer
+  - Head of Sales
+  - Head of Growth
+scoring_weights:
+  domain_email: 35
+  decision_maker: 35
+  relevance: 30

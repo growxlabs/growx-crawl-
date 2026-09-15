@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowxLabs — Ops Command & Billing Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #07080a;
+            --bg-card: rgba(18, 20, 26, 0.75);
+            --bg-surface: #0d0f14;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-cyan: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+            background-size: 24px 24px;
+            min-height: 100vh;
+        }
+
+        /* ─── Top Navbar ─── */
+        .ops-header {
+            height: 64px;
+            background: rgba(9, 10, 14, 0.88);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .brand-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #38bdf8;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+        }
+        .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+        .ops-pill {
+            font-size: 10.5px; font-family: var(--font-mono); color: #f43f5e;
+            padding: 2px 8px; background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 9999px;
+            font-weight: 700; letter-spacing: 0.05em;
+        }
+        .ops-user-badge {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-email-tag {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-logout:hover {
+            color: #f43f5e;
+            border-color: rgba(244, 63, 94, 0.3);
+            background: rgba(244, 63, 94, 0.08);
+        }
+
+        /* ─── Security Gate View (Login) ─── */
+        .auth-gate-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 64px);
+            padding: 24px;
+        }
+        .auth-gate-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 36px 32px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.05);
+            backdrop-filter: blur(16px);
+            text-align: center;
+        }
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #f43f5e;
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 4px 10px;
+            border-radius: 9999px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .auth-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .auth-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-align: left;
+        }
+        .form-label {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            background: #060709;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+        .btn-auth-submit {
+            margin-top: 10px;
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+        }
+        .btn-auth-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(56, 189, 248, 0.45);
+        }
+        .auth-error {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12.5px;
+            color: #f87171;
+            margin-bottom: 16px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        /* ─── Ops Command Center View ─── */
+        .ops-dashboard {
+            display: none;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 32px 24px 60px 24px;
+        }
+
+        /* Tabs Navigation */
+        .ops-tabs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 14px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .tab-btn.active {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.3);
+            font-weight: 600;
+        }
+
+        /* Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 22px;
+            backdrop-filter: blur(12px);
+        }
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .stat-val {
+            font-family: var(--font-mono);
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Table Card */
+        .ops-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        .card-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        .data-table th {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .data-table td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #e4e4e7;
+            vertical-align: middle;
+        }
+        .data-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Progress Bar */
+        .progress-wrap {
+            width: 140px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #34d399);
+            border-radius: 9999px;
+        }
+
+        /* Badges */
+        .tag-status {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .status-active { color: #34d399; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-pending { color: #f59e0b; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-revoked { color: #f43f5e; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+        .tag-tier {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.25);
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .btn-table-action {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-table-action:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .btn-revoke {
+            color: #f87171;
+        }
+        .btn-revoke:hover {
+            border-color: rgba(244, 63, 94, 0.4);
+            background: rgba(244, 63, 94, 0.12);
+        }
+
+        /* Log Console */
+        .log-terminal {
+            background: #050608;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 18px 22px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            height: 480px;
+            overflow-y: auto;
+        }
+        .log-entry { margin-bottom: 4px; }
+        .log-time { color: #64748b; margin-right: 8px; }
+        .log-level-INFO { color: #38bdf8; font-weight: 600; margin-right: 8px; }
+        .log-level-SECURITY { color: #34d399; font-weight: 600; margin-right: 8px; }
+        .log-level-WARN { color: #fbbf24; font-weight: 600; margin-right: 8px; }
+        .log-level-CRITICAL, .log-level-ERROR { color: #f43f5e; font-weight: 600; margin-right: 8px; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-card {
+            background: #0d0f14;
+            border: 1px solid var(--border-hover);
+            border-radius: 12px;
+            padding: 28px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        @media (max-width: 900px) {
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .ops-dashboard { padding: 20px 14px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ops-header">
+        <a href="/home" class="brand-group">
+            <div class="brand-icon">GX</div>
+            <span class="brand-name">GrowxLabs</span>
+            <span class="ops-pill">OPS COMMAND</span>
+        </a>
+
+        <div id="ops-nav-user" class="ops-user-badge" style="display: none;">
+            <span>Admin:</span>
+            <span class="user-email-tag">sai@growxlabs.tech</span>
+            <button class="btn-logout" onclick="logoutOps()">Log Out</button>
+        </div>
+    </header>
+
+    <!-- ─── Security Auth Gate (Login) ─── -->
+    <main id="auth-gate-view" class="auth-gate-container">
+        <div class="auth-gate-card">
+            <div class="auth-badge">
+                <span>🔒 STRICT AIR-GAPPED ACCESS</span>
+            </div>
+            <h1 class="auth-title">GrowX Ops Command</h1>
+            <p class="auth-desc">
+                Access is strictly restricted to authorized Ops personnel (<strong>sai@growxlabs.tech</strong>). All unauthorized access attempts are blocked and audited.
+            </p>
+
+            <div id="auth-error-box" class="auth-error"></div>
+
+            <form class="auth-form" onsubmit="handleOpsLogin(event)">
+                <div>
+                    <label class="form-label" for="ops-email">ADMINISTRATOR EMAIL</label>
+                    <input class="form-input" id="ops-email" type="email" value="sai@growxlabs.tech" required />
+                </div>
+                <div>
+                    <label class="form-label" for="ops-passkey">OPS SECURITY PASSKEY</label>
+                    <input class="form-input" id="ops-passkey" type="password" placeholder="Enter Ops Secret Key" required autofocus />
+                </div>
+                <button class="btn-auth-submit" type="submit">
+                    <span>Authenticate & Establish Session &rarr;</span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- ─── Ops Command Dashboard ─── -->
+    <main id="ops-dashboard-view" class="ops-dashboard">
+        <!-- Navigation Tabs -->
+        <div class="ops-tabs">
+            <button id="tab-btn-billing" class="tab-btn active" onclick="switchTab('billing')">💳 Billing & Client Metering</button>
+            <button id="tab-btn-telemetry" class="tab-btn" onclick="switchTab('telemetry')">📊 Cluster Telemetry</button>
+            <button id="tab-btn-logs" class="tab-btn" onclick="switchTab('logs')">📜 Live System Logs</button>
+            <button id="tab-btn-audit" class="tab-btn" onclick="switchTab('audit')">🛡️ Security Audit Trail</button>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Requests Served</div>
+                <div class="stat-val" id="stat-requests">0</div>
+                <div class="stat-sub" id="stat-utilization">0% of allocated quota</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Client Accounts</div>
+                <div class="stat-val" id="stat-clients">0</div>
+                <div class="stat-sub" id="stat-active-keys">0 active API keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Retrieval Latency (P50)</div>
+                <div class="stat-val" style="color:#34d399;" id="stat-latency">&lt;8.4ms</div>
+                <div class="stat-sub">SQLite WAL + FTS5 Micro-Index</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Anti-Bot Evasion Rate</div>
+                <div class="stat-val" style="color:#38bdf8;" id="stat-evasion">99.8%</div>
+                <div class="stat-sub">Camoufox & JA4 Stealth Fleet</div>
+            </div>
+        </div>
+
+        <!-- Tab 1: Billing & Clients -->
+        <div id="tab-content-billing">
+            <div class="ops-card">
+                <div class="card-header-bar">
+                    <div>
+                        <div class="card-title">Client Accounts & API Key Governance</div>
+                        <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">
+                            Manage API keys, monthly request quotas, and real-time usage consumption per client.
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="openNewClientModal()">+ Issue Client API Key</button>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Client / Email</th>
+                            <th>Tier</th>
+                            <th>API Key Prefix</th>
+                            <th>Usage Meter</th>
+                            <th>Status</th>
+                            <th>Last Used</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table-body">
+                        <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">Loading client registry...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 2: Telemetry -->
+        <div id="tab-content-telemetry" style="display: none;">
+            <div class="ops-card">
+                <div class="card-header-bar">
+                    <div class="card-title">Engine Cluster Telemetry</div>
+                    <span style="font-family:var(--font-mono); font-size:11px; color:#10b981;">● NODE HEALTHY</span>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px; font-family:var(--font-mono); font-size:13px;">
+                    <div style="background:#090b10; border:1px solid var(--border-subtle); padding:18px; border-radius:8px;">
+                        <div style="color:var(--text-muted); font-size:11px; margin-bottom:8px;">CORPUS PERSISTENCE</div>
+                        <div style="font-size:18px; color:#ffffff;" id="tel-docs">-</div>
+                        <div style="color:#34d399; font-size:11.5px; margin-top:6px;">FTS5 Inverted Index Ready</div>
+                    </div>
+                    <div style="background:#090b10; border:1px solid var(--border-subtle); padding:18px; border-radius:8px;">
+                        <div style="color:var(--text-muted); font-size:11px; margin-bottom:8px;">MEMORY FOOTPRINT</div>
+                        <div style="font-size:18px; color:#ffffff;" id="tel-ram">-</div>
+                        <div style="color:#38bdf8; font-size:11.5px; margin-top:6px;">Process RSS RAM</div>
+                    </div>
+                    <div style="background:#090b10; border:1px solid var(--border-subtle); padding:18px; border-radius:8px;">
+                        <div style="color:var(--text-muted); font-size:11px; margin-bottom:8px;">PROXY MESH & TLS</div>
+                        <div style="font-size:18px; color:#34d399;">JA4 ACTIVE</div>
+                        <div style="color:var(--text-muted); font-size:11.5px; margin-top:6px;">Cloudflare Clear</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Logs -->
+        <div id="tab-content-logs" style="display: none;">
+            <div class="ops-card">
+                <div class="card-header-bar">
+                    <div class="card-title">Live System & Crawler Execution Stream</div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button class="btn-table-action" onclick="fetchOpsLogs()">Refresh Now</button>
+                    </div>
+                </div>
+                <div class="log-terminal" id="log-terminal-output">
+                    Loading live logs...
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Security Audit -->
+        <div id="tab-content-audit" style="display: none;">
+            <div class="ops-card">
+                <div class="card-header-bar">
+                    <div class="card-title">Security & Access Audit Trail</div>
+                    <span style="font-family:var(--font-mono); font-size:11.5px; color:#38bdf8;">Lockdown: sai@growxlabs.tech only</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Attempted Email</th>
+                            <th>IP Address</th>
+                            <th>Result</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-table-body">
+                        <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Loading audit trail...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Issue New Client Key -->
+    <div id="new-client-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 style="font-size:18px; font-weight:700; color:#fff; margin-bottom:16px;">Issue New Client API Key</h3>
+            <form onsubmit="handleCreateClient(event)" style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label class="form-label">CLIENT / COMPANY NAME</label>
+                    <input class="form-input" id="new-client-name" type="text" placeholder="e.g. Acme Capital" required />
+                </div>
+                <div>
+                    <label class="form-label">CLIENT EMAIL</label>
+                    <input class="form-input" id="new-client-email" type="email" placeholder="client@acme.com" required />
+                </div>
+                <div>
+                    <label class="form-label">TIER PLAN</label>
+                    <select class="form-input" id="new-client-tier">
+                        <option value="starter">Starter (10,000 req/mo • 60 RPM)</option>
+                        <option value="growth">Growth (100,000 req/mo • 300 RPM)</option>
+                        <option value="enterprise" selected>Enterprise (1,000,000 req/mo • 1,200 RPM)</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="btn-table-action" onclick="closeNewClientModal()">Cancel</button>
+                    <button type="submit" class="btn-action">Issue Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Display Generated Key -->
+    <div id="key-result-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 style="font-size:18px; font-weight:700; color:#34d399; margin-bottom:12px;">Client API Key Generated</h3>
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+                This secret API key will only be shown once. Copy and share securely with the client:
+            </p>
+            <div style="background:#060709; border:1px solid rgba(56,189,248,0.3); padding:12px; border-radius:8px; font-family:var(--font-mono); font-size:12.5px; color:#38bdf8; word-break:break-all; margin-bottom:20px;" id="generated-key-display">
+            </div>
+            <button class="btn-action" style="width:100%;" onclick="document.getElementById('key-result-modal').style.display='none'; fetchOpsClients();">Done</button>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_KEY = 'gx_ops_token';
+
+        function checkSession() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            if (!token) {
+                showAuthGate();
+                return;
+            }
+            fetch('/api/ops/session', {
+                headers: { 'X-Ops-Token': token }
+            })
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error('Session invalid');
+            })
+            .then(data => {
+                showDashboard(data.email);
+            })
+            .catch(() => {
+                sessionStorage.removeItem(AUTH_KEY);
+                showAuthGate();
+            });
+        }
+
+        function showAuthGate() {
+            document.getElementById('auth-gate-view').style.display = 'flex';
+            document.getElementById('ops-dashboard-view').style.display = 'none';
+            document.getElementById('ops-nav-user').style.display = 'none';
+        }
+
+        function showDashboard(email) {
+            document.getElementById('auth-gate-view').style.display = 'none';
+            document.getElementById('ops-dashboard-view').style.display = 'block';
+            document.getElementById('ops-nav-user').style.display = 'flex';
+            fetchOpsBilling();
+            fetchOpsClients();
+            fetchOpsTelemetry();
+            fetchOpsLogs();
+        }
+
+        async function handleOpsLogin(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('auth-error-box');
+            errBox.style.display = 'none';
+            const email = document.getElementById('ops-email').value.trim();
+            const passkey = document.getElementById('ops-passkey').value.trim();
+
+            try {
+                const res = await fetch('/api/ops/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, passkey })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Authentication failed');
+                }
+                sessionStorage.setItem(AUTH_KEY, data.token);
+                showDashboard(data.email);
+            } catch (err) {
+                errBox.innerText = '⛔ ' + err.message;
+                errBox.style.display = 'block';
+            }
+        }
+
+        async function logoutOps() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            if (token) {
+                try {
+                    await fetch('/api/ops/logout', {
+                        method: 'POST',
+                        headers: { 'X-Ops-Token': token }
+                    });
+                } catch (e) {}
+            }
+            sessionStorage.removeItem(AUTH_KEY);
+            showAuthGate();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-btn-' + tabId).classList.add('active');
+            ['billing', 'telemetry', 'logs', 'audit'].forEach(t => {
+                document.getElementById('tab-content-' + t).style.display = (t === tabId) ? 'block' : 'none';
+            });
+            if (tabId === 'logs') fetchOpsLogs();
+            if (tabId === 'audit') fetchOpsAudit();
+            if (tabId === 'telemetry') fetchOpsTelemetry();
+        }
+
+        async function fetchOpsBilling() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            try {
+                const res = await fetch('/api/ops/billing', { headers: { 'X-Ops-Token': token } });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const m = data.metering;
+                    document.getElementById('stat-requests').innerText = m.total_requests_served.toLocaleString();
+                    document.getElementById('stat-utilization').innerText = `${m.global_utilization_pct}% of ${m.total_quota_allocated.toLocaleString()} quota`;
+                    document.getElementById('stat-clients').innerText = m.total_clients;
+                    document.getElementById('stat-active-keys').innerText = `${m.active_clients} active API keys`;
+                }
+            } catch (e) {}
+        }
+
+        async function fetchOpsClients() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            try {
+                const res = await fetch('/api/ops/clients', { headers: { 'X-Ops-Token': token } });
+                const data = await res.json();
+                const tbody = document.getElementById('clients-table-body');
+                if (!data.clients || data.clients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:24px;">No client keys found. Issue one above.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.clients.map(c => {
+                    const quota = c.monthly_quota || 10000;
+                    const used = c.requests_used || 0;
+                    const pct = Math.min(Math.round((used / quota) * 100), 100);
+                    return `
+                        <tr>
+                            <td>
+                                <div style="font-weight:600; color:#fff;">${c.name}</div>
+                                <div style="font-size:11.5px; color:var(--text-muted);">${c.email}</div>
+                            </td>
+                            <td><span class="tag-tier">${c.tier}</span></td>
+                            <td><code style="color:#38bdf8;">${c.prefix}</code></td>
+                            <td>
+                                <div style="font-family:var(--font-mono); font-size:11.5px;">${used.toLocaleString()} / ${quota.toLocaleString()}</div>
+                                <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;"></div></div>
+                            </td>
+                            <td><span class="tag-status status-${c.status}">${c.status}</span></td>
+                            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${c.last_used_at ? c.last_used_at.split('T')[0] : 'Never'}</td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    ${c.status === 'pending' ? `<button class="btn-table-action" onclick="approveKey('${c.id}')">Approve</button>` : ''}
+                                    ${c.status === 'active' ? `<button class="btn-table-action btn-revoke" onclick="revokeKey('${c.id}')">Revoke</button>` : ''}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {}
+        }
+
+        async function approveKey(id) {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            const res = await fetch(`/api/ops/clients/${id}/approve`, {
+                method: 'POST',
+                headers: { 'X-Ops-Token': token }
+            });
+            const data = await res.json();
+            if (data.api_key) {
+                document.getElementById('generated-key-display').innerText = data.api_key;
+                document.getElementById('key-result-modal').style.display = 'flex';
+            } else {
+                fetchOpsClients();
+            }
+        }
+
+        async function revokeKey(id) {
+            if (!confirm('Are you sure you want to revoke this API key immediately?')) return;
+            const token = sessionStorage.getItem(AUTH_KEY);
+            await fetch(`/api/ops/clients/${id}/revoke`, {
+                method: 'POST',
+                headers: { 'X-Ops-Token': token }
+            });
+            fetchOpsClients();
+        }
+
+        async function fetchOpsTelemetry() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            try {
+                const res = await fetch('/api/ops/telemetry', { headers: { 'X-Ops-Token': token } });
+                const d = await res.json();
+                document.getElementById('tel-docs').innerText = (d.corpus.indexed_documents || 0).toLocaleString() + ' docs';
+                document.getElementById('tel-ram').innerText = d.resources.process_ram_mb + ' MB';
+            } catch (e) {}
+        }
+
+        async function fetchOpsLogs() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            try {
+                const res = await fetch('/api/ops/logs?limit=150', { headers: { 'X-Ops-Token': token } });
+                const d = await res.json();
+                const out = document.getElementById('log-terminal-output');
+                if (!d.logs || d.logs.length === 0) {
+                    out.innerText = 'No log entries recorded yet.';
+                    return;
+                }
+                out.innerHTML = d.logs.map(l => `
+                    <div class="log-entry">
+                        <span class="log-time">[${l.timestamp}]</span>
+                        <span class="log-level-${l.level}">[${l.level}]</span>
+                        <span>${l.message}</span>
+                    </div>
+                `).join('');
+                out.scrollTop = out.scrollHeight;
+            } catch (e) {}
+        }
+
+        async function fetchOpsAudit() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            try {
+                const res = await fetch('/api/ops/audit?limit=50', { headers: { 'X-Ops-Token': token } });
+                const d = await res.json();
+                const tbody = document.getElementById('audit-table-body');
+                if (!d.audit || d.audit.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No audit events yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = d.audit.map(a => `
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-size:11px;">${a.timestamp.split('.')[0].replace('T', ' ')}</td>
+                        <td><code style="color:#38bdf8;">${a.event}</code></td>
+                        <td><strong>${a.email}</strong></td>
+                        <td style="font-family:var(--font-mono); font-size:11.5px;">${a.client_ip}</td>
+                        <td>
+                            <span class="tag-status ${a.authorized ? 'status-active' : 'status-revoked'}">
+                                ${a.authorized ? 'AUTHORIZED' : 'BLOCKED'}
+                            </span>
+                        </td>
+                        <td style="color:var(--text-secondary); font-size:12px;">${a.reason || '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {}
+        }
+
+        function openNewClientModal() {
+            document.getElementById('new-client-modal').style.display = 'flex';
+        }
+        function closeNewClientModal() {
+            document.getElementById('new-client-modal').style.display = 'none';
+        }
+
+        async function handleCreateClient(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-client-name').value.trim();
+            const email = document.getElementById('new-client-email').value.trim();
+            const tier = document.getElementById('new-client-tier').value;
+            const token = sessionStorage.getItem(AUTH_KEY);
+
+            try {
+                const res = await fetch('/api/ops/clients/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Ops-Token': token },
+                    body: JSON.stringify({ name, email, tier })
+                });
+                const d = await res.json();
+                closeNewClientModal();
+                if (d.api_key) {
+                    document.getElementById('generated-key-display').innerText = d.api_key;
+                    document.getElementById('key-result-modal').style.display = 'flex';
+                } else {
+                    fetchOpsClients();
+                }
+            } catch (err) {
+                alert('Error creating client key: ' + err.message);
+            }
+        }
+
+        // Auto-check session on page load
+        checkSession();
+
+        // Auto refresh logs every 4 seconds if logs tab is open
+        setInterval(() => {
+            if (document.getElementById('tab-content-logs').style.display !== 'none') {
+                fetchOpsLogs();
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+industry: default
+
+queries:
+  - store
+  - showroom
+  - manufacturer
+  - supplier
+  - company
+  - services

@@ -1,0 +1,45 @@
+industry: jewellery
+
+decision_maker_tiers:
+  tier_1:
+    - Owner
+    - Founder
+    - Co-Founder
+    - Managing Director
+    - MD
+    - CEO
+    - Proprietor
+  tier_2:
+    - Director
+    - Executive Director
+    - Head of Marketing
+    - Head of Sales
+    - E-commerce Head
+    - Operations Head
+  tier_3:
+    - Store Manager
+    - General Manager
+    - Business Development Manager
+
+products_services_keywords:
+  - Gold Jewellery
+  - Diamond Jewellery
+  - Bridal Jewellery
+  - Silver Jewellery
+  - Custom Jewellery
+  - Uncut Diamond
+  - Gemstones
+  - Jewellery Manufacturing
+  - Wholesale Jewellery
+  - Retail Jewellery
+
+weights:
+  target_fit: 30
+  contactability: 25
+  decision_maker: 20
+  data_quality: 15
+  digital_presence: 10
+
+priority_thresholds:
+  high: 75
+  medium: 50

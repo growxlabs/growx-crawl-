@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowX Crawl · Enterprise Web Extraction Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=2.7.0">
+</head>
+<body class="app-body">
+
+    <div class="app-layout">
+
+        <!-- ── SIDEBAR NAVIGATION ── -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo-mark">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                        <polyline points="2 17 12 22 22 17" />
+                        <polyline points="2 12 12 17 22 12" />
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <div class="brand-title">GrowX Crawl</div>
+                    <div class="brand-tier">Enterprise Platform</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group-title">Platform</div>
+                
+                <button class="nav-item active" onclick="switchAppTab('dashboard')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="7" height="9" x="3" y="3" rx="1"/>
+                            <rect width="7" height="5" x="14" y="3" rx="1"/>
+                            <rect width="7" height="9" x="14" y="12" rx="1"/>
+                            <rect width="7" height="5" x="3" y="16" rx="1"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Overview</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('playground')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Playground</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('jobs')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20v-6M6 20V10M18 20V4"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Job History</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('targets')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                            <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Stored Content</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('search')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Web Search</span>
+                </button>
+
+                <div class="nav-group-title">Configuration</div>
+
+                <button class="nav-item" onclick="switchAppTab('keys')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="7.5" cy="15.5" r="5.5"/>
+                            <path d="m21 2-9.6 9.6"/>
+                            <path d="m15.5 7.5 3 3M18 5l3 3"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">API Credentials</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('usage')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="m19 9-5 5-4-4-3 3"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">Usage &amp; Limits</span>
+                </button>
+
+                <button class="nav-item" onclick="switchAppTab('docs')">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                            <path d="M6 6h10M6 10h10"/>
+                        </svg>
+                    </span>
+                    <span class="nav-text">API Reference</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-user">
+                <div class="user-avatar">GX</div>
+                <div class="user-details">
+                    <div class="user-name">GrowX Labs Inc.</div>
+                    <div class="user-status"><span class="status-dot"></span> Cluster Connected</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── MAIN CONTENT VIEWPORT ── -->
+        <main class="app-main">
+
+            <!-- Top Application Header -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">GrowX</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item active" id="active-tab-title">Overview</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <div class="system-status-indicator">
+                        <span class="status-pulse-dot"></span>
+                        <span>Systems Operational</span>
+                    </div>
+
+                    <a href="/home" class="topbar-action-btn" style="text-decoration: none; color: #93c5fd; background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.25);" title="Go to GrowxLabs Studio Landing Page">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        <span>Studio Home</span>
+                    </a>
+                    
+                    <a href="/v1/brochure" target="_blank" class="topbar-action-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Specifications PDF</span>
+                    </a>
+
+                    <a href="/docs" target="_blank" class="topbar-action-btn secondary">
+                        <span>Interactive Docs</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Scrollable View Container -->
+            <div class="view-viewport">
+
+                <!-- 1. OVERVIEW VIEW -->
+                <div id="view-dashboard" class="view-panel active">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Platform Overview</h1>
+                            <p class="page-description">High-throughput web extraction, headless browser sessions, and pipeline health.</p>
+                        </div>
+                    </div>
+
+                    <!-- 4 Metric Cards Grid -->
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Average Latency</span>
+                                <span class="metric-badge">Fast HTTP</span>
+                            </div>
+                            <div class="metric-number" id="metric-fast-latency">112 ms</div>
+                            <div class="metric-footer">Global edge node response time</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Browser Concurrency</span>
+                                <span class="metric-badge">Headless</span>
+                            </div>
+                            <div class="metric-number" id="metric-dynamic-slots">64 Sessions</div>
+                            <div class="metric-footer">Chromium execution pool active</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Anti-Bot Evasion</span>
+                                <span class="metric-badge success">Active</span>
+                            </div>
+                            <div class="metric-number">Automated</div>
+                            <div class="metric-footer">TLS fingerprinting &amp; challenge bypass</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Total Extractions</span>
+                                <span class="metric-badge">Indexed</span>
+                            </div>
+                            <div class="metric-number" id="metric-total-jobs">--</div>
+                            <div class="metric-footer">Persisted in database storage</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Instant Extraction -->
+                    <div class="section-card">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Run Live Extraction</div>
+                            <div class="card-desc-sub">Test single-page URL extraction directly against the live edge fetcher.</div>
+                        </div>
+
+                        <div class="form-row-extraction">
+                            <div class="input-wrapper">
+                                <input type="url" id="dash-quick-url" class="form-control" value="https://growxlabs.tech" placeholder="https://example.com" />
+                            </div>
+                            <div class="select-wrapper">
+                                <select id="dash-quick-fetcher" class="form-control select-control">
+                                    <option value="auto">Auto-Detect (Recommended)</option>
+                                    <option value="fast">Fast HTTP (Direct HTML)</option>
+                                    <option value="dynamic">Headless Chromium (JavaScript)</option>
+                                    <option value="stealth">Stealth Mode (Anti-Bot Bypass)</option>
+                                </select>
+                            </div>
+                            <button class="btn-action-primary" onclick="executeQuickScrape()">
+                                <span>Execute Request</span>
+                            </button>
+                        </div>
+
+                        <div id="dash-quick-result" class="result-box-container" style="display: none;">
+                            <div class="result-box-header">
+                                <span>Extraction Response Payload</span>
+                                <button class="copy-text-btn" onclick="copyQuickJson()">Copy Output</button>
+                            </div>
+                            <pre id="dash-quick-json" class="code-output-block"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Recent Extractions Table -->
+                    <div class="section-card">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Recent Extractions</div>
+                            <div class="card-desc-sub">History of single-page and multi-page crawl executions.</div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Execution ID</th>
+                                        <th>Target URL</th>
+                                        <th>Status</th>
+                                        <th>Pages</th>
+                                        <th>Created At</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-jobs-tbody">
+                                    <tr><td colspan="6" class="table-cell-muted">Loading extraction logs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PLAYGROUND VIEW -->
+                <div id="view-playground" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Extraction Playground</h1>
+                            <p class="page-description">Interactive testing environment for all 7 extraction and document generation capabilities.</p>
+                        </div>
+                    </div>
+
+                    <!-- Modern Segmented Control for Capabilities -->
+                    <div class="segment-control-bar">
+                        <button class="segment-tab active" onclick="selectPlaygroundCapability('scrape')">Single Scrape</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('extract')">Structured Data</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('crawl')">Multi-Page Crawler</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('batch')">Batch Extractions</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('screenshot')">Screenshot Capture</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('pdf')">PDF Generation</button>
+                        <button class="segment-tab" onclick="selectPlaygroundCapability('audit')">SEO &amp; AI Readiness Audit</button>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="playground-input-grid">
+                            <div class="field-container">
+                                <label class="field-label">Target URL / Seed URL</label>
+                                <input type="url" id="pg-target-url" class="form-control" value="https://growxlabs.tech" placeholder="https://example.com" />
+                            </div>
+
+                            <div class="field-container" id="pg-fetcher-group">
+                                <label class="field-label">Execution Engine</label>
+                                <select id="pg-fetcher-select" class="form-control select-control">
+                                    <option value="auto">Auto-Detect (Recommended)</option>
+                                    <option value="fast">Fast HTTP (Direct HTML)</option>
+                                    <option value="dynamic">Headless Chromium (JavaScript)</option>
+                                    <option value="stealth">Stealth Mode (Anti-Bot Bypass)</option>
+                                </select>
+                            </div>
+
+                            <div class="field-container btn-align-end">
+                                <button class="btn-action-primary" id="btn-pg-run" onclick="runPlaygroundTest()">
+                                    <span>Run Capability</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Config Inputs (Selectors, Depth, PDF Format, etc.) -->
+                        <div id="pg-extra-fields" class="dynamic-config-row"></div>
+
+                        <!-- Output Section -->
+                        <div class="output-wrapper">
+                            <div class="output-topbar">
+                                <span class="output-title">Output &amp; Rendering Preview</span>
+                                <span id="pg-latency-tag" class="latency-indicator"></span>
+                            </div>
+
+                            <div id="pg-visual-preview" class="visual-render-box" style="display: none;"></div>
+
+                            <pre id="pg-json-output" class="code-output-block">// Select a capability and click Run Capability to inspect output...</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. JOBS HISTORY VIEW -->
+                <div id="view-jobs" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Job History</h1>
+                            <p class="page-description">Persistent records of asynchronous multi-page crawls and bulk parallel processing.</p>
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Job ID</th>
+                                        <th>Seed URL</th>
+                                        <th>Status</th>
+                                        <th>Pages Count</th>
+                                        <th>Started</th>
+                                        <th>Finished</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="jobs-tbody">
+                                    <tr><td colspan="6" class="table-cell-muted">Loading job history...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. STORED CONTENT VIEW -->
+                <div id="view-targets" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Stored Content</h1>
+                            <p class="page-description">Database-persisted DOM snapshots and on-demand CSS &amp; XPath extraction from stored documents.</p>
+                        </div>
+                    </div>
+
+                    <!-- Query from Snapshot -->
+                    <div class="section-card" style="margin-bottom: 24px;">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Query Stored Snapshot</div>
+                            <div class="card-desc-sub">Run CSS / XPath queries on previously indexed pages without re-fetching over the network.</div>
+                        </div>
+
+                        <div class="target-query-grid">
+                            <input type="text" id="target-id-input" class="form-control" placeholder="Snapshot ID (e.g. tgt_92b8d0c)" />
+                            <input type="text" id="target-selectors-input" class="form-control font-mono-input" value='{"title": "h1", "description": "meta[name=description]"}' placeholder='{"title": "h1"}' />
+                            <button class="btn-action-primary" onclick="executeExtractFromTarget()">
+                                <span>Execute Query</span>
+                            </button>
+                        </div>
+
+                        <div id="target-extract-result" class="result-box-container" style="display: none; margin-top: 16px;">
+                            <pre id="target-extract-json" class="code-output-block"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Stored Content Table -->
+                    <div class="section-card">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Indexed Page Snapshots</div>
+                            <div class="card-desc-sub">Complete HTML documents stored locally in SQLite database.</div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Snapshot ID</th>
+                                        <th>Page Title</th>
+                                        <th>Source URL</th>
+                                        <th>Status</th>
+                                        <th>Stored At</th>
+                                        <th class="text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="targets-tbody">
+                                    <tr><td colspan="6" class="table-cell-muted">Loading stored pages...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4.5 SOVEREIGN WEB SEARCH ENGINE VIEW -->
+                <div id="view-search" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Sovereign Web Search</h1>
+                            <p class="page-description">Self-hosted, zero-dependency search engine powered by SQLite FTS5, BM25 relevance ranking, and link graph authority.</p>
+                        </div>
+                        <div class="header-action-group">
+                            <button class="btn-action-secondary" onclick="triggerSearchReindex()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                </svg>
+                                <span>Re-index Documents</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Input Box -->
+                    <div class="section-card" style="margin-bottom: 16px;">
+                        <div class="search-hero-container">
+                            <div class="search-input-wrapper">
+                                <svg class="search-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                <input type="text" id="search-query-input" class="search-bar-input" placeholder="Search crawled web pages, e.g. 'AI product studio', 'FastAPI', 'site:growxlabs.tech'" onkeydown="if(event.key==='Enter') executeWebSearch()" oninput="toggleSearchClearBtn()" />
+                                <button id="btn-search-clear" onclick="clearSearchInput()" style="display: none; background: transparent; border: none; color: #71717a; cursor: pointer; padding: 4px 8px; font-size: 14px; margin-right: 4px; line-height: 1;" title="Clear search">✕</button>
+                                <button class="btn-action-primary" onclick="executeWebSearch()">
+                                    <span>Search</span>
+                                </button>
+                            </div>
+                            <div class="search-hints-row">
+                                <span class="hint-label">Suggestions:</span>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('ResumeForgeAI')">ResumeForgeAI</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('site:www.linkedin.com')">site:www.linkedin.com</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('Full Stack')">Full Stack</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('site:growxlabs.tech')">site:growxlabs.tech</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('AI product studio')">AI product studio</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('Einstein')">Einstein</a>
+                                <a href="javascript:void(0)" class="search-hint-tag" onclick="quickSearch('&quot;Software Engineering&quot;')">&quot;Software Engineering&quot;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Crawl & Index Any New URL Target -->
+                    <div class="section-card" style="margin-bottom: 24px; padding: 18px 22px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div style="font-size: 13px; font-weight: 600; color: #f4f4f5; display: flex; align-items: center; gap: 8px;">
+                                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span>
+                                <span>Crawl &amp; Index Any New Target URL</span>
+                            </div>
+                            <span style="font-size: 11.5px; color: #71717a;">Instant discovery &bull; Automatic inverted index</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="url" id="crawl-new-url-input" class="form-control" placeholder="Paste any live URL, e.g. https://news.ycombinator.com/jobs" style="flex: 1; min-width: 280px; height: 38px; font-size: 13px;" onkeydown="if(event.key==='Enter') crawlAndIndexNewUrl()" />
+                            <select id="crawl-new-mode" class="form-control select-control" style="width: 165px; height: 38px; font-size: 12px;">
+                                <option value="auto">Auto-Escalate</option>
+                                <option value="fast">Fast HTTP</option>
+                                <option value="dynamic">Anti-Bot Chromium</option>
+                                <option value="ghost">Ghost Camoufox</option>
+                            </select>
+                            <select id="crawl-new-pages" class="form-control select-control" style="width: 185px; height: 38px; font-size: 12px;">
+                                <option value="1">1 Page (Seed Only)</option>
+                                <option value="10">Spider 10 Sub-Pages</option>
+                                <option value="25">Spider 25 Sub-Pages</option>
+                                <option value="50">Spider 50 Sub-Pages</option>
+                                <option value="100">Spider 100 Sub-Pages</option>
+                            </select>
+                            <button class="btn-action-primary" id="btn-crawl-new" onclick="crawlAndIndexNewUrl()" style="height: 38px; padding: 0 16px;">
+                                <span>+ Crawl &amp; Index</span>
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 11.5px; color: #71717a;">Quick 1-click test targets:</span>
+                            <a href="javascript:void(0)" class="search-hint-tag" onclick="crawlSpecificUrl('https://resumeforgeai.in')">resumeforgeai.in</a>
+                            <a href="javascript:void(0)" class="search-hint-tag" onclick="crawlSpecificUrl('https://news.ycombinator.com')">news.ycombinator.com</a>
+                            <a href="javascript:void(0)" class="search-hint-tag" onclick="crawlSpecificUrl('https://quotes.toscrape.com')">quotes.toscrape.com</a>
+                            <a href="javascript:void(0)" class="search-hint-tag" onclick="crawlSpecificUrl('https://stripe.com')">stripe.com</a>
+                        </div>
+                        <div id="crawl-new-feedback" style="display: none; font-size: 12px; margin-top: 10px; padding: 8px 12px; border-radius: var(--radius-sm);"></div>
+                    </div>
+
+                    <!-- Search Telemetry & Metrics -->
+                    <div id="search-telemetry-bar" class="search-meta-bar" style="display: none;">
+                        <div id="search-stats-text" class="search-stats-text"></div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button class="serp-mini-btn" id="btn-export-csv" onclick="exportSearchResultsCsv()" style="display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font-size: 11.5px; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); color: #93c5fd;" title="Download results as CSV spreadsheet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <button class="serp-mini-btn" id="btn-copy-json" onclick="copySearchResultsJson()" style="display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; font-size: 11.5px;" title="Copy all results as JSON">
+                                <span>Copy JSON</span>
+                            </button>
+                            <div id="search-timing-badge" class="badge-timing"></div>
+                        </div>
+                    </div>
+
+                    <!-- Search Results SERP List -->
+                    <div id="search-results-container" class="search-results-list">
+                        <!-- SERP Cards will be injected by JavaScript -->
+                    </div>
+
+                    <!-- Pagination Navigation -->
+                    <div id="search-pagination-container" style="display: none; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; gap: 12px;">
+                        <!-- Pagination controls -->
+                    </div>
+                </div>
+
+                <!-- 5. API CREDENTIALS VIEW -->
+                <div id="view-keys" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">API Credentials</h1>
+                            <p class="page-description">Manage client tokens, approve pending access requests, and configure rate limit quotas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Master Token Box -->
+                    <div class="section-card" style="margin-bottom: 24px;">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Active Master Token</div>
+                            <div class="card-desc-sub">Authorized credentials for administrative requests and dashboard execution.</div>
+                        </div>
+
+                        <div class="master-key-container">
+                            <div class="key-field-wrapper">
+                                <code id="master-token-val">gx_live_sandbox_master_key</code>
+                            </div>
+                            <button class="btn-action-secondary" onclick="copyMasterKey()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                                </svg>
+                                <span>Copy Token</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Issue New Key -->
+                    <div class="section-card" style="margin-bottom: 24px;">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Request Client API Key</div>
+                            <div class="card-desc-sub">Submit a new organization credential for queue review and activation.</div>
+                        </div>
+
+                        <div class="key-request-grid">
+                            <input type="text" id="req-key-name" class="form-control" placeholder="Organization / Team Name" />
+                            <input type="email" id="req-key-email" class="form-control" placeholder="admin@organization.com" />
+                            <select id="req-key-tier" class="form-control select-control">
+                                <option value="starter">Starter (60 RPM)</option>
+                                <option value="growth">Growth (300 RPM)</option>
+                                <option value="enterprise" selected>Enterprise (1,200 RPM)</option>
+                            </select>
+                            <button class="btn-action-primary" onclick="submitAppKeyRequest()">
+                                <span>Request Key</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Keys Queue Table -->
+                    <div class="section-card">
+                        <div class="card-header-clean">
+                            <div class="card-title-main">Registered Credentials &amp; Status</div>
+                            <div class="card-desc-sub">Team API keys, approval states, and real-time usage counters.</div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Key ID</th>
+                                        <th>Organization</th>
+                                        <th>Tier</th>
+                                        <th>Status</th>
+                                        <th>Rate Limit</th>
+                                        <th>Usage</th>
+                                        <th class="text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keys-tbody">
+                                    <tr><td colspan="7" class="table-cell-muted">Loading API keys...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. USAGE & LIMITS VIEW -->
+                <div id="view-usage" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">Usage &amp; Limits</h1>
+                            <p class="page-description">Live request volume telemetry, concurrency caps, and plan renewal metrics.</p>
+                        </div>
+                    </div>
+
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Monthly Extractions</span>
+                                <span class="metric-badge">Quota</span>
+                            </div>
+                            <div class="metric-number" id="usage-requests-val">-- / 1,000,000</div>
+                            <div class="progress-track"><div class="progress-fill" id="usage-progress-bar" style="width: 2%;"></div></div>
+                            <div class="metric-footer" id="usage-percent-text">1.8% consumed this billing cycle</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Rate Limit</span>
+                                <span class="metric-badge">Sliding Window</span>
+                            </div>
+                            <div class="metric-number" id="usage-rpm-val">1,200 RPM</div>
+                            <div class="metric-footer">Token bucket rate limiting</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Browser Sessions</span>
+                                <span class="metric-badge success">Optimal</span>
+                            </div>
+                            <div class="metric-number">64 / 100</div>
+                            <div class="metric-footer">Concurrent headless instances</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-top">
+                                <span class="metric-label">Active Plan</span>
+                                <span class="metric-badge">Enterprise</span>
+                            </div>
+                            <div class="metric-number" id="usage-plan-val">Enterprise</div>
+                            <div class="metric-footer">Renews on the 1st of every month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. API REFERENCE VIEW -->
+                <div id="view-docs" class="view-panel">
+                    <div class="page-heading">
+                        <div>
+                            <h1 class="page-title">API Reference</h1>
+                            <p class="page-description">Complete specification for RESTful endpoints, parameter schemas, and production code samples.</p>
+                        </div>
+                    </div>
+
+                    <div class="docs-split-container">
+                        <!-- Left Navigation: Endpoints List -->
+                        <div class="docs-nav-column">
+                            <div class="docs-nav-header">Available Endpoints</div>
+                            <div class="docs-endpoints-menu" id="docs-endpoints-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Right Content: Endpoint Specification -->
+                        <div class="docs-detail-column" id="docs-detail-panel">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js?v=3.1.0"></script>
+</body>
+</html>

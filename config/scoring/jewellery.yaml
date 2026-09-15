@@ -1,0 +1,28 @@
+# Jewellery Industry Scoring Profile
+profile_name: jewellery
+industry_keywords:
+  - jewellery
+  - jewelry
+  - gold
+  - diamond
+  - gemstone
+  - necklace
+  - ring
+  - bangle
+  - ornaments
+  - silver
+  - traditional jewellery
+  - bridal jewellery
+
+weights:
+  website_available: 20
+  public_phone: 25
+  public_email: 20
+  instagram_present: 15
+  linkedin_present: 5
+  contact_person_found: 10
+  location_matched: 5
+
+priority_thresholds:
+  high: 75
+  medium: 50
