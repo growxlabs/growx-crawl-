@@ -917,3 +917,218 @@ def verify_competitor_relationship(relationship_id: str):
     return updated.model_dump()
 
 
+# ── Phase 12: ICP Intelligence API ──
+
+class CreateICPRequest(BaseModel):
+    seller_company_id: str
+    name: str
+    description: Optional[str] = None
+    target_industries: Optional[List[str]] = None
+    target_geographies: Optional[List[str]] = None
+    target_employee_range: Optional[List[int]] = None
+    seller_data: Optional[Dict[str, Any]] = None
+    custom_criteria: Optional[List[Dict[str, Any]]] = None
+    custom_exclusions: Optional[List[Dict[str, Any]]] = None
+    custom_personas: Optional[List[Dict[str, Any]]] = None
+    activate: bool = True
+
+
+class CreateICPVersionRequest(BaseModel):
+    seller_data: Optional[Dict[str, Any]] = None
+    target_industries: Optional[List[str]] = None
+    target_geographies: Optional[List[str]] = None
+    target_employee_range: Optional[List[int]] = None
+    custom_criteria: Optional[List[Dict[str, Any]]] = None
+    custom_exclusions: Optional[List[Dict[str, Any]]] = None
+    custom_personas: Optional[List[Dict[str, Any]]] = None
+
+
+class ActivateICPVersionRequest(BaseModel):
+    version_id: str
+
+
+class ScoreCompanyRequest(BaseModel):
+    company_data: Optional[Dict[str, Any]] = None
+    version_id: Optional[str] = None
+    seller_competitor_ids: Optional[List[str]] = None
+    existing_customer_ids: Optional[List[str]] = None
+
+
+class ScorePersonRequest(BaseModel):
+    person_data: Optional[Dict[str, Any]] = None
+    company_id: str
+    version_id: Optional[str] = None
+
+
+@v1_router.post("/icps")
+def create_icp_endpoint(req: CreateICPRequest):
+    """Creates a new Ideal Customer Profile container and initial targeting model."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    emp_range = (req.target_employee_range[0], req.target_employee_range[1]) if req.target_employee_range and len(req.target_employee_range) >= 2 else None
+    icp, version = icp_service.create_icp(
+        seller_company_id=req.seller_company_id,
+        name=req.name,
+        description=req.description,
+        target_industries=req.target_industries,
+        target_geographies=req.target_geographies,
+        target_employee_range=emp_range,
+        seller_data=req.seller_data,
+        custom_criteria=req.custom_criteria,
+        custom_exclusions=req.custom_exclusions,
+        custom_personas=req.custom_personas,
+        activate=req.activate,
+    )
+    return {"icp": icp.model_dump(), "version": version.model_dump()}
+
+
+@v1_router.get("/icps")
+def list_icps_endpoint(
+    seller_company_id: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 50,
+):
+    """Lists existing Ideal Customer Profiles."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    icps = icp_service.list_icps(
+        seller_company_id=seller_company_id, status=status, limit=limit
+    )
+    return [i.model_dump() for i in icps]
+
+
+@v1_router.get("/icps/{icp_id}")
+def get_icp_endpoint(icp_id: str):
+    """Retrieves an ICP and its active version targeting details."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    icp = icp_service.get_icp(icp_id)
+    if not icp:
+        raise HTTPException(status_code=404, detail=f"ICP '{icp_id}' not found")
+    active_version = icp_service.get_active_version(icp_id)
+    details = (
+        icp_service.get_version_details(active_version.id) if active_version else None
+    )
+    return {
+        "icp": icp.model_dump(),
+        "active_version": active_version.model_dump() if active_version else None,
+        "details": {
+            "criteria": [c.model_dump() for c in details["criteria"]],
+            "exclusions": [e.model_dump() for e in details["exclusions"]],
+            "personas": [p.model_dump() for p in details["personas"]],
+        }
+        if details
+        else None,
+    }
+
+
+@v1_router.get("/icps/{icp_id}/versions")
+def list_icp_versions_endpoint(icp_id: str):
+    """Lists all versions for a given ICP."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    versions = icp_service.list_versions(icp_id)
+    return [v.model_dump() for v in versions]
+
+
+@v1_router.post("/icps/{icp_id}/versions")
+def create_icp_version_endpoint(icp_id: str, req: CreateICPVersionRequest):
+    """Generates a new draft version for an ICP."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    emp_range = (req.target_employee_range[0], req.target_employee_range[1]) if req.target_employee_range and len(req.target_employee_range) >= 2 else None
+    try:
+        ver = icp_service.create_version(
+            icp_id=icp_id,
+            seller_data=req.seller_data,
+            target_industries=req.target_industries,
+            target_geographies=req.target_geographies,
+            target_employee_range=emp_range,
+            custom_criteria=req.custom_criteria,
+            custom_exclusions=req.custom_exclusions,
+            custom_personas=req.custom_personas,
+        )
+        return ver.model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@v1_router.post("/icps/{icp_id}/activate")
+def activate_icp_version_endpoint(icp_id: str, req: ActivateICPVersionRequest):
+    """Activates an ICP version and supersedes previous ones."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    try:
+        activated = icp_service.activate_version(icp_id, req.version_id)
+        return activated.model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/icps/{icp_id}/score/company/{company_id}")
+def score_company_endpoint(
+    icp_id: str,
+    company_id: str,
+    req: ScoreCompanyRequest = ScoreCompanyRequest(),
+):
+    """Scores a prospect company against an ICP version."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    company_data = req.company_data or {}
+    if not company_data:
+        try:
+            from growx_crawl.identity.service import identity_service
+            comp = identity_service.get_company(company_id)
+            if comp:
+                company_data = comp.model_dump() if hasattr(comp, "model_dump") else comp.__dict__
+        except Exception:
+            pass
+    if "id" not in company_data and "company_id" not in company_data:
+        company_data["id"] = company_id
+
+    try:
+        score = icp_service.score_company(
+            icp_id=icp_id,
+            company_data=company_data,
+            version_id=req.version_id,
+            seller_competitor_ids=req.seller_competitor_ids,
+            existing_customer_ids=req.existing_customer_ids,
+        )
+        return score.model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/icps/{icp_id}/score/person/{person_id}")
+def score_person_endpoint(
+    icp_id: str,
+    person_id: str,
+    req: ScorePersonRequest,
+):
+    """Scores a person against target buyer personas."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    person_data = req.person_data or {}
+    if "id" not in person_data and "person_id" not in person_data:
+        person_data["id"] = person_id
+
+    try:
+        score = icp_service.score_person(
+            icp_id=icp_id,
+            person_data=person_data,
+            company_id=req.company_id,
+            version_id=req.version_id,
+        )
+        return score.model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.get("/icps/{icp_id}/matches")
+def get_icp_matches_endpoint(
+    icp_id: str,
+    version_id: Optional[str] = None,
+    min_fit: float = 0.5,
+    limit: int = 50,
+):
+    """Queries prospects evaluated against an ICP meeting a minimum fit threshold."""
+    from growx_crawl.intelligence.icp.service import icp_service
+    matches = icp_service.query_matches(
+        icp_id=icp_id, version_id=version_id, min_fit=min_fit, limit=limit
+    )
+    return [m.model_dump() for m in matches]
+
+
+

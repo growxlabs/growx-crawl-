@@ -1,6 +1,7 @@
 import logging
-from typing import List
+from typing import List, Optional
 from growx_crawl.autogtm.models import CompanyAnalysis, ICPProfile
+from growx_crawl.intelligence.icp.service import icp_service
 
 logger = logging.getLogger("growx_crawl.autogtm.icp")
 
@@ -9,7 +10,11 @@ class ICPSynthesizer:
     """
     Synthesizes the Ideal Customer Profile (ICP) based on deep domain analysis,
     generating high-conversion target titles, industries, pain points, and search dorks.
+    Adapts legacy AutoGTM synthesis to the canonical Phase 12 ICPIntelligenceService.
     """
+
+    def __init__(self, service=None):
+        self.service = service or icp_service
 
     def synthesize(self, analysis: CompanyAnalysis) -> ICPProfile:
         domain = analysis.domain
@@ -71,6 +76,20 @@ class ICPSynthesizer:
             f'site:linkedin.com/in/ ("Chief Revenue Officer") "{industries[1] if len(industries) > 1 else industries[0]}"',
             f'"{industries[0]}" "our team" OR "contact us" "USA"',
         ]
+
+        # Canonical Phase 12 Registration & Persistence
+        try:
+            seller_company_id = f"comp_{domain.replace('.', '_')}"
+            self.service.create_icp(
+                seller_company_id=seller_company_id,
+                name=f"ICP for {analysis.company_name or domain}",
+                description=f"AutoGTM synthesized profile for {domain}",
+                target_industries=industries[:4],
+                target_geographies=geographies,
+                seller_data=analysis.model_dump() if hasattr(analysis, "model_dump") else analysis.__dict__,
+            )
+        except Exception as e:
+            logger.debug(f"Could not persist canonical ICP for {domain}: {e}")
 
         return ICPProfile(
             target_industries=industries[:4],

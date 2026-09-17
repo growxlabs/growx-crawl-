@@ -29,6 +29,14 @@ CANONICAL_PREFIXES = {
     "sig_": "signal",
     "cpr_": "competitor relationship",
     "cpe_": "competitor evidence",
+    "icp_": "ideal customer profile",
+    "icpv_": "icp version",
+    "snp_": "seller snapshot",
+    "cr_": "icp criterion",
+    "ex_": "icp exclusion",
+    "prn_": "icp persona",
+    "sc_": "icp company score",
+    "psc_": "icp person score",
     # Verification
     "ver_": "verification result",
     # Platform / Execution

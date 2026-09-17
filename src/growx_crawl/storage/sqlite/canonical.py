@@ -973,6 +973,148 @@ CREATE TABLE IF NOT EXISTS company_competitor_summaries (
     updated_at TEXT NOT NULL,
     metadata_json TEXT DEFAULT '{}'
 );
+
+-- Phase 12: ICP Intelligence
+
+CREATE TABLE IF NOT EXISTS icps (
+    id TEXT PRIMARY KEY,
+    seller_company_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'draft',
+    source_type TEXT NOT NULL DEFAULT 'seller_derived',
+    current_version_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_icp_seller ON icps(seller_company_id);
+CREATE INDEX IF NOT EXISTS idx_icp_status ON icps(status);
+
+CREATE TABLE IF NOT EXISTS icp_versions (
+    id TEXT PRIMARY KEY,
+    icp_id TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'draft',
+    created_at TEXT NOT NULL,
+    created_by TEXT NOT NULL DEFAULT 'system',
+    seller_snapshot_id TEXT,
+    policy_version TEXT DEFAULT 'v1',
+    model_run_id TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_icpv_icp_ver ON icp_versions(icp_id, version);
+CREATE INDEX IF NOT EXISTS idx_icpv_status ON icp_versions(status);
+
+CREATE TABLE IF NOT EXISTS seller_snapshots (
+    id TEXT PRIMARY KEY,
+    seller_company_id TEXT NOT NULL,
+    fact_snapshot_json TEXT NOT NULL DEFAULT '{}',
+    verified_at TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_snp_seller ON seller_snapshots(seller_company_id);
+
+CREATE TABLE IF NOT EXISTS icp_criteria (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    category TEXT NOT NULL,
+    field TEXT NOT NULL,
+    operator TEXT NOT NULL DEFAULT 'equals',
+    value_json TEXT NOT NULL DEFAULT '{}',
+    weight REAL DEFAULT 1.0,
+    requirement_type TEXT NOT NULL DEFAULT 'preferred',
+    source TEXT NOT NULL DEFAULT 'seller_fact',
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_crit_ver ON icp_criteria(icp_version_id);
+CREATE INDEX IF NOT EXISTS idx_crit_cat ON icp_criteria(category);
+
+CREATE TABLE IF NOT EXISTS icp_exclusions (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    rule_type TEXT NOT NULL,
+    field TEXT NOT NULL,
+    operator TEXT NOT NULL DEFAULT 'equals',
+    value_json TEXT NOT NULL DEFAULT '{}',
+    reason TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_excl_ver ON icp_exclusions(icp_version_id);
+
+CREATE TABLE IF NOT EXISTS icp_personas (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    department TEXT NOT NULL,
+    seniority TEXT NOT NULL,
+    title_patterns TEXT NOT NULL DEFAULT '[]',
+    responsibilities TEXT NOT NULL DEFAULT '[]',
+    persona_category TEXT NOT NULL DEFAULT 'technical_buyer',
+    priority INTEGER DEFAULT 1,
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_pers_ver ON icp_personas(icp_version_id);
+
+CREATE TABLE IF NOT EXISTS icp_company_scores (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    fit_score REAL DEFAULT 0.0,
+    data_confidence REAL DEFAULT 0.0,
+    status TEXT NOT NULL DEFAULT 'possible_fit',
+    evaluated_at TEXT NOT NULL,
+    valid_until TEXT,
+    fingerprint TEXT,
+    explanation_json TEXT DEFAULT '{}',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sc_ver_comp ON icp_company_scores(icp_version_id, company_id);
+CREATE INDEX IF NOT EXISTS idx_sc_comp ON icp_company_scores(company_id);
+CREATE INDEX IF NOT EXISTS idx_sc_status ON icp_company_scores(status);
+CREATE INDEX IF NOT EXISTS idx_sc_score ON icp_company_scores(fit_score);
+
+CREATE TABLE IF NOT EXISTS icp_person_scores (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    person_id TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    persona_id TEXT,
+    fit_score REAL DEFAULT 0.0,
+    employment_confidence REAL DEFAULT 1.0,
+    role_matched TEXT,
+    evaluated_at TEXT NOT NULL,
+    explanation_json TEXT DEFAULT '{}',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_psc_ver_pers ON icp_person_scores(icp_version_id, person_id);
+CREATE INDEX IF NOT EXISTS idx_psc_comp ON icp_person_scores(company_id);
+
+CREATE TABLE IF NOT EXISTS icp_evidence (
+    id TEXT PRIMARY KEY,
+    icp_version_id TEXT NOT NULL,
+    criterion_id TEXT,
+    source_type TEXT NOT NULL,
+    source_id TEXT,
+    fact_id TEXT,
+    evidence_id TEXT,
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_iev_ver ON icp_evidence(icp_version_id);
 """
 
 

@@ -942,6 +942,148 @@ CREATE TABLE IF NOT EXISTS company_competitor_summaries (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     metadata_json JSONB DEFAULT '{}'::jsonb
 );
+
+-- Phase 12: ICP Intelligence
+
+CREATE TABLE IF NOT EXISTS icps (
+    id VARCHAR(64) PRIMARY KEY,
+    seller_company_id VARCHAR(64) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    status VARCHAR(32) NOT NULL DEFAULT 'draft',
+    source_type VARCHAR(64) NOT NULL DEFAULT 'seller_derived',
+    current_version_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_icp_seller ON icps(seller_company_id);
+CREATE INDEX IF NOT EXISTS idx_icp_status ON icps(status);
+
+CREATE TABLE IF NOT EXISTS icp_versions (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_id VARCHAR(64) NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    status VARCHAR(32) NOT NULL DEFAULT 'draft',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(64) NOT NULL DEFAULT 'system',
+    seller_snapshot_id VARCHAR(64),
+    policy_version VARCHAR(16) DEFAULT 'v1',
+    model_run_id VARCHAR(64),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_icpv_icp_ver ON icp_versions(icp_id, version);
+CREATE INDEX IF NOT EXISTS idx_icpv_status ON icp_versions(status);
+
+CREATE TABLE IF NOT EXISTS seller_snapshots (
+    id VARCHAR(64) PRIMARY KEY,
+    seller_company_id VARCHAR(64) NOT NULL,
+    fact_snapshot_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_snp_seller ON seller_snapshots(seller_company_id);
+
+CREATE TABLE IF NOT EXISTS icp_criteria (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    category VARCHAR(64) NOT NULL,
+    field VARCHAR(128) NOT NULL,
+    operator VARCHAR(32) NOT NULL DEFAULT 'equals',
+    value_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    weight DOUBLE PRECISION DEFAULT 1.0,
+    requirement_type VARCHAR(32) NOT NULL DEFAULT 'preferred',
+    source VARCHAR(64) NOT NULL DEFAULT 'seller_fact',
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_crit_ver ON icp_criteria(icp_version_id);
+CREATE INDEX IF NOT EXISTS idx_crit_cat ON icp_criteria(category);
+
+CREATE TABLE IF NOT EXISTS icp_exclusions (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    rule_type VARCHAR(64) NOT NULL,
+    field VARCHAR(128) NOT NULL,
+    operator VARCHAR(32) NOT NULL DEFAULT 'equals',
+    value_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    reason TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_excl_ver ON icp_exclusions(icp_version_id);
+
+CREATE TABLE IF NOT EXISTS icp_personas (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    department VARCHAR(64) NOT NULL,
+    seniority VARCHAR(64) NOT NULL,
+    title_patterns JSONB NOT NULL DEFAULT '[]'::jsonb,
+    responsibilities JSONB NOT NULL DEFAULT '[]'::jsonb,
+    persona_category VARCHAR(64) NOT NULL DEFAULT 'technical_buyer',
+    priority INTEGER DEFAULT 1,
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pers_ver ON icp_personas(icp_version_id);
+
+CREATE TABLE IF NOT EXISTS icp_company_scores (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    company_id VARCHAR(64) NOT NULL,
+    fit_score DOUBLE PRECISION DEFAULT 0.0,
+    data_confidence DOUBLE PRECISION DEFAULT 0.0,
+    status VARCHAR(32) NOT NULL DEFAULT 'possible_fit',
+    evaluated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_until TIMESTAMPTZ,
+    fingerprint VARCHAR(128),
+    explanation_json JSONB DEFAULT '{}'::jsonb,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sc_ver_comp ON icp_company_scores(icp_version_id, company_id);
+CREATE INDEX IF NOT EXISTS idx_sc_comp ON icp_company_scores(company_id);
+CREATE INDEX IF NOT EXISTS idx_sc_status ON icp_company_scores(status);
+CREATE INDEX IF NOT EXISTS idx_sc_score ON icp_company_scores(fit_score);
+
+CREATE TABLE IF NOT EXISTS icp_person_scores (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    person_id VARCHAR(64) NOT NULL,
+    company_id VARCHAR(64) NOT NULL,
+    persona_id VARCHAR(64),
+    fit_score DOUBLE PRECISION DEFAULT 0.0,
+    employment_confidence DOUBLE PRECISION DEFAULT 1.0,
+    role_matched VARCHAR(255),
+    evaluated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    explanation_json JSONB DEFAULT '{}'::jsonb,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_psc_ver_pers ON icp_person_scores(icp_version_id, person_id);
+CREATE INDEX IF NOT EXISTS idx_psc_comp ON icp_person_scores(company_id);
+
+CREATE TABLE IF NOT EXISTS icp_evidence (
+    id VARCHAR(64) PRIMARY KEY,
+    icp_version_id VARCHAR(64) NOT NULL,
+    criterion_id VARCHAR(64),
+    source_type VARCHAR(64) NOT NULL,
+    source_id VARCHAR(64),
+    fact_id VARCHAR(64),
+    evidence_id VARCHAR(64),
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_iev_ver ON icp_evidence(icp_version_id);
 """
 
 
