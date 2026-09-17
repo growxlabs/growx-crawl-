@@ -24,10 +24,10 @@ export function WorkflowStage({
       {/* Subtle vertical connector between stages */}
       {!isLast && (
         <div
-          className={`absolute left-[7px] top-6 bottom-0 w-[1px] ${
+          className={`absolute left-[15px] top-7 bottom-0 w-[1.5px] ${
             stage.state === "completed"
-              ? "bg-emerald-900/60"
-              : "bg-slate-800"
+              ? "bg-[#BDEBD7]"
+              : "bg-[#E9ECF0]"
           }`}
           aria-hidden="true"
         />

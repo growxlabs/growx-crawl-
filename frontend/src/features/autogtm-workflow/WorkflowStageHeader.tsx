@@ -21,13 +21,13 @@ export function WorkflowStageHeader({
   onToggle,
   canExpand = true,
 }: WorkflowStageHeaderProps) {
-  // Render accessible state glyph
+  // Render accessible, restrained state glyph
   const renderStateIndicator = () => {
     switch (state) {
       case "completed":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-400 flex items-center justify-center text-[10px] flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-[#EAF7F1] border border-[#BDEBD7] text-[#16825D] flex items-center justify-center text-[10px] flex-shrink-0"
             title="Stage completed"
             aria-label="Completed"
           >
@@ -37,7 +37,7 @@ export function WorkflowStageHeader({
       case "running":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-blue-950/80 border border-blue-500/50 text-blue-400 flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-[#EDF2FF] border border-[#C9D5FF] text-[#315EF5] flex items-center justify-center flex-shrink-0"
             title="Stage in progress"
             aria-label="In progress"
           >
@@ -47,7 +47,7 @@ export function WorkflowStageHeader({
       case "attention":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-400 flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-[#FFF5E5] border border-[#FEE1BA] text-[#A86514] flex items-center justify-center flex-shrink-0"
             title="Action required"
             aria-label="Attention needed"
           >
@@ -57,7 +57,7 @@ export function WorkflowStageHeader({
       case "failed":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-400 flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-[#FDECEC] border border-[#F8C8C8] text-[#C64141] flex items-center justify-center flex-shrink-0"
             title="Stage failed"
             aria-label="Failed"
           >
@@ -68,7 +68,7 @@ export function WorkflowStageHeader({
       default:
         return (
           <span
-            className="w-4 h-4 rounded-full border border-slate-700 bg-[#121622] text-slate-500 flex items-center justify-center text-[9px] font-mono flex-shrink-0"
+            className="w-4 h-4 rounded-full border border-[#DDE2E8] bg-[#F1F3F6] text-[#818A97] flex items-center justify-center text-[9px] font-mono flex-shrink-0"
             title="Pending"
             aria-label="Pending"
           >
@@ -86,23 +86,25 @@ export function WorkflowStageHeader({
       onClick={onToggle}
       disabled={!canExpand}
       aria-expanded={isExpanded}
-      className={`w-full flex items-center justify-between text-left py-1 text-xs group transition-colors select-none ${
-        isPending
-          ? "cursor-default text-slate-500"
-          : "cursor-pointer text-slate-200 hover:text-white"
+      className={`w-full flex items-center justify-between text-left transition-colors select-none text-xs ${
+        isExpanded
+          ? "bg-[#EDF2FF] text-[#111318] border-l-2 border-[#315EF5] pl-2 pr-2 py-1.5 rounded-r-md font-semibold"
+          : isPending
+          ? "cursor-default text-[#818A97] border-l-2 border-transparent pl-2 pr-2 py-1.5"
+          : "cursor-pointer text-[#111318] hover:bg-[#F1F3F6] border-l-2 border-transparent pl-2 pr-2 py-1.5 rounded-r-md group"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         {renderStateIndicator()}
-        <div className="truncate font-medium flex items-center gap-1.5">
-          <span className="text-slate-400 text-[11px] font-mono">{order}.</span>
+        <div className="truncate flex items-center gap-1.5">
+          <span className="text-[#818A97] text-[11px] font-mono">{order}.</span>
           <span
             className={
               isExpanded
-                ? "text-white font-semibold"
+                ? "text-[#111318] font-semibold"
                 : isPending
-                ? "text-slate-500"
-                : "text-slate-300 group-hover:text-white"
+                ? "text-[#818A97]"
+                : "text-[#111318] group-hover:text-[#315EF5]"
             }
           >
             {title}
@@ -112,8 +114,8 @@ export function WorkflowStageHeader({
 
       {canExpand && !isPending && (
         <ChevronRight
-          className={`w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300 transition-transform flex-shrink-0 ml-1 ${
-            isExpanded ? "rotate-90 text-slate-300" : ""
+          className={`w-3.5 h-3.5 text-[#818A97] transition-transform flex-shrink-0 ml-1 ${
+            isExpanded ? "rotate-90 text-[#315EF5]" : "group-hover:text-[#4D5663]"
           }`}
         />
       )}

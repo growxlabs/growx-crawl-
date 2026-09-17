@@ -83,7 +83,7 @@ export function buildWorkflowPresentation(
       key: "campaigns",
       title: "Define campaigns",
       state: "completed",
-      summary: `${params.campaignsCount} campaigns · ${params.totalAudienceLabel} target reach`,
+      summary: `${params.campaignsCount} campaigns · ${params.totalAudienceLabel} companies`,
       count: params.campaignsCount,
     },
     {

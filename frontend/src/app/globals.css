@@ -4,23 +4,59 @@
 
 @layer base {
   :root {
-    --background: 222 47% 5%;
-    --foreground: 210 40% 98%;
-    --muted: 217 33% 12%;
-    --muted-foreground: 215 20% 65%;
-    --border: 217 33% 17%;
+    /* =========================================================
+       GROWX PRODUCT PALETTE
+       ========================================================= */
+
+    /* Canvas */
+    --gx-canvas:          #F6F7F9;
+    --gx-surface:         #FFFFFF;
+    --gx-surface-soft:    #F1F3F6;
+    --gx-surface-hover:   #ECEFF3;
+    --gx-surface-active:  #E8EEF9;
+
+    /* Typography */
+    --gx-ink:             #111318;
+    --gx-ink-secondary:   #4D5663;
+    --gx-ink-muted:       #818A97;
+    --gx-ink-disabled:    #AEB5BF;
+
+    /* Borders */
+    --gx-border:          #DDE2E8;
+    --gx-border-soft:     #E9ECF0;
+    --gx-border-strong:   #BFC7D1;
+
+    /* Brand */
+    --gx-primary:         #315EF5;
+    --gx-primary-hover:   #244BD6;
+    --gx-primary-soft:    #EDF2FF;
+    --gx-primary-border:  #C9D5FF;
+
+    /* Secondary GrowX signal */
+    --gx-aqua:            #00A7A0;
+    --gx-aqua-soft:       #E8F8F6;
+
+    /* Semantic */
+    --gx-success:         #16825D;
+    --gx-success-soft:    #EAF7F1;
+
+    --gx-warning:         #A86514;
+    --gx-warning-soft:    #FFF5E5;
+
+    --gx-danger:          #C64141;
+    --gx-danger-soft:     #FDECEC;
   }
 
   body {
-    background-color: #0a0c10;
-    color: #f8fafc;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--gx-canvas);
+    color: var(--gx-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Dense table typography and Swiss minimalism */
+/* Dense table typography */
 table {
   font-variant-numeric: tabular-nums;
 }
@@ -35,10 +71,10 @@ table {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #232838;
+  background: #DDE2E8;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #343c52;
+  background: #BFC7D1;
 }

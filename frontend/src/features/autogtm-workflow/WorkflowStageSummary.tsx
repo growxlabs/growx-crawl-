@@ -14,7 +14,7 @@ export function WorkflowStageSummary({
   if (!summary || isExpanded) return null;
 
   return (
-    <div className="pl-6 text-[11px] text-slate-400 truncate leading-snug mt-0.5">
+    <div className="pl-8 pr-2 text-[11px] text-[#4D5663] truncate leading-snug pt-0.5">
       {summary}
     </div>
   );
