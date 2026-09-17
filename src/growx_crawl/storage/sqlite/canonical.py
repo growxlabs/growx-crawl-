@@ -899,6 +899,80 @@ CREATE TABLE IF NOT EXISTS history_backfill_runs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_backfill_status ON history_backfill_runs(status);
+
+-- Phase 11: Competitor Graph
+
+CREATE TABLE IF NOT EXISTS competitor_relationships (
+    id TEXT PRIMARY KEY,
+    company_id TEXT NOT NULL,
+    competitor_company_id TEXT NOT NULL,
+    canonical_pair TEXT NOT NULL,
+    relationship_type TEXT NOT NULL DEFAULT 'unknown',
+    status TEXT NOT NULL DEFAULT 'candidate',
+    confidence REAL DEFAULT 0.0,
+    strength REAL DEFAULT 0.0,
+    market_overlap REAL DEFAULT 0.0,
+    offering_overlap REAL DEFAULT 0.0,
+    customer_overlap REAL DEFAULT 0.0,
+    geography_overlap REAL DEFAULT 0.0,
+    evidence_count INTEGER DEFAULT 0,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    valid_until TEXT,
+    scoring_version TEXT DEFAULT 'v1',
+    policy_version TEXT DEFAULT 'v1',
+    reasons TEXT DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comp_pair_type ON competitor_relationships(canonical_pair, relationship_type);
+CREATE INDEX IF NOT EXISTS idx_comp_company ON competitor_relationships(company_id);
+CREATE INDEX IF NOT EXISTS idx_comp_competitor ON competitor_relationships(competitor_company_id);
+CREATE INDEX IF NOT EXISTS idx_comp_status ON competitor_relationships(status);
+CREATE INDEX IF NOT EXISTS idx_comp_strength ON competitor_relationships(strength);
+
+CREATE TABLE IF NOT EXISTS competitor_evidence (
+    id TEXT PRIMARY KEY,
+    relationship_id TEXT NOT NULL,
+    source_id TEXT,
+    fact_id TEXT,
+    observation_id TEXT,
+    object_ref_id TEXT,
+    evidence_type TEXT NOT NULL,
+    support_type TEXT NOT NULL DEFAULT 'positive',
+    captured_at TEXT NOT NULL,
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_comp_ev_rel ON competitor_evidence(relationship_id);
+CREATE INDEX IF NOT EXISTS idx_comp_ev_type ON competitor_evidence(evidence_type);
+
+CREATE TABLE IF NOT EXISTS competitor_rejections (
+    canonical_pair TEXT PRIMARY KEY,
+    company_a TEXT NOT NULL,
+    company_b TEXT NOT NULL,
+    reason_code TEXT NOT NULL,
+    rejected_at TEXT NOT NULL,
+    policy_version TEXT DEFAULT 'v1',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_comp_rej_pair ON competitor_rejections(canonical_pair);
+
+CREATE TABLE IF NOT EXISTS company_competitor_summaries (
+    company_id TEXT PRIMARY KEY,
+    top_competitor_ids TEXT DEFAULT '[]',
+    competitor_count INTEGER DEFAULT 0,
+    verified_competitor_count INTEGER DEFAULT 0,
+    last_refreshed_at TEXT,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
 """
 
 

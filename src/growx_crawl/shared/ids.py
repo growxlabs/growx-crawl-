@@ -27,6 +27,8 @@ CANONICAL_PREFIXES = {
     "val_": "fact value",
     "cnf_": "fact conflict",
     "sig_": "signal",
+    "cpr_": "competitor relationship",
+    "cpe_": "competitor evidence",
     # Verification
     "ver_": "verification result",
     # Platform / Execution

@@ -868,6 +868,80 @@ CREATE TABLE IF NOT EXISTS history_backfill_runs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMPTZ
 );
+
+-- Phase 11: Competitor Graph
+
+CREATE TABLE IF NOT EXISTS competitor_relationships (
+    id VARCHAR(64) PRIMARY KEY,
+    company_id VARCHAR(64) NOT NULL,
+    competitor_company_id VARCHAR(64) NOT NULL,
+    canonical_pair VARCHAR(130) NOT NULL,
+    relationship_type VARCHAR(32) NOT NULL DEFAULT 'unknown',
+    status VARCHAR(32) NOT NULL DEFAULT 'candidate',
+    confidence DOUBLE PRECISION DEFAULT 0.0,
+    strength DOUBLE PRECISION DEFAULT 0.0,
+    market_overlap DOUBLE PRECISION DEFAULT 0.0,
+    offering_overlap DOUBLE PRECISION DEFAULT 0.0,
+    customer_overlap DOUBLE PRECISION DEFAULT 0.0,
+    geography_overlap DOUBLE PRECISION DEFAULT 0.0,
+    evidence_count INTEGER DEFAULT 0,
+    first_seen_at TIMESTAMPTZ NOT NULL,
+    last_seen_at TIMESTAMPTZ NOT NULL,
+    last_verified_at TIMESTAMPTZ,
+    valid_until TIMESTAMPTZ,
+    scoring_version VARCHAR(16) DEFAULT 'v1',
+    policy_version VARCHAR(16) DEFAULT 'v1',
+    reasons JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comp_pair_type ON competitor_relationships(canonical_pair, relationship_type);
+CREATE INDEX IF NOT EXISTS idx_comp_company ON competitor_relationships(company_id);
+CREATE INDEX IF NOT EXISTS idx_comp_competitor ON competitor_relationships(competitor_company_id);
+CREATE INDEX IF NOT EXISTS idx_comp_status ON competitor_relationships(status);
+CREATE INDEX IF NOT EXISTS idx_comp_strength ON competitor_relationships(strength);
+
+CREATE TABLE IF NOT EXISTS competitor_evidence (
+    id VARCHAR(64) PRIMARY KEY,
+    relationship_id VARCHAR(64) NOT NULL,
+    source_id VARCHAR(64),
+    fact_id VARCHAR(64),
+    observation_id VARCHAR(64),
+    object_ref_id VARCHAR(64),
+    evidence_type VARCHAR(64) NOT NULL,
+    support_type VARCHAR(16) NOT NULL DEFAULT 'positive',
+    captured_at TIMESTAMPTZ NOT NULL,
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_comp_ev_rel ON competitor_evidence(relationship_id);
+CREATE INDEX IF NOT EXISTS idx_comp_ev_type ON competitor_evidence(evidence_type);
+
+CREATE TABLE IF NOT EXISTS competitor_rejections (
+    canonical_pair VARCHAR(130) PRIMARY KEY,
+    company_a VARCHAR(64) NOT NULL,
+    company_b VARCHAR(64) NOT NULL,
+    reason_code VARCHAR(64) NOT NULL,
+    rejected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    policy_version VARCHAR(16) DEFAULT 'v1',
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_comp_rej_pair ON competitor_rejections(canonical_pair);
+
+CREATE TABLE IF NOT EXISTS company_competitor_summaries (
+    company_id VARCHAR(64) PRIMARY KEY,
+    top_competitor_ids JSONB DEFAULT '[]'::jsonb,
+    competitor_count INTEGER DEFAULT 0,
+    verified_competitor_count INTEGER DEFAULT 0,
+    last_refreshed_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
 """
 
 

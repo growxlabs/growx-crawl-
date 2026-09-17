@@ -833,3 +833,87 @@ def get_entity_signals(
     svc = SignalService()
     return svc.get_active_signals(entity_id)
 
+
+# ── Phase 11: Competitor Graph API ──
+
+class DiscoverCompetitorsRequest(BaseModel):
+    max_candidates: int = 50
+    verify_top: int = 20
+
+
+@v1_router.get("/companies/{company_id}/competitors")
+def get_company_competitors(
+    company_id: str,
+    relationship_type: Optional[str] = Query(None, description="direct, adjacent, substitute, etc."),
+    min_strength: float = Query(0.0, ge=0.0, le=1.0),
+    status: Optional[str] = Query(None, description="candidate, supported, verified, etc."),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """List discovered and verified competitors for a company."""
+    from growx_crawl.intelligence.competitors.service import competitor_service
+    types_list = [relationship_type] if relationship_type else None
+    rels = competitor_service.get_competitors(
+        company_id=company_id,
+        relationship_types=types_list,
+        min_strength=min_strength,
+        status=status,
+        limit=limit,
+    )
+    return [r.model_dump() for r in rels]
+
+
+@v1_router.get("/companies/{company_id}/competitors/graph")
+def get_company_competitor_graph(
+    company_id: str,
+    depth: int = Query(1, ge=1, le=2),
+    min_strength: float = Query(0.0, ge=0.0, le=1.0),
+):
+    """Get network graph nodes and edges for a company's competitors."""
+    from growx_crawl.intelligence.competitors.service import competitor_service
+    return competitor_service.get_graph(
+        company_id=company_id,
+        depth=depth,
+        min_strength=min_strength,
+    )
+
+
+@v1_router.post("/companies/{company_id}/competitors/discover")
+def discover_company_competitors(
+    company_id: str,
+    req: DiscoverCompetitorsRequest = DiscoverCompetitorsRequest(),
+):
+    """Triggers internal-data-first competitor candidate discovery and scoring."""
+    from growx_crawl.intelligence.competitors.service import competitor_service
+    rels = competitor_service.discover(
+        company_id=company_id,
+        max_candidates=req.max_candidates,
+        verify_top=req.verify_top,
+    )
+    return [r.model_dump() for r in rels]
+
+
+@v1_router.get("/competitors/{relationship_id}")
+def get_competitor_relationship(relationship_id: str):
+    """Retrieves full details for a specific competitor relationship."""
+    from growx_crawl.intelligence.competitors.service import competitor_service
+    rel = competitor_service.repository.get_relationship(relationship_id)
+    if not rel:
+        raise HTTPException(status_code=404, detail="Competitor relationship not found")
+    ev_list = competitor_service.repository.list_evidence(relationship_id)
+    return {
+        "relationship": rel.model_dump(),
+        "evidence": [e.model_dump() for e in ev_list],
+    }
+
+
+@v1_router.post("/competitors/{relationship_id}/verify")
+def verify_competitor_relationship(relationship_id: str):
+    """Re-runs verification gate for an existing competitor relationship."""
+    from growx_crawl.intelligence.competitors.service import competitor_service
+    rel = competitor_service.repository.get_relationship(relationship_id)
+    if not rel:
+        raise HTTPException(status_code=404, detail="Competitor relationship not found")
+    updated = competitor_service.score_pair(rel.company_id, rel.competitor_company_id)
+    return updated.model_dump()
+
+
