@@ -8,18 +8,15 @@ import {
   Search,
   Check,
   CheckCircle2,
-  XCircle,
   ExternalLink,
   Send,
   Loader2,
   Linkedin,
   Shield,
-  Sparkles,
   Flame,
   Zap,
 } from "lucide-react";
 import { useCockpit, ContactItem, TargetCompanyItem } from "./CockpitContext";
-import { CompetitorModal } from "./CompetitorModal";
 import { CampaignLaunchModal } from "./CampaignLaunchModal";
 
 export function AutoGTMCockpit() {
@@ -49,16 +46,17 @@ export function AutoGTMCockpit() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0a0c10] text-slate-200 overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full bg-[#F6F7F9] text-[#111318] overflow-hidden select-none">
       {/* Sub-Header Tabs */}
-      <div className="h-12 px-6 border-b border-[#1b202c] bg-[#0d0f15] flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-1.5 p-1 bg-[#141822] border border-[#202736] rounded-lg">
+      <div className="h-12 px-6 border-b border-[#DDE2E8] bg-[#FFFFFF] flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-1 p-1 bg-[#F1F3F6] border border-[#DDE2E8] rounded-lg">
           <button
+            type="button"
             onClick={() => setActiveTab("companies")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
               activeTab === "companies"
-                ? "bg-[#252d3e] text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[#FFFFFF] text-[#111318] font-semibold shadow-2xs border border-[#DDE2E8]"
+                : "text-[#4D5663] hover:text-[#111318] hover:bg-[#E9ECF0]"
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -66,11 +64,12 @@ export function AutoGTMCockpit() {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab("people")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
               activeTab === "people"
-                ? "bg-[#252d3e] text-white font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[#FFFFFF] text-[#111318] font-semibold shadow-2xs border border-[#DDE2E8]"
+                : "text-[#4D5663] hover:text-[#111318] hover:bg-[#E9ECF0]"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -78,11 +77,12 @@ export function AutoGTMCockpit() {
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab("emails")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
               activeTab === "emails"
-                ? "bg-white text-slate-950 font-bold shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[#FFFFFF] text-[#111318] font-semibold shadow-2xs border border-[#DDE2E8]"
+                : "text-[#4D5663] hover:text-[#111318] hover:bg-[#E9ECF0]"
             }`}
           >
             <Mail className="w-3.5 h-3.5" />
@@ -92,56 +92,59 @@ export function AutoGTMCockpit() {
 
         {/* Global Search Bar */}
         <div className="w-72 relative">
-          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-[#818A97] absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search accounts, people, or signals..."
-            className="w-full bg-[#141822] border border-[#212737] rounded-md pl-8 pr-3 py-1 text-xs text-white placeholder:text-slate-500 outline-none focus:border-slate-500 transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[#DDE2E8] rounded-md pl-8 pr-3 py-1 text-xs text-[#111318] placeholder:text-[#818A97] outline-none focus:border-[#315EF5] transition-colors"
           />
         </div>
       </div>
 
       {/* Main Workspace Area */}
       <div className="flex-1 overflow-hidden p-6">
-        {/* VIEW 1: EMAILS (Core Explee Master-Detail Split Composer) */}
+        {/* VIEW 1: EMAILS (Master-Detail Split Composer) */}
         {activeTab === "emails" && (
           <div className="h-full grid grid-cols-12 gap-6">
             {/* Left Contact List Sub-pane (5 cols) */}
-            <div className="col-span-5 flex flex-col h-full bg-[#0e1118] border border-[#1e2434] rounded-xl overflow-hidden shadow-xl">
+            <div className="col-span-5 flex flex-col h-full bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl overflow-hidden shadow-2xs">
               {/* Filter controls */}
-              <div className="p-3 border-b border-[#1b2130] flex items-center justify-between text-xs">
-                <span className="font-semibold text-white text-xs">
+              <div className="p-3 border-b border-[#DDE2E8] bg-[#FFFFFF] flex items-center justify-between text-xs">
+                <span className="font-semibold text-[#111318] text-xs">
                   Contacts ({filteredContacts.length})
                 </span>
                 <div className="flex items-center gap-1 text-[11px]">
                   <button
+                    type="button"
                     onClick={() => setStatusFilter("all")}
                     className={`px-2 py-0.5 rounded transition-colors ${
                       statusFilter === "all"
-                        ? "bg-[#202738] text-white font-medium"
-                        : "text-slate-400 hover:text-slate-200"
+                        ? "bg-[#F1F3F6] text-[#111318] font-semibold border border-[#DDE2E8]"
+                        : "text-[#4D5663] hover:text-[#111318]"
                     }`}
                   >
                     All
                   </button>
                   <button
+                    type="button"
                     onClick={() => setStatusFilter("verified")}
                     className={`px-2 py-0.5 rounded transition-colors ${
                       statusFilter === "verified"
-                        ? "bg-[#202738] text-emerald-400 font-medium"
-                        : "text-slate-400 hover:text-slate-200"
+                        ? "bg-[#EAF7F1] text-[#16825D] font-semibold border border-[#BDE8D6]"
+                        : "text-[#4D5663] hover:text-[#111318]"
                     }`}
                   >
                     Verified
                   </button>
                   <button
+                    type="button"
                     onClick={() => setStatusFilter("missing")}
                     className={`px-2 py-0.5 rounded transition-colors ${
                       statusFilter === "missing"
-                        ? "bg-[#202738] text-amber-400 font-medium"
-                        : "text-slate-400 hover:text-slate-200"
+                        ? "bg-[#FFF5E5] text-[#A86514] font-semibold border border-[#F5DCB7]"
+                        : "text-[#4D5663] hover:text-[#111318]"
                     }`}
                   >
                     Missing
@@ -152,7 +155,7 @@ export function AutoGTMCockpit() {
               {/* Scrollable contact cards */}
               <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
                 {filteredContacts.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500 text-xs">
+                  <div className="text-center py-12 text-[#818A97] text-xs">
                     No contacts match the current filter or search.
                   </div>
                 ) : (
@@ -166,8 +169,8 @@ export function AutoGTMCockpit() {
                         onClick={() => setActiveContactId(contact.id)}
                         className={`p-3 rounded-xl border transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-[#161c28] border-slate-500 shadow-lg ring-1 ring-slate-500/50"
-                            : "bg-[#121620] border-[#202636] hover:bg-[#151a25] hover:border-slate-700"
+                            ? "bg-[#EDF2FF] border-[#C9D5FF] shadow-2xs ring-1 ring-[#315EF5]/30"
+                            : "bg-[#FFFFFF] border-[#DDE2E8] hover:bg-[#F6F7F9] hover:border-[#BFC7D1]"
                         }`}
                       >
                         {/* Header: Avatar, Name, Title, Check/Cross */}
@@ -177,19 +180,19 @@ export function AutoGTMCockpit() {
                               <img
                                 src={contact.avatarUrl}
                                 alt={contact.name}
-                                className="w-8 h-8 rounded-full object-cover border border-[#2b3348]"
+                                className="w-8 h-8 rounded-full object-cover border border-[#DDE2E8]"
                               />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-[#202738] border border-[#2c354c] flex items-center justify-center font-bold text-xs text-white flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-[#F1F3F6] border border-[#DDE2E8] flex items-center justify-center font-bold text-xs text-[#4D5663] flex-shrink-0">
                                 {contact.initials}
                               </div>
                             )}
 
                             <div className="min-w-0">
-                              <div className="text-xs font-bold text-white truncate">
+                              <div className="text-xs font-semibold text-[#111318] truncate">
                                 {contact.name}
                               </div>
-                              <div className="text-[11px] text-slate-400 truncate">
+                              <div className="text-[11px] text-[#4D5663] truncate">
                                 {contact.title} &middot; {contact.domain}
                               </div>
                             </div>
@@ -198,11 +201,11 @@ export function AutoGTMCockpit() {
                           {/* Verification Icon */}
                           <div className="flex-shrink-0 pt-0.5">
                             {hasEmail ? (
-                              <div className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center text-slate-300">
-                                <Check className="w-2.5 h-2.5" />
+                              <div className="w-4 h-4 rounded-full border border-[#16825D] bg-[#EAF7F1] flex items-center justify-center text-[#16825D]">
+                                <Check className="w-2.5 h-2.5 stroke-[2.5]" />
                               </div>
                             ) : (
-                              <div className="w-4 h-4 rounded-full border border-slate-600 flex items-center justify-center text-slate-500">
+                              <div className="w-4 h-4 rounded-full border border-[#DDE2E8] bg-[#F1F3F6] flex items-center justify-center text-[#818A97]">
                                 <span className="text-[9px] font-bold">&times;</span>
                               </div>
                             )}
@@ -214,39 +217,39 @@ export function AutoGTMCockpit() {
                           {contact.providers.map((p) => (
                             <span
                               key={p.name}
-                              className="px-2 py-0.5 rounded text-[10px] bg-[#181e2b] border border-[#242c3d] text-slate-400 flex items-center gap-1"
+                              className="px-2 py-0.5 rounded text-[10px] bg-[#F1F3F6] border border-[#DDE2E8] text-[#4D5663] flex items-center gap-1 font-mono"
                             >
-                              {p.name === "hunter" && <Flame className="w-2.5 h-2.5 text-orange-400" />}
-                              {p.name === "findymail" && <Zap className="w-2.5 h-2.5 text-amber-400" />}
-                              {p.name === "exreacher" && <Shield className="w-2.5 h-2.5 text-blue-400" />}
-                              {p.name === "leadmagic" && <Mail className="w-2.5 h-2.5 text-purple-400" />}
+                              {p.name === "hunter" && <Flame className="w-2.5 h-2.5 text-orange-500" />}
+                              {p.name === "findymail" && <Zap className="w-2.5 h-2.5 text-amber-500" />}
+                              {p.name === "exreacher" && <Shield className="w-2.5 h-2.5 text-[#315EF5]" />}
+                              {p.name === "leadmagic" && <Mail className="w-2.5 h-2.5 text-purple-500" />}
                               <span>{p.name}</span>
                             </span>
                           ))}
                         </div>
 
                         {/* Direct email line */}
-                        <div className="pt-2 border-t border-[#1b2230] flex items-center justify-between text-[11px]">
+                        <div className="pt-2 border-t border-[#E9ECF0] flex items-center justify-between text-[11px]">
                           {hasEmail ? (
                             <div className="flex items-center gap-1.5 truncate">
-                              <span className="font-mono text-slate-300 truncate">
+                              <span className="font-mono text-[#111318] truncate font-medium">
                                 {contact.email}
                               </span>
-                              <span className="text-slate-500 text-[10px]">via {contact.provider}</span>
+                              <span className="text-[#818A97] text-[10px]">via {contact.provider}</span>
                               {contact.emailStatus === "catch_all" && (
-                                <span className="px-1.5 py-0.2 bg-amber-950/80 border border-amber-600/40 text-amber-400 text-[9px] rounded font-mono">
+                                <span className="px-1.5 py-0.2 bg-[#FFF5E5] border border-[#F5DCB7] text-[#A86514] text-[9px] rounded font-mono font-medium">
                                   catch_all
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-500 italic text-[10px]">
+                            <span className="text-[#818A97] italic text-[10px]">
                               no email found
                             </span>
                           )}
 
                           {contact.emailDraft.sent && (
-                            <span className="px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 text-[10px] rounded font-medium">
+                            <span className="px-1.5 py-0.5 bg-[#EAF7F1] text-[#16825D] border border-[#BDE8D6] text-[10px] rounded font-medium">
                               Sent
                             </span>
                           )}
@@ -263,27 +266,27 @@ export function AutoGTMCockpit() {
               {activeContact ? (
                 <>
                   {/* Recipient Profile Header */}
-                  <div className="bg-[#0e1118] border border-[#1e2434] rounded-xl p-4 flex items-center justify-between shadow-lg">
+                  <div className="bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl p-4 flex items-center justify-between shadow-2xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#1b2232] border border-[#2b354d] flex items-center justify-center font-bold text-sm text-white">
+                      <div className="w-10 h-10 rounded-full bg-[#F1F3F6] border border-[#DDE2E8] flex items-center justify-center font-bold text-sm text-[#111318]">
                         {activeContact.initials}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-sm">
+                          <span className="font-semibold text-[#111318] text-sm">
                             {activeContact.name}
                           </span>
                           <a
                             href={activeContact.linkedinUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="w-4 h-4 bg-blue-600 hover:bg-blue-500 rounded text-white flex items-center justify-center text-[10px] font-bold"
+                            className="w-4 h-4 bg-[#0A66C2] hover:bg-[#084e96] rounded text-white flex items-center justify-center text-[10px] font-bold"
                             title="Open LinkedIn profile"
                           >
                             in
                           </a>
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-[#4D5663]">
                           {activeContact.title} &middot; {activeContact.domain}
                         </div>
                       </div>
@@ -291,8 +294,9 @@ export function AutoGTMCockpit() {
 
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => handleCopyEmail(activeContact.email)}
-                        className="px-3 py-1.5 bg-[#171c28] hover:bg-[#202738] border border-[#232b3b] rounded-lg text-xs text-slate-300 hover:text-white transition-colors"
+                        className="px-3 py-1.5 bg-[#F6F7F9] hover:bg-[#ECEFF3] border border-[#DDE2E8] rounded-lg text-xs text-[#111318] font-medium transition-colors"
                       >
                         {copiedEmail ? "Copied!" : "Copy Email"}
                       </button>
@@ -300,12 +304,12 @@ export function AutoGTMCockpit() {
                   </div>
 
                   {/* Email Composer Box */}
-                  <div className="flex-1 bg-[#0e1118] border border-[#1e2434] rounded-xl flex flex-col overflow-hidden shadow-xl">
+                  <div className="flex-1 bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl flex flex-col overflow-hidden shadow-2xs">
                     {/* Headers: To & Subject */}
-                    <div className="p-4 border-b border-[#1b2130] space-y-2.5 bg-[#10141f]">
+                    <div className="p-4 border-b border-[#DDE2E8] space-y-2.5 bg-[#F6F7F9]">
                       {/* To Field */}
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-500 w-8 font-mono">To</span>
+                        <span className="text-[#818A97] w-8 font-mono">To</span>
                         <input
                           type="text"
                           value={activeContact.emailDraft.to}
@@ -313,60 +317,60 @@ export function AutoGTMCockpit() {
                             updateDraft(activeContact.id, { to: e.target.value })
                           }
                           placeholder="recipient@domain.com"
-                          className="flex-1 bg-transparent text-white font-mono text-xs outline-none border-b border-transparent focus:border-slate-600 py-0.5"
+                          className="flex-1 bg-transparent text-[#111318] font-mono text-xs outline-none border-b border-transparent focus:border-[#315EF5] py-0.5"
                         />
                       </div>
 
                       {/* Subj Field */}
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-500 w-8 font-mono">Subj</span>
+                        <span className="text-[#818A97] w-8 font-mono">Subj</span>
                         <input
                           type="text"
                           value={activeContact.emailDraft.subject}
                           onChange={(e) =>
                             updateDraft(activeContact.id, { subject: e.target.value })
                           }
-                          className="flex-1 bg-transparent text-white font-semibold text-xs outline-none border-b border-transparent focus:border-slate-600 py-0.5"
+                          className="flex-1 bg-transparent text-[#111318] font-semibold text-xs outline-none border-b border-transparent focus:border-[#315EF5] py-0.5"
                         />
                       </div>
                     </div>
 
                     {/* Email Body Area */}
-                    <div className="flex-1 p-4 flex flex-col relative bg-[#0c0e14]">
+                    <div className="flex-1 p-4 flex flex-col relative bg-[#FFFFFF]">
                       <textarea
                         value={activeContact.emailDraft.body}
                         onChange={(e) =>
                           updateDraft(activeContact.id, { body: e.target.value })
                         }
-                        className="w-full flex-1 bg-transparent text-slate-200 text-xs leading-relaxed outline-none resize-none font-sans"
+                        className="w-full flex-1 bg-transparent text-[#111318] text-xs leading-relaxed outline-none resize-none font-sans"
                         placeholder="Write your email here..."
                       />
 
-                      <div className="text-[10px] text-slate-500 text-right pt-2 select-none">
+                      <div className="text-[10px] text-[#818A97] text-right pt-2 select-none">
                         Click to edit
                       </div>
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="p-3.5 border-t border-[#1b2130] bg-[#10141f] flex items-center justify-between">
+                    <div className="p-3.5 border-t border-[#DDE2E8] bg-[#F6F7F9] flex items-center justify-between">
                       {/* Left: Email validation status */}
-                      <div className="text-xs text-slate-400 flex items-center gap-2">
+                      <div className="text-xs text-[#4D5663] flex items-center gap-2">
                         {activeContact.emailDraft.sent ? (
-                          <span className="text-emerald-400 flex items-center gap-1.5 font-medium text-xs">
-                            <CheckCircle2 className="w-4 h-4" />
+                          <span className="text-[#16825D] flex items-center gap-1.5 font-medium text-xs">
+                            <CheckCircle2 className="w-4 h-4 text-[#16825D]" />
                             <span>Sent at {activeContact.emailDraft.sentAt}</span>
                           </span>
                         ) : activeContact.emailStatus === "verified" ? (
-                          <span className="text-slate-300 flex items-center gap-1.5 text-xs">
-                            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Verified corporate inbox</span>
+                          <span className="text-[#4D5663] flex items-center gap-1.5 text-xs">
+                            <Shield className="w-3.5 h-3.5 text-[#16825D]" />
+                            <span className="font-medium text-[#111318]">Verified corporate inbox</span>
                           </span>
                         ) : activeContact.emailStatus === "catch_all" ? (
-                          <span className="text-amber-400 flex items-center gap-1.5 text-xs">
+                          <span className="text-[#A86514] flex items-center gap-1.5 text-xs font-medium">
                             <span>⚠ Catch-all domain (Hunter verified)</span>
                           </span>
                         ) : (
-                          <span className="text-slate-500 text-xs">
+                          <span className="text-[#818A97] text-xs">
                             No verified email found for this profile
                           </span>
                         )}
@@ -376,20 +380,22 @@ export function AutoGTMCockpit() {
                       <div>
                         {activeContact.emailDraft.sent ? (
                           <button
+                            type="button"
                             disabled
-                            className="px-4 py-2 bg-[#192420] border border-emerald-500/30 text-emerald-400 rounded-lg text-xs font-semibold flex items-center gap-1.5"
+                            className="px-4 py-2 bg-[#EAF7F1] border border-[#BDE8D6] text-[#16825D] rounded-lg text-xs font-semibold flex items-center gap-1.5"
                           >
-                            <Check className="w-3.5 h-3.5" />
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                             <span>Sent to {activeContact.emailDraft.to}</span>
                           </button>
                         ) : (
                           <button
+                            type="button"
                             onClick={() => sendEmail(activeContact.id)}
                             disabled={
                               sendingContactId === activeContact.id ||
                               !activeContact.emailDraft.to
                             }
-                            className="bg-[#00c288] hover:bg-[#00d696] disabled:opacity-50 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                            className="bg-[#315EF5] hover:bg-[#244BD6] disabled:opacity-50 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-all hover:scale-[1.01] active:scale-[0.99]"
                           >
                             {sendingContactId === activeContact.id ? (
                               <>
@@ -409,7 +415,7 @@ export function AutoGTMCockpit() {
                   </div>
                 </>
               ) : (
-                <div className="flex-1 flex items-center justify-center bg-[#0e1118] border border-[#1e2434] rounded-xl text-slate-500 text-xs">
+                <div className="flex-1 flex items-center justify-center bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl text-[#818A97] text-xs">
                   Select a contact from the left pane to preview and send outreach.
                 </div>
               )}
@@ -419,15 +425,15 @@ export function AutoGTMCockpit() {
 
         {/* VIEW 2: TARGET COMPANIES */}
         {activeTab === "companies" && (
-          <div className="h-full bg-[#0e1118] border border-[#1e2434] rounded-xl overflow-hidden shadow-xl flex flex-col">
-            <div className="p-4 border-b border-[#1b2130] flex items-center justify-between">
+          <div className="h-full bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl overflow-hidden shadow-2xs flex flex-col">
+            <div className="p-4 border-b border-[#DDE2E8] flex items-center justify-between bg-[#FFFFFF]">
               <div>
-                <h3 className="text-sm font-bold text-white">Target Accounts</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-sm font-semibold text-[#111318]">Target Accounts</h3>
+                <p className="text-xs text-[#4D5663]">
                   Accounts matching active campaign criteria with verified timing signals.
                 </p>
               </div>
-              <span className="text-xs font-mono px-2 py-1 bg-[#171c28] rounded border border-[#232a3c] text-slate-300">
+              <span className="text-xs font-mono px-2.5 py-1 bg-[#F1F3F6] rounded border border-[#DDE2E8] text-[#4D5663] font-medium">
                 {filteredCompanies.length} accounts found
               </span>
             </div>
@@ -435,7 +441,7 @@ export function AutoGTMCockpit() {
             <div className="flex-1 overflow-y-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#1b2130] bg-[#10141f] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                  <tr className="border-b border-[#DDE2E8] bg-[#F6F7F9] text-[#4D5663] font-semibold text-[11px] uppercase tracking-wider">
                     <th className="py-3 px-4">Company</th>
                     <th className="py-3 px-4">Industry &amp; Location</th>
                     <th className="py-3 px-4">Employees</th>
@@ -445,36 +451,36 @@ export function AutoGTMCockpit() {
                     <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#181d2a]">
+                <tbody className="divide-y divide-[#E9ECF0]">
                   {filteredCompanies.map((comp) => (
-                    <tr key={comp.id} className="hover:bg-[#131722] transition-colors">
-                      <td className="py-3.5 px-4 font-semibold text-white">
+                    <tr key={comp.id} className="hover:bg-[#F6F7F9] transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-[#111318]">
                         <div>{comp.name}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">{comp.domain}</div>
+                        <div className="text-[11px] text-[#818A97] font-mono">{comp.domain}</div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300">
+                      <td className="py-3.5 px-4 text-[#4D5663]">
                         <div>{comp.industry}</div>
-                        <div className="text-[11px] text-slate-500">{comp.location}</div>
+                        <div className="text-[11px] text-[#818A97]">{comp.location}</div>
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-slate-300">
+                      <td className="py-3.5 px-4 font-mono text-[#111318]">
                         {comp.employeeCount.toLocaleString()}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 font-bold">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#EAF7F1] border border-[#BDE8D6] text-[#16825D] font-bold">
                           {Math.round(comp.fitScore * 100)}%
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300 text-[11px] max-w-xs truncate">
+                      <td className="py-3.5 px-4 text-[#4D5663] text-[11px] max-w-xs truncate">
                         {comp.timingSignal}
                       </td>
                       <td className="py-3.5 px-4">
-                        <div className="font-medium text-white">{comp.keyContactName}</div>
-                        <div className="text-[11px] text-slate-400">{comp.keyContactRole}</div>
+                        <div className="font-medium text-[#111318]">{comp.keyContactName}</div>
+                        <div className="text-[11px] text-[#818A97]">{comp.keyContactRole}</div>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <button
+                          type="button"
                           onClick={() => {
-                            // Find contact or switch to emails
                             const contact = filteredContacts.find(
                               (c) => c.domain === comp.domain || c.companyName === comp.name
                             );
@@ -483,7 +489,7 @@ export function AutoGTMCockpit() {
                             }
                             setActiveTab("emails");
                           }}
-                          className="px-3 py-1.5 bg-[#00c288] hover:bg-[#00d696] text-slate-950 font-bold rounded-lg text-xs transition-colors"
+                          className="px-3 py-1.5 bg-[#315EF5] hover:bg-[#244BD6] text-white font-semibold rounded-lg text-xs transition-colors"
                         >
                           Draft Email
                         </button>
@@ -498,15 +504,15 @@ export function AutoGTMCockpit() {
 
         {/* VIEW 3: PEOPLE / DECISION MAKERS */}
         {activeTab === "people" && (
-          <div className="h-full bg-[#0e1118] border border-[#1e2434] rounded-xl overflow-hidden shadow-xl flex flex-col">
-            <div className="p-4 border-b border-[#1b2130] flex items-center justify-between">
+          <div className="h-full bg-[#FFFFFF] border border-[#DDE2E8] rounded-xl overflow-hidden shadow-2xs flex flex-col">
+            <div className="p-4 border-b border-[#DDE2E8] flex items-center justify-between bg-[#FFFFFF]">
               <div>
-                <h3 className="text-sm font-bold text-white">Target Decision Makers</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-sm font-semibold text-[#111318]">Target Decision Makers</h3>
+                <p className="text-xs text-[#4D5663]">
                   Verified executive buyers across target accounts with direct waterfall verification.
                 </p>
               </div>
-              <span className="text-xs font-mono px-2 py-1 bg-[#171c28] rounded border border-[#232a3c] text-slate-300">
+              <span className="text-xs font-mono px-2.5 py-1 bg-[#F1F3F6] rounded border border-[#DDE2E8] text-[#4D5663] font-medium">
                 {filteredContacts.length} people identified
               </span>
             </div>
@@ -514,7 +520,7 @@ export function AutoGTMCockpit() {
             <div className="flex-1 overflow-y-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#1b2130] bg-[#10141f] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                  <tr className="border-b border-[#DDE2E8] bg-[#F6F7F9] text-[#4D5663] font-semibold text-[11px] uppercase tracking-wider">
                     <th className="py-3 px-4">Decision Maker</th>
                     <th className="py-3 px-4">Role &amp; Company</th>
                     <th className="py-3 px-4">Verified Email</th>
@@ -523,12 +529,12 @@ export function AutoGTMCockpit() {
                     <th className="py-3 px-4 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#181d2a]">
+                <tbody className="divide-y divide-[#E9ECF0]">
                   {filteredContacts.map((person) => (
-                    <tr key={person.id} className="hover:bg-[#131722] transition-colors">
-                      <td className="py-3.5 px-4 font-semibold text-white">
+                    <tr key={person.id} className="hover:bg-[#F6F7F9] transition-colors">
+                      <td className="py-3.5 px-4 font-semibold text-[#111318]">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#1b2232] border border-[#2b354d] flex items-center justify-center font-bold text-[11px] text-white">
+                          <div className="w-7 h-7 rounded-full bg-[#F1F3F6] border border-[#DDE2E8] flex items-center justify-center font-bold text-[11px] text-[#111318]">
                             {person.initials}
                           </div>
                           <div>
@@ -538,7 +544,7 @@ export function AutoGTMCockpit() {
                                 href={person.linkedinUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-3.5 h-3.5 bg-blue-600 rounded text-white flex items-center justify-center text-[9px] font-bold"
+                                className="w-3.5 h-3.5 bg-[#0A66C2] rounded text-white flex items-center justify-center text-[9px] font-bold"
                               >
                                 in
                               </a>
@@ -546,30 +552,30 @@ export function AutoGTMCockpit() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-300">
+                      <td className="py-3.5 px-4 text-[#4D5663]">
                         <div>{person.title}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">{person.domain}</div>
+                        <div className="text-[11px] text-[#818A97] font-mono">{person.domain}</div>
                       </td>
                       <td className="py-3.5 px-4 font-mono">
                         {person.email ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="text-white">{person.email}</span>
+                            <span className="text-[#111318] font-medium">{person.email}</span>
                             {person.emailStatus === "catch_all" && (
-                              <span className="px-1 py-0.2 bg-amber-950/80 border border-amber-500/40 text-amber-400 text-[9px] rounded">
+                              <span className="px-1.5 py-0.2 bg-[#FFF5E5] border border-[#F5DCB7] text-[#A86514] text-[9px] rounded">
                                 catch_all
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-500 italic text-[11px]">no email found</span>
+                          <span className="text-[#818A97] italic text-[11px]">no email found</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 font-mono">
                           {person.providers.map((p) => (
                             <span
                               key={p.name}
-                              className="px-1.5 py-0.5 rounded text-[10px] bg-[#181e2b] border border-[#242c3d] text-slate-400"
+                              className="px-1.5 py-0.5 rounded text-[10px] bg-[#F1F3F6] border border-[#DDE2E8] text-[#4D5663]"
                             >
                               {p.name}
                             </span>
@@ -577,17 +583,18 @@ export function AutoGTMCockpit() {
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 font-bold">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-[#EAF7F1] border border-[#BDE8D6] text-[#16825D] font-bold">
                           {Math.round(person.fitScore * 100)}%
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <button
+                          type="button"
                           onClick={() => {
                             setActiveContactId(person.id);
                             setActiveTab("emails");
                           }}
-                          className="px-3 py-1.5 bg-[#00c288] hover:bg-[#00d696] text-slate-950 font-bold rounded-lg text-xs transition-colors"
+                          className="px-3 py-1.5 bg-[#315EF5] hover:bg-[#244BD6] text-white font-semibold rounded-lg text-xs transition-colors"
                         >
                           Compose Email
                         </button>
@@ -601,8 +608,7 @@ export function AutoGTMCockpit() {
         )}
       </div>
 
-      {/* Global Modals */}
-      <CompetitorModal />
+      {/* Global Campaign Launch Modal */}
       <CampaignLaunchModal />
     </div>
   );
