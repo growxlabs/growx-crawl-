@@ -1,0 +1,7 @@
+# Employee count change detection policy
+predicate_pattern: company.employee_count
+disappearance_threshold_days: 180
+min_misses_for_removal: 3
+reappearance_enabled: true
+significance_default: high
+policy_version: v1

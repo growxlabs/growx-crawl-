@@ -45,13 +45,26 @@ from growx_crawl.intelligence.observations import (
 )
 
 from growx_crawl.intelligence.history import (
+    ChangeDetector,
+    ChangeEventType,
+    HistoricalIntelligenceService,
     HistoryService,
+    Significance,
+    SignificanceEngine,
+    TimelineBuilder,
+    TimelineEventEntity,
+    TrendEngine,
+    TrendEntity,
     detect_value_change,
     history_service,
 )
 from growx_crawl.intelligence.signals import (
+    SignalCandidateDetector,
+    SignalCandidateEntity,
     SignalEntity,
     SignalService,
+    SignalType,
+    compute_signal_score,
     detect_signals_from_company,
     signal_service,
 )
@@ -94,11 +107,26 @@ __all__ = [
     "extractor_adapter",
     "AutoGTMAdapter",
     "autogtm_adapter",
+    # Phase 10: Historical Intelligence
+    "ChangeDetector",
+    "ChangeEventType",
+    "HistoricalIntelligenceService",
     "HistoryService",
     "history_service",
     "detect_value_change",
+    "Significance",
+    "SignificanceEngine",
+    "TimelineBuilder",
+    "TimelineEventEntity",
+    "TrendEngine",
+    "TrendEntity",
+    # Phase 10: Signals
     "SignalEntity",
+    "SignalCandidateEntity",
+    "SignalType",
+    "SignalCandidateDetector",
     "SignalService",
     "signal_service",
+    "compute_signal_score",
     "detect_signals_from_company",
 ]

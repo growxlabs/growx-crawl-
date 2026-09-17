@@ -792,6 +792,113 @@ CREATE TABLE IF NOT EXISTS data_factory_summaries (
     report_markdown TEXT DEFAULT '',
     metadata_json TEXT DEFAULT '{}'
 );
+
+-- Phase 10: Historical Intelligence
+
+CREATE TABLE IF NOT EXISTS entity_timeline_events (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    occurred_at TEXT NOT NULL,
+    detected_at TEXT NOT NULL,
+    source_id TEXT,
+    fact_id TEXT,
+    observation_id TEXT,
+    evidence_ids TEXT DEFAULT '[]',
+    predicate TEXT,
+    previous_value_json TEXT DEFAULT '{}',
+    new_value_json TEXT DEFAULT '{}',
+    confidence REAL DEFAULT 1.0,
+    verification_state TEXT DEFAULT 'unverified',
+    significance TEXT DEFAULT 'medium',
+    fingerprint TEXT NOT NULL,
+    extractor_version TEXT,
+    policy_version TEXT DEFAULT 'v1',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_timeline_fingerprint ON entity_timeline_events(fingerprint);
+CREATE INDEX IF NOT EXISTS idx_timeline_entity ON entity_timeline_events(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_timeline_occurred ON entity_timeline_events(occurred_at);
+CREATE INDEX IF NOT EXISTS idx_timeline_event_type ON entity_timeline_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_timeline_fact ON entity_timeline_events(fact_id);
+
+CREATE TABLE IF NOT EXISTS entity_trends (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    trend_type TEXT NOT NULL,
+    window_start TEXT NOT NULL,
+    window_end TEXT NOT NULL,
+    value_json TEXT DEFAULT '{}',
+    confidence REAL DEFAULT 1.0,
+    calculation_version TEXT DEFAULT 'v1',
+    source_fact_ids TEXT DEFAULT '[]',
+    derived INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_trends_entity ON entity_trends(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_trends_type ON entity_trends(trend_type);
+CREATE INDEX IF NOT EXISTS idx_trends_window ON entity_trends(window_start, window_end);
+
+CREATE TABLE IF NOT EXISTS company_temporal_summaries (
+    company_id TEXT PRIMARY KEY,
+    last_change_at TEXT,
+    change_count_30d INTEGER DEFAULT 0,
+    change_count_90d INTEGER DEFAULT 0,
+    latest_signal_type TEXT,
+    latest_signal_at TEXT,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS company_trend_summaries (
+    company_id TEXT PRIMARY KEY,
+    employee_growth_90d REAL,
+    employee_growth_365d REAL,
+    leadership_changes_180d INTEGER DEFAULT 0,
+    location_growth_365d INTEGER DEFAULT 0,
+    technology_changes_180d INTEGER DEFAULT 0,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS signal_candidates (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL DEFAULT 'company',
+    entity_id TEXT NOT NULL,
+    signal_type TEXT NOT NULL,
+    trigger_event_ids TEXT DEFAULT '[]',
+    detected_at TEXT NOT NULL,
+    occurred_at TEXT,
+    expires_at TEXT,
+    confidence REAL DEFAULT 1.0,
+    significance TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'candidate',
+    policy_version TEXT DEFAULT 'v1',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_signal_cand_entity ON signal_candidates(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_signal_cand_type ON signal_candidates(signal_type);
+CREATE INDEX IF NOT EXISTS idx_signal_cand_status ON signal_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_signal_cand_expires ON signal_candidates(expires_at);
+
+CREATE TABLE IF NOT EXISTS history_backfill_runs (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    start_time TEXT,
+    end_time TEXT,
+    status TEXT DEFAULT 'running',
+    processed_count INTEGER DEFAULT 0,
+    error_count INTEGER DEFAULT 0,
+    last_cursor TEXT,
+    created_at TEXT NOT NULL,
+    completed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_backfill_status ON history_backfill_runs(status);
 """
 
 

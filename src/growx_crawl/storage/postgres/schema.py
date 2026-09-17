@@ -766,6 +766,108 @@ CREATE TABLE IF NOT EXISTS data_factory_summaries (
     report_markdown TEXT DEFAULT '',
     metadata_json JSONB DEFAULT '{}'::jsonb
 );
+
+-- Phase 10: Historical Intelligence
+
+CREATE TABLE IF NOT EXISTS entity_timeline_events (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    event_type VARCHAR(64) NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    source_id VARCHAR(64),
+    fact_id VARCHAR(64),
+    observation_id VARCHAR(64),
+    evidence_ids JSONB DEFAULT '[]'::jsonb,
+    predicate TEXT,
+    previous_value_json JSONB DEFAULT '{}'::jsonb,
+    new_value_json JSONB DEFAULT '{}'::jsonb,
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    verification_state VARCHAR(32) DEFAULT 'unverified',
+    significance VARCHAR(16) DEFAULT 'medium',
+    fingerprint TEXT NOT NULL UNIQUE,
+    extractor_version TEXT,
+    policy_version VARCHAR(16) DEFAULT 'v1',
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_timeline_entity ON entity_timeline_events(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_timeline_occurred ON entity_timeline_events(occurred_at);
+CREATE INDEX IF NOT EXISTS idx_timeline_event_type ON entity_timeline_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_timeline_fact ON entity_timeline_events(fact_id);
+
+CREATE TABLE IF NOT EXISTS entity_trends (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    trend_type VARCHAR(64) NOT NULL,
+    window_start TIMESTAMPTZ NOT NULL,
+    window_end TIMESTAMPTZ NOT NULL,
+    value_json JSONB DEFAULT '{}'::jsonb,
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    calculation_version VARCHAR(16) DEFAULT 'v1',
+    source_fact_ids JSONB DEFAULT '[]'::jsonb,
+    derived BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_trends_entity ON entity_trends(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_trends_type ON entity_trends(trend_type);
+
+CREATE TABLE IF NOT EXISTS company_temporal_summaries (
+    company_id VARCHAR(64) PRIMARY KEY,
+    last_change_at TIMESTAMPTZ,
+    change_count_30d INTEGER DEFAULT 0,
+    change_count_90d INTEGER DEFAULT 0,
+    latest_signal_type TEXT,
+    latest_signal_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS company_trend_summaries (
+    company_id VARCHAR(64) PRIMARY KEY,
+    employee_growth_90d DOUBLE PRECISION,
+    employee_growth_365d DOUBLE PRECISION,
+    leadership_changes_180d INTEGER DEFAULT 0,
+    location_growth_365d INTEGER DEFAULT 0,
+    technology_changes_180d INTEGER DEFAULT 0,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS signal_candidates (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL DEFAULT 'company',
+    entity_id VARCHAR(64) NOT NULL,
+    signal_type VARCHAR(64) NOT NULL,
+    trigger_event_ids JSONB DEFAULT '[]'::jsonb,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ,
+    confidence DOUBLE PRECISION DEFAULT 1.0,
+    significance VARCHAR(16) DEFAULT 'medium',
+    status VARCHAR(32) DEFAULT 'candidate',
+    policy_version VARCHAR(16) DEFAULT 'v1',
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_signal_cand_entity ON signal_candidates(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_signal_cand_type ON signal_candidates(signal_type);
+CREATE INDEX IF NOT EXISTS idx_signal_cand_status ON signal_candidates(status);
+
+CREATE TABLE IF NOT EXISTS history_backfill_runs (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
+    status VARCHAR(32) DEFAULT 'running',
+    processed_count INTEGER DEFAULT 0,
+    error_count INTEGER DEFAULT 0,
+    last_cursor TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ
+);
 """
 
 

@@ -1,0 +1,7 @@
+# Employment change detection policy
+predicate_pattern: person.title
+disappearance_threshold_days: 60
+min_misses_for_removal: 2
+reappearance_enabled: true
+significance_default: medium
+policy_version: v1

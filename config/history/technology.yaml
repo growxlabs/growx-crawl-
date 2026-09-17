@@ -1,0 +1,7 @@
+# Technology change detection policy
+predicate_pattern: company.technology
+disappearance_threshold_days: 90
+min_misses_for_removal: 3
+reappearance_enabled: true
+significance_default: medium
+policy_version: v1

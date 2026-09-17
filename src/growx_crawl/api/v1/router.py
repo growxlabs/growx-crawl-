@@ -750,3 +750,86 @@ async def reprocess_r2_artifacts(
     """Reprocess raw R2 crawl artifacts through extraction, resolution, and facts without recrawling."""
     from growx_crawl.data_factory import data_factory_service
     return data_factory_service.reprocess_from_r2(req.r2_keys, run_id=req.run_id)
+
+
+# ── Phase 10: Historical Intelligence API ──
+
+@v1_router.get("/intelligence/entities/{entity_type}/{entity_id}/timeline")
+def get_entity_timeline(
+    entity_type: str,
+    entity_id: str,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    event_types: Optional[str] = Query(None, description="Comma-separated event types"),
+    since: Optional[str] = Query(None, description="ISO 8601 timestamp filter"),
+):
+    """Get the timeline of changes for an entity."""
+    from growx_crawl.intelligence.history.service import HistoricalIntelligenceService
+    svc = HistoricalIntelligenceService()
+    types_list = event_types.split(",") if event_types else None
+    return svc.get_timeline(
+        entity_type=entity_type,
+        entity_id=entity_id,
+        limit=limit,
+        offset=offset,
+        event_types=types_list,
+        since=since,
+    )
+
+
+@v1_router.get("/intelligence/entities/{entity_type}/{entity_id}/state")
+def get_entity_state_at(
+    entity_type: str,
+    entity_id: str,
+    at: str = Query(..., description="ISO 8601 timestamp for historical state"),
+):
+    """Reconstruct what we believed about an entity at a given point in time."""
+    from growx_crawl.intelligence.facts.repository import SqliteFactRepository
+    from growx_crawl.intelligence.history.service import HistoricalIntelligenceService
+
+    fact_repo = SqliteFactRepository()
+    svc = HistoricalIntelligenceService()
+
+    facts = fact_repo.list_current(entity_type, entity_id)
+    all_values = []
+    for f in facts:
+        vals = fact_repo.list_history(f.id)
+        for v in vals:
+            all_values.append({
+                "fact_id": f.id,
+                "predicate": f.predicate,
+                "value_json": v.value_json,
+                "valid_from": v.valid_from,
+                "valid_to": v.valid_to,
+                "confidence": v.confidence,
+                "status": v.status,
+            })
+
+    facts_dicts = [{"id": f.id, "predicate": f.predicate} for f in facts]
+    return svc.get_state_at(entity_type, entity_id, at, facts_dicts, all_values)
+
+
+@v1_router.get("/intelligence/entities/{entity_type}/{entity_id}/trends")
+def get_entity_trends(
+    entity_type: str,
+    entity_id: str,
+    trend_types: Optional[str] = Query(None, description="Comma-separated trend types"),
+):
+    """Get computed trends for an entity."""
+    from growx_crawl.intelligence.history.service import HistoricalIntelligenceService
+    svc = HistoricalIntelligenceService()
+    types_list = trend_types.split(",") if trend_types else None
+    trends = svc.get_trends(entity_type, entity_id, types_list)
+    return [t.model_dump() for t in trends]
+
+
+@v1_router.get("/intelligence/entities/{entity_type}/{entity_id}/signals")
+def get_entity_signals(
+    entity_type: str,
+    entity_id: str,
+):
+    """Get active signal candidates for an entity."""
+    from growx_crawl.intelligence.signals.service import SignalService
+    svc = SignalService()
+    return svc.get_active_signals(entity_id)
+
