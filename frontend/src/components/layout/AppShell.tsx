@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { Navigation } from "./Navigation";
-import { Header } from "./Header";
-import { Breadcrumbs } from "./Breadcrumbs";
+import { usePathname } from "next/navigation";
+import { CockpitProvider } from "@/features/cockpit/CockpitContext";
+import { CockpitSidebar } from "@/features/cockpit/CockpitSidebar";
+import { CockpitHeader } from "@/features/cockpit/CockpitHeader";
 import { EvidenceProvider } from "../inspector/EvidenceContext";
 import { EvidenceInspector } from "../inspector/EvidenceInspector";
 import { FactCorrectionModal } from "../inspector/FactCorrectionModal";
@@ -13,34 +14,41 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  return (
-    <EvidenceProvider>
-      <div className="flex h-screen w-screen overflow-hidden bg-neutral-50/50 text-neutral-900 font-sans">
-        {/* Left Navigation Sidebar */}
-        <Navigation />
+  const pathname = usePathname();
+  const isOps = pathname.startsWith("/ops");
 
-        {/* Main Content Pane */}
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-          {/* Top Header */}
-          <Header />
-
-          {/* Subheader / Breadcrumbs bar */}
-          <div className="h-10 border-b border-neutral-200/80 bg-white px-6 flex items-center justify-between flex-shrink-0">
-            <Breadcrumbs />
-          </div>
-
-          {/* Scrollable Page Body */}
-          <main className="flex-1 overflow-y-auto p-6 bg-neutral-50/60">
-            <div className="max-w-7xl mx-auto w-full pb-12">
-              {children}
-            </div>
+  if (isOps) {
+    return (
+      <EvidenceProvider>
+        <div className="flex h-screen w-screen overflow-hidden bg-[#0a0c10] text-slate-100 font-sans">
+          <main className="flex-1 overflow-y-auto bg-[#0a0c10]">
+            {children}
           </main>
         </div>
+      </EvidenceProvider>
+    );
+  }
 
-        {/* Global Slide-out Drawer and Modal */}
-        <EvidenceInspector />
-        <FactCorrectionModal />
-      </div>
+  return (
+    <EvidenceProvider>
+      <CockpitProvider>
+        <div className="flex h-screen w-screen overflow-hidden bg-[#0a0c10] text-slate-100 font-sans">
+          {/* Explee Left Control Column */}
+          <CockpitSidebar />
+
+          {/* Right Main Column (Top Stepper + Unified Cockpit Area) */}
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#0a0c10]">
+            <CockpitHeader />
+            <main className="flex-1 min-h-0 overflow-hidden flex flex-col bg-[#0a0c10]">
+              {children}
+            </main>
+          </div>
+
+          {/* Global Slide-out Drawer and Modal */}
+          <EvidenceInspector />
+          <FactCorrectionModal />
+        </div>
+      </CockpitProvider>
     </EvidenceProvider>
   );
 }
