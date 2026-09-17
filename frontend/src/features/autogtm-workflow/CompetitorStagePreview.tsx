@@ -17,10 +17,10 @@ export function CompetitorStagePreview() {
           <button
             key={comp.domain}
             onClick={() => setSelectedCompetitor(comp)}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-[#FFFFFF] hover:bg-[#F1F3F6] border border-[#DDE2E8] text-[11px] text-[#111318] transition-colors group"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md bg-gx-surface hover:bg-gx-surface-hover border border-gx-border text-[11px] text-gx-ink transition-colors group"
           >
             <span className="truncate font-mono">{comp.name}</span>
-            <span className="text-[10px] text-[#818A97] group-hover:text-[#315EF5] flex items-center gap-1">
+            <span className="text-[10px] text-gx-ink-muted group-hover:text-gx-primary flex items-center gap-1">
               <span>View overlap</span>
               <ExternalLink className="w-2.5 h-2.5" />
             </span>
@@ -31,7 +31,7 @@ export function CompetitorStagePreview() {
       {remainingCount > 0 && (
         <button
           onClick={() => setSelectedCompetitor(competitors[0])}
-          className="w-full text-center py-1 text-[11px] text-[#818A97] hover:text-[#315EF5] transition-colors font-medium"
+          className="w-full text-center py-1 text-[11px] text-gx-ink-muted hover:text-gx-primary transition-colors font-medium"
         >
           +{remainingCount} more competitors &middot; View breakdown
         </button>

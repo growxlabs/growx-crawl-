@@ -27,7 +27,7 @@ export function WorkflowStageHeader({
       case "completed":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-[#EAF7F1] border border-[#BDEBD7] text-[#16825D] flex items-center justify-center text-[10px] flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-gx-success-soft border border-gx-success/30 text-gx-success flex items-center justify-center text-[10px] flex-shrink-0"
             title="Stage completed"
             aria-label="Completed"
           >
@@ -37,7 +37,7 @@ export function WorkflowStageHeader({
       case "running":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-[#EDF2FF] border border-[#C9D5FF] text-[#315EF5] flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-gx-primary-soft border border-gx-primary-border text-gx-primary flex items-center justify-center flex-shrink-0"
             title="Stage in progress"
             aria-label="In progress"
           >
@@ -47,7 +47,7 @@ export function WorkflowStageHeader({
       case "attention":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-[#FFF5E5] border border-[#FEE1BA] text-[#A86514] flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-gx-warning-soft border border-gx-warning/30 text-gx-warning flex items-center justify-center flex-shrink-0"
             title="Action required"
             aria-label="Attention needed"
           >
@@ -57,7 +57,7 @@ export function WorkflowStageHeader({
       case "failed":
         return (
           <span
-            className="w-4 h-4 rounded-full bg-[#FDECEC] border border-[#F8C8C8] text-[#C64141] flex items-center justify-center flex-shrink-0"
+            className="w-4 h-4 rounded-full bg-gx-danger-soft border border-gx-danger/30 text-gx-danger flex items-center justify-center flex-shrink-0"
             title="Stage failed"
             aria-label="Failed"
           >
@@ -68,7 +68,7 @@ export function WorkflowStageHeader({
       default:
         return (
           <span
-            className="w-4 h-4 rounded-full border border-[#DDE2E8] bg-[#F1F3F6] text-[#818A97] flex items-center justify-center text-[9px] font-mono flex-shrink-0"
+            className="w-4 h-4 rounded-full border border-gx-border bg-gx-surface-soft text-gx-ink-muted flex items-center justify-center text-[9px] font-mono flex-shrink-0"
             title="Pending"
             aria-label="Pending"
           >
@@ -88,23 +88,23 @@ export function WorkflowStageHeader({
       aria-expanded={isExpanded}
       className={`w-full flex items-center justify-between text-left transition-colors select-none text-xs ${
         isExpanded
-          ? "bg-[#EDF2FF] text-[#111318] border-l-2 border-[#315EF5] pl-2 pr-2 py-1.5 rounded-r-md font-semibold"
+          ? "bg-gx-primary-soft text-gx-ink border-l-2 border-gx-primary pl-2 pr-2 py-1.5 rounded-r-md font-semibold"
           : isPending
-          ? "cursor-default text-[#818A97] border-l-2 border-transparent pl-2 pr-2 py-1.5"
-          : "cursor-pointer text-[#111318] hover:bg-[#F1F3F6] border-l-2 border-transparent pl-2 pr-2 py-1.5 rounded-r-md group"
+          ? "cursor-default text-gx-ink-muted border-l-2 border-transparent pl-2 pr-2 py-1.5"
+          : "cursor-pointer text-gx-ink hover:bg-gx-surface-soft border-l-2 border-transparent pl-2 pr-2 py-1.5 rounded-r-md group"
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         {renderStateIndicator()}
         <div className="truncate flex items-center gap-1.5">
-          <span className="text-[#818A97] text-[11px] font-mono">{order}.</span>
+          <span className="text-gx-ink-muted text-[11px] font-mono">{order}.</span>
           <span
             className={
               isExpanded
-                ? "text-[#111318] font-semibold"
+                ? "text-gx-ink font-semibold"
                 : isPending
-                ? "text-[#818A97]"
-                : "text-[#111318] group-hover:text-[#315EF5]"
+                ? "text-gx-ink-muted"
+                : "text-gx-ink group-hover:text-gx-primary"
             }
           >
             {title}
@@ -114,8 +114,8 @@ export function WorkflowStageHeader({
 
       {canExpand && !isPending && (
         <ChevronRight
-          className={`w-3.5 h-3.5 text-[#818A97] transition-transform flex-shrink-0 ml-1 ${
-            isExpanded ? "rotate-90 text-[#315EF5]" : "group-hover:text-[#4D5663]"
+          className={`w-3.5 h-3.5 text-gx-ink-muted transition-transform flex-shrink-0 ml-1 ${
+            isExpanded ? "rotate-90 text-gx-primary" : "group-hover:text-gx-ink-secondary"
           }`}
         />
       )}

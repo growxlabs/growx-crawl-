@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* =========================================================
-       GROWX PRODUCT PALETTE
+       GROWX PRODUCT PALETTE - LIGHT (Paper / Porcelain)
        ========================================================= */
 
     /* Canvas */
@@ -26,7 +26,7 @@
     --gx-border-soft:     #E9ECF0;
     --gx-border-strong:   #BFC7D1;
 
-    /* Brand */
+    /* Brand - Default Blue */
     --gx-primary:         #315EF5;
     --gx-primary-hover:   #244BD6;
     --gx-primary-soft:    #EDF2FF;
@@ -47,12 +47,132 @@
     --gx-danger-soft:     #FDECEC;
   }
 
+  /* =========================================================
+     GROWX PRODUCT PALETTE - DARK (Modern Deep Slate)
+     ========================================================= */
+  .dark, [data-theme="dark"] {
+    /* Canvas */
+    --gx-canvas:          #0D1117;
+    --gx-surface:         #161B22;
+    --gx-surface-soft:    #21262D;
+    --gx-surface-hover:   #2A313C;
+    --gx-surface-active:  #30363D;
+
+    /* Typography */
+    --gx-ink:             #F0F6FC;
+    --gx-ink-secondary:   #8B949E;
+    --gx-ink-muted:       #6E7681;
+    --gx-ink-disabled:    #484F58;
+
+    /* Borders */
+    --gx-border:          #30363D;
+    --gx-border-soft:     #21262D;
+    --gx-border-strong:   #484F58;
+
+    /* Brand - Default Dark Blue */
+    --gx-primary:         #3B82F6;
+    --gx-primary-hover:   #2563EB;
+    --gx-primary-soft:    rgba(59, 130, 246, 0.15);
+    --gx-primary-border:  rgba(59, 130, 246, 0.35);
+
+    /* Secondary GrowX signal */
+    --gx-aqua:            #14B8A6;
+    --gx-aqua-soft:       rgba(20, 184, 166, 0.15);
+
+    /* Semantic */
+    --gx-success:         #238636;
+    --gx-success-soft:    rgba(35, 134, 54, 0.15);
+
+    --gx-warning:         #D29922;
+    --gx-warning-soft:    rgba(210, 153, 34, 0.15);
+
+    --gx-danger:          #F85149;
+    --gx-danger-soft:     rgba(248, 81, 73, 0.15);
+  }
+
+  /* =========================================================
+     ACCENT COLOR OVERRIDES - LIGHT
+     ========================================================= */
+  [data-accent="blue"] {
+    --gx-primary:         #315EF5;
+    --gx-primary-hover:   #244BD6;
+    --gx-primary-soft:    #EDF2FF;
+    --gx-primary-border:  #C9D5FF;
+  }
+
+  [data-accent="green"] {
+    --gx-primary:         #10B981;
+    --gx-primary-hover:   #059669;
+    --gx-primary-soft:    #ECFDF5;
+    --gx-primary-border:  #A7F3D0;
+  }
+
+  [data-accent="orange"] {
+    --gx-primary:         #F97316;
+    --gx-primary-hover:   #EA580C;
+    --gx-primary-soft:    #FFF7ED;
+    --gx-primary-border:  #FED7AA;
+  }
+
+  [data-accent="pink"] {
+    --gx-primary:         #EC4899;
+    --gx-primary-hover:   #DB2777;
+    --gx-primary-soft:    #FDF2F8;
+    --gx-primary-border:  #FBCFE8;
+  }
+
+  [data-accent="purple"] {
+    --gx-primary:         #8B5CF6;
+    --gx-primary-hover:   #7C3AED;
+    --gx-primary-soft:    #F5F3FF;
+    --gx-primary-border:  #DDD6FE;
+  }
+
+  /* =========================================================
+     ACCENT COLOR OVERRIDES - DARK
+     ========================================================= */
+  .dark[data-accent="blue"], [data-theme="dark"][data-accent="blue"] {
+    --gx-primary:         #3B82F6;
+    --gx-primary-hover:   #2563EB;
+    --gx-primary-soft:    rgba(59, 130, 246, 0.15);
+    --gx-primary-border:  rgba(59, 130, 246, 0.35);
+  }
+
+  .dark[data-accent="green"], [data-theme="dark"][data-accent="green"] {
+    --gx-primary:         #10B981;
+    --gx-primary-hover:   #059669;
+    --gx-primary-soft:    rgba(16, 185, 129, 0.15);
+    --gx-primary-border:  rgba(16, 185, 129, 0.35);
+  }
+
+  .dark[data-accent="orange"], [data-theme="dark"][data-accent="orange"] {
+    --gx-primary:         #F97316;
+    --gx-primary-hover:   #EA580C;
+    --gx-primary-soft:    rgba(249, 115, 22, 0.15);
+    --gx-primary-border:  rgba(249, 115, 22, 0.35);
+  }
+
+  .dark[data-accent="pink"], [data-theme="dark"][data-accent="pink"] {
+    --gx-primary:         #F43F5E;
+    --gx-primary-hover:   #E11D48;
+    --gx-primary-soft:    rgba(244, 63, 94, 0.15);
+    --gx-primary-border:  rgba(244, 63, 94, 0.35);
+  }
+
+  .dark[data-accent="purple"], [data-theme="dark"][data-accent="purple"] {
+    --gx-primary:         #A855F7;
+    --gx-primary-hover:   #9333EA;
+    --gx-primary-soft:    rgba(168, 85, 247, 0.15);
+    --gx-primary-border:  rgba(168, 85, 247, 0.35);
+  }
+
   body {
     background-color: var(--gx-canvas);
     color: var(--gx-ink);
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -71,10 +191,10 @@ table {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #DDE2E8;
+  background: var(--gx-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #BFC7D1;
+  background: var(--gx-border-strong);
 }

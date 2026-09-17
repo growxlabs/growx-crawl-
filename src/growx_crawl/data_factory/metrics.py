@@ -4,7 +4,7 @@ Tracks high-resolution operational counters, stage outcomes, change statistics,
 and cost allocations for every factory execution.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from growx_crawl.data_factory.models import MorningSummary
 from growx_crawl.shared.time import utc_iso_now
 

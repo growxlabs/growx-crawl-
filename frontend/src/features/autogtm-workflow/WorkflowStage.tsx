@@ -26,8 +26,8 @@ export function WorkflowStage({
         <div
           className={`absolute left-[15px] top-7 bottom-0 w-[1.5px] ${
             stage.state === "completed"
-              ? "bg-[#BDEBD7]"
-              : "bg-[#E9ECF0]"
+              ? "bg-gx-success/30"
+              : "bg-gx-border-soft"
           }`}
           aria-hidden="true"
         />
