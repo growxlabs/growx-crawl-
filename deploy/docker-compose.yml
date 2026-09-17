@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # ── Canonical Structured Truth ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: growx-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: growx_canonical
+      POSTGRES_USER: growx_admin
+      POSTGRES_PASSWORD: growx_secure_internal_pw_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U growx_admin -d growx_canonical"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Production Engine ──
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.api
+    container_name: growx-api
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      GROWX_OBJECT_STORE: r2
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      GROWX_AUTH_JWT_SECRET: ${GROWX_AUTH_JWT_SECRET:-growx_production_jwt_secret_token_key_2026}
+    ports:
+      - "7411:7411"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Next.js AutoGTM Product UI ──
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.frontend
+    container_name: growx-frontend
+    restart: always
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE: http://api:7411
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  # ── Dedicated Background Workers ──
+  worker-crawler:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: growx-worker-crawler
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      WORKER_MODULE: growx_crawl.workers.crawler
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker-browser:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: growx-worker-browser
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      WORKER_MODULE: growx_crawl.workers.browser
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker-intelligence:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: growx-worker-intelligence
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      WORKER_MODULE: growx_crawl.workers.intelligence
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker-verification:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: growx-worker-verification
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      WORKER_MODULE: growx_crawl.workers.verification
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker-coordinator:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: growx-worker-coordinator
+    restart: always
+    environment:
+      GROWX_ENV: production
+      DATABASE_URL: postgresql://growx_admin:growx_secure_internal_pw_2026@postgres:5432/growx_canonical
+      WORKER_MODULE: growx_crawl.workers.coordinator
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

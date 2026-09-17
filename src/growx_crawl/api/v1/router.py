@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, 
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
+from growx_crawl.auth import get_current_user, require_admin, require_operator
 from growx_crawl.core.auth import api_key_manager, get_current_api_key
 from growx_crawl.core.cache import cache
 from growx_crawl.crawler.batch import batch_scraper
@@ -2083,6 +2084,222 @@ def trigger_seed_endpoint():
     """Populates canonical demo dataset for UI exploration."""
     from growx_crawl.autogtm.seed import seed_canonical_environment
     return seed_canonical_environment()
+
+
+# ── Phase 15 Production Health & Observability ──
+
+@v1_router.get("/health/live")
+def get_health_live():
+    """Lightweight process liveness check."""
+    from growx_crawl.ops.health import check_liveness
+    return check_liveness()
+
+
+@v1_router.get("/health/ready")
+def get_health_ready():
+    """Readiness probe checking DB pool and storage readiness."""
+    from growx_crawl.ops.health import check_readiness
+    res = check_readiness()
+    if res["status"] != "ready":
+        raise HTTPException(status_code=503, detail=res)
+    return res
+
+
+@v1_router.get("/health/dependencies")
+def get_health_dependencies():
+    """Detailed dependency health check."""
+    from growx_crawl.ops.health import check_dependencies
+    return check_dependencies()
+
+
+# ── Phase 15 Operations & Worker Telemetry ──
+
+@v1_router.get("/ops/workers")
+def list_ops_workers_endpoint(worker_type: Optional[str] = None):
+    """Lists registered worker processes and their heartbeat statuses."""
+    from growx_crawl.jobs.queue import job_queue_service
+    workers = job_queue_service.list_workers(worker_type=worker_type)
+    return [w.model_dump() for w in workers]
+
+
+@v1_router.get("/ops/queue")
+def get_ops_queue_endpoint():
+    """Returns persistent job queue depth by status."""
+    from growx_crawl.jobs.queue import job_queue_service
+    return job_queue_service.get_queue_depth()
+
+
+@v1_router.get("/ops/metrics")
+def get_ops_metrics_endpoint():
+    """Returns API latencies, queue throughput, and worker telemetry."""
+    from growx_crawl.ops.metrics import metrics_collector
+    return metrics_collector.get_summary()
+
+
+@v1_router.post("/ops/workers/reap")
+def reap_dead_workers_endpoint(timeout_seconds: int = 90):
+    """Marks workers whose heartbeat exceeded timeout as offline."""
+    from growx_crawl.jobs.queue import job_queue_service
+    reaped = job_queue_service.reap_dead_workers(timeout_seconds=timeout_seconds)
+    return {"status": "reaped", "count": reaped}
+
+
+@v1_router.post("/ops/queue/reclaim")
+def reclaim_expired_leases_endpoint():
+    """Reclaims abandoned job leases back into the queued status."""
+    from growx_crawl.jobs.queue import job_queue_service
+    reclaimed = job_queue_service.reclaim_expired_leases()
+    return {"status": "reclaimed", "count": reclaimed}
+
+
+# ── Phase 15 Internal Auth & RBAC ──
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterUserRequest(BaseModel):
+    email: str
+    name: str
+    password: str
+    role: str = "viewer"
+
+
+@v1_router.post("/auth/login")
+def auth_login_endpoint(req: LoginRequest):
+    """Internal user authentication returning signed access token."""
+    from growx_crawl.auth.service import auth_service
+    user = auth_service.authenticate(req.email, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = auth_service.create_token(user)
+    auth_service.log_audit(
+        actor_id=user.id,
+        action="user_login",
+        subject_type="user",
+        subject_id=user.id,
+    )
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role.value,
+        },
+    }
+
+
+@v1_router.get("/auth/me")
+def auth_me_endpoint(user=Depends(get_current_user)):
+    """Returns current authenticated internal user."""
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role.value,
+        "status": user.status.value,
+        "last_login_at": user.last_login_at,
+    }
+
+
+@v1_router.get("/auth/users")
+def list_users_endpoint(user=Depends(require_admin)):
+    """Lists internal platform users (Admin role required)."""
+    from growx_crawl.auth.service import auth_service
+    users = auth_service.list_users()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "name": u.name,
+            "role": u.role.value,
+            "status": u.status.value,
+            "created_at": u.created_at,
+            "last_login_at": u.last_login_at,
+        }
+        for u in users
+    ]
+
+
+@v1_router.post("/auth/users")
+def register_user_endpoint(req: RegisterUserRequest, user=Depends(require_admin)):
+    """Registers a new internal platform user (Admin role required)."""
+    from growx_crawl.auth.service import auth_service
+    from growx_crawl.auth.models import Role
+    new_user = auth_service.register_user(
+        email=req.email,
+        name=req.name,
+        password=req.password,
+        role=Role(req.role),
+    )
+    auth_service.log_audit(
+        actor_id=user.id,
+        action="create_user",
+        subject_type="user",
+        subject_id=new_user.id,
+        metadata={"email": new_user.email, "role": new_user.role.value},
+    )
+    return {
+        "id": new_user.id,
+        "email": new_user.email,
+        "name": new_user.name,
+        "role": new_user.role.value,
+    }
+
+
+@v1_router.get("/auth/audit")
+def list_audit_events_endpoint(actor_id: Optional[str] = None, limit: int = 50, user=Depends(require_operator)):
+    """Lists internal audit events (Operator or Admin required)."""
+    from growx_crawl.auth.service import auth_service
+    events = auth_service.list_audit_events(actor_id=actor_id, limit=limit)
+    return [e.model_dump() for e in events]
+
+
+# ── Phase 15 Operator Ground-Truth Feedback ──
+
+class SubmitFeedbackRequest(BaseModel):
+    subject_type: str
+    subject_id: str
+    feedback_type: str
+    notes: Optional[str] = None
+
+
+@v1_router.post("/feedback")
+def submit_feedback_endpoint(req: SubmitFeedbackRequest, user=Depends(get_current_user)):
+    """Captures operator ground-truth review feedback."""
+    from growx_crawl.feedback.service import operator_feedback_service
+    from growx_crawl.feedback.models import FeedbackType
+    fb = operator_feedback_service.submit_feedback(
+        actor_id=user.id,
+        subject_type=req.subject_type,
+        subject_id=req.subject_id,
+        feedback_type=FeedbackType(req.feedback_type),
+        notes=req.notes,
+    )
+    return fb.model_dump()
+
+
+@v1_router.get("/feedback")
+def list_feedback_endpoint(subject_type: Optional[str] = None, subject_id: Optional[str] = None, limit: int = 100):
+    """Lists operator feedback records."""
+    from growx_crawl.feedback.service import operator_feedback_service
+    records = operator_feedback_service.list_feedback(
+        subject_type=subject_type,
+        subject_id=subject_id,
+        limit=limit,
+    )
+    return [r.model_dump() for r in records]
+
+
+@v1_router.get("/feedback/summary")
+def get_feedback_summary_endpoint():
+    """Aggregates quality review sentiments and accuracy rates."""
+    from growx_crawl.feedback.service import operator_feedback_service
+    return operator_feedback_service.get_summary()
+
 
 
 

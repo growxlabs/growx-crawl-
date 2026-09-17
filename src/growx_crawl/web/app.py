@@ -22,19 +22,57 @@ app.include_router(v1_router, prefix="/v1")
 app.include_router(v1_router, prefix="/api/v1")
 app.include_router(ops_router, prefix="/api")
 
+# Phase 15 Root Health Probes
+@app.get("/health/live")
+def root_health_live():
+    from growx_crawl.ops.health import check_liveness
+    return check_liveness()
+
+
+@app.get("/health/ready")
+def root_health_ready():
+    from growx_crawl.ops.health import check_readiness
+    res = check_readiness()
+    if res["status"] != "ready":
+        raise HTTPException(status_code=503, detail=res)
+    return res
+
+
+@app.get("/health/dependencies")
+def root_health_dependencies():
+    from growx_crawl.ops.health import check_dependencies
+    return check_dependencies()
+
+
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @app.middleware("http")
-async def add_cache_control_headers(request: Request, call_next):
-    response = await call_next(request)
-    path = request.url.path
-    if path.startswith("/static") or path == "/":
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-    return response
+async def track_metrics_and_cache_middleware(request: Request, call_next):
+    import time
+    start = time.time()
+    is_err = False
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            is_err = True
+        path = request.url.path
+        if path.startswith("/static") or path == "/":
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+    except Exception:
+        is_err = True
+        raise
+    finally:
+        dur = (time.time() - start) * 1000
+        try:
+            from growx_crawl.ops.metrics import metrics_collector
+            metrics_collector.record_request(dur, is_error=is_err)
+        except Exception:
+            pass
 
 
 class CreateJobRequest(BaseModel):

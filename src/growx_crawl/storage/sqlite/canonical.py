@@ -1225,6 +1225,103 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE INDEX IF NOT EXISTS idx_prj_seller ON projects(seller_company_id);
 CREATE INDEX IF NOT EXISTS idx_prj_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_prj_icp ON projects(active_icp_id);
+
+-- Phase 15 Internal Deployment Tables
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id TEXT PRIMARY KEY,
+    job_type TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'queued',
+    priority INTEGER NOT NULL DEFAULT 50,
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    result_json TEXT NOT NULL DEFAULT '{}',
+    claimed_by_worker_id TEXT,
+    claimed_at TEXT,
+    lease_expires_at TEXT,
+    heartbeat_at TEXT,
+    started_at TEXT,
+    finished_at TEXT,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    max_retries INTEGER NOT NULL DEFAULT 3,
+    failure_reason TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_jobs_status_priority ON jobs(status, priority DESC, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_jobs_worker ON jobs(claimed_by_worker_id);
+CREATE INDEX IF NOT EXISTS idx_jobs_lease ON jobs(lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS workers (
+    id TEXT PRIMARY KEY,
+    worker_type TEXT NOT NULL,
+    hostname TEXT,
+    process_id INTEGER,
+    status TEXT NOT NULL DEFAULT 'active',
+    current_job_id TEXT,
+    version TEXT,
+    started_at TEXT NOT NULL,
+    last_heartbeat_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_wrk_type_status ON workers(worker_type, status);
+CREATE INDEX IF NOT EXISTS idx_wrk_heartbeat ON workers(last_heartbeat_at);
+
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'viewer',
+    status TEXT NOT NULL DEFAULT 'active',
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    last_login_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_usr_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_usr_role ON users(role);
+
+CREATE TABLE IF NOT EXISTS audit_events (
+    id TEXT PRIMARY KEY,
+    actor_id TEXT NOT NULL,
+    action TEXT NOT NULL,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_aud_actor ON audit_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_aud_subject ON audit_events(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_aud_time ON audit_events(timestamp);
+
+CREATE TABLE IF NOT EXISTS operator_feedback (
+    id TEXT PRIMARY KEY,
+    actor_id TEXT NOT NULL,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    feedback_type TEXT NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_fbk_subject ON operator_feedback(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_fbk_type ON operator_feedback(feedback_type);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    applied_at TEXT NOT NULL,
+    checksum TEXT
+);
+
+CREATE TABLE IF NOT EXISTS schema_migrations_lock (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    is_locked INTEGER NOT NULL DEFAULT 0,
+    locked_by TEXT,
+    locked_at TEXT
+);
 """
 
 

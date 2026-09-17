@@ -1194,6 +1194,103 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE INDEX IF NOT EXISTS idx_pg_prj_seller ON projects(seller_company_id);
 CREATE INDEX IF NOT EXISTS idx_pg_prj_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_pg_prj_icp ON projects(active_icp_id);
+
+-- Phase 15 Internal Deployment Tables
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id VARCHAR(64) PRIMARY KEY,
+    job_type VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'queued',
+    priority INTEGER NOT NULL DEFAULT 50,
+    payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    result_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    claimed_by_worker_id VARCHAR(64),
+    claimed_at TIMESTAMPTZ,
+    lease_expires_at TIMESTAMPTZ,
+    heartbeat_at TIMESTAMPTZ,
+    started_at TIMESTAMPTZ,
+    finished_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    max_retries INTEGER NOT NULL DEFAULT 3,
+    failure_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_jobs_status_priority ON jobs(status, priority DESC, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_pg_jobs_worker ON jobs(claimed_by_worker_id);
+CREATE INDEX IF NOT EXISTS idx_pg_jobs_lease ON jobs(lease_expires_at);
+
+CREATE TABLE IF NOT EXISTS workers (
+    id VARCHAR(64) PRIMARY KEY,
+    worker_type VARCHAR(64) NOT NULL,
+    hostname VARCHAR(128),
+    process_id INTEGER,
+    status VARCHAR(32) NOT NULL DEFAULT 'active',
+    current_job_id VARCHAR(64),
+    version VARCHAR(32),
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_heartbeat_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_wrk_type_status ON workers(worker_type, status);
+CREATE INDEX IF NOT EXISTS idx_pg_wrk_heartbeat ON workers(last_heartbeat_at);
+
+CREATE TABLE IF NOT EXISTS users (
+    id VARCHAR(64) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(32) NOT NULL DEFAULT 'viewer',
+    status VARCHAR(32) NOT NULL DEFAULT 'active',
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_login_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_usr_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_pg_usr_role ON users(role);
+
+CREATE TABLE IF NOT EXISTS audit_events (
+    id VARCHAR(64) PRIMARY KEY,
+    actor_id VARCHAR(64) NOT NULL,
+    action VARCHAR(64) NOT NULL,
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_aud_actor ON audit_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_pg_aud_subject ON audit_events(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_pg_aud_time ON audit_events(timestamp);
+
+CREATE TABLE IF NOT EXISTS operator_feedback (
+    id VARCHAR(64) PRIMARY KEY,
+    actor_id VARCHAR(64) NOT NULL,
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL,
+    feedback_type VARCHAR(64) NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_fbk_subject ON operator_feedback(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_pg_fbk_type ON operator_feedback(feedback_type);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    checksum VARCHAR(64)
+);
+
+CREATE TABLE IF NOT EXISTS schema_migrations_lock (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    is_locked INTEGER NOT NULL DEFAULT 0,
+    locked_by VARCHAR(128),
+    locked_at TIMESTAMPTZ
+);
 """
 
 

@@ -345,10 +345,104 @@ def seed_canonical_environment() -> Dict[str, Any]:
         except Exception as e:
             logger.debug(f"Prospect seed check: {e}")
 
+    # ── 6. Real Internal Project: GrowxLabs — Manufacturing India ──
+    mfg_project_id = "prj_growx_mfg_india"
+    try:
+        existing_mfg_prj = project_service.get_project(mfg_project_id)
+        if not existing_mfg_prj:
+            mfg_icp, mfg_ver = icp_service.create_icp(
+                seller_company_id=SELLER_ID,
+                name="India Precision Manufacturing & Fabrication ICP",
+                description="Targeting high-precision Indian metal fabrication, CNC machining, and industrial component manufacturers.",
+            )
+            mfg_prj = project_service.create_project(
+                name="GrowxLabs — Manufacturing India",
+                seller_company_id=SELLER_ID,
+                active_icp_id=mfg_icp.id,
+                target_geography="India (Pune, Coimbatore, Ahmedabad, Bengaluru)",
+                notes="Real GrowxLabs internal GTM project targeting industrial component manufacturers with export capabilities.",
+            )
+            mfg_prj.id = mfg_project_id
+            project_service.repo.save_project(mfg_prj)
+
+            mfg_prospects = [
+                {
+                    "company_id": "cmp_bharat_forge",
+                    "company_name": "Bharat Forge Precision Components",
+                    "domain": "bharatforge.com",
+                    "industry": "Precision Forging & Metal Fabrication",
+                    "employee_count": 4200,
+                    "location": "Pune, Maharashtra, India",
+                    "person": {"name": "Amit Kalyani", "title": "Joint Managing Director", "email": "amit.k@bharatforge.com", "seniority": "c_level"},
+                    "signals": [{"signal_type": "export_expansion", "confidence": 0.96, "detected_at": (now - timedelta(days=2)).isoformat()}],
+                    "icp_score": 0.95,
+                    "status": RankingStatus.PRIORITY.value,
+                },
+                {
+                    "company_id": "cmp_craftsman",
+                    "company_name": "Craftsman Automation",
+                    "domain": "craftsmanautomation.com",
+                    "industry": "CNC Machining & Tooling",
+                    "employee_count": 1800,
+                    "location": "Coimbatore, Tamil Nadu, India",
+                    "person": {"name": "Srinivasan Ravi", "title": "Chairman & MD", "email": "ravi@craftsmanautomation.com", "seniority": "c_level"},
+                    "signals": [{"signal_type": "capex_investment", "confidence": 0.91, "detected_at": (now - timedelta(days=7)).isoformat()}],
+                    "icp_score": 0.92,
+                    "status": RankingStatus.PRIORITY.value,
+                },
+                {
+                    "company_id": "cmp_dynamatic",
+                    "company_name": "Dynamatic Technologies",
+                    "domain": "dynamatics.com",
+                    "industry": "Aerospace & Precision Engineering",
+                    "employee_count": 950,
+                    "location": "Bengaluru, Karnataka, India",
+                    "person": {"name": "Udayant Malhoutra", "title": "CEO & Managing Director", "email": "udayant@dynamatics.com", "seniority": "c_level"},
+                    "signals": [{"signal_type": "defense_contract", "confidence": 0.89, "detected_at": (now - timedelta(days=14)).isoformat()}],
+                    "icp_score": 0.88,
+                    "status": RankingStatus.STRONG.value,
+                },
+            ]
+
+            for mfg_p in mfg_prospects:
+                prosp = prospect_ranking_service.create_prospect(
+                    project_id=mfg_project_id,
+                    company_id=mfg_p["company_id"],
+                    person_id=f"prs_{mfg_p['company_id']}",
+                    icp_version_id=mfg_icp.id,
+                    metadata={
+                        "company_data": {
+                            "id": mfg_p["company_id"],
+                            "company_name": mfg_p["company_name"],
+                            "domain": mfg_p["domain"],
+                            "industry": mfg_p["industry"],
+                            "employee_count": mfg_p["employee_count"],
+                            "location": mfg_p["location"],
+                            "is_verified": True,
+                            "quality_gate_passed": True,
+                            "is_competitor": False,
+                        },
+                        "person_data": mfg_p["person"],
+                        "signals": mfg_p.get("signals", []),
+                    },
+                )
+                prospect_ranking_service.rank_prospect(
+                    prospect_id=prosp.id,
+                    company_data=prosp.metadata_json.get("company_data"),
+                    person_data=mfg_p["person"],
+                    signals=mfg_p.get("signals"),
+                    icp_score=mfg_p["icp_score"],
+                    is_competitor=False,
+                )
+    except Exception as e:
+        logger.debug(f"Manufacturing India seed check: {e}")
+
     return {
         "status": "seeded",
         "seller_company_id": SELLER_ID,
         "project_id": project_id,
+        "mfg_project_id": mfg_project_id,
         "icp_id": icp_id,
         "prospects_count": len(prospects_data),
     }
+

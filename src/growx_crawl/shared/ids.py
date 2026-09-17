@@ -56,6 +56,11 @@ CANONICAL_PREFIXES = {
     "opp_": "opportunity",
     "tx_": "billing transaction",
     "ai_": "ai model run",
+    "usr_": "user",
+    "aud_": "audit event",
+    "fbk_": "operator feedback",
+    "lck_": "migration lock",
+    "mig_": "schema migration",
 }
 
 
