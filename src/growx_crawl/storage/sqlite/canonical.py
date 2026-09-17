@@ -726,6 +726,72 @@ CREATE TABLE IF NOT EXISTS prospect_quality_snapshots (
     required_actions TEXT DEFAULT '[]',
     evaluated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS data_factory_runs (
+    id TEXT PRIMARY KEY,
+    run_type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    plan_version TEXT NOT NULL,
+    checkpoint TEXT NOT NULL,
+    discovery_count INTEGER DEFAULT 0,
+    crawl_count INTEGER DEFAULT 0,
+    entity_count INTEGER DEFAULT 0,
+    verification_count INTEGER DEFAULT 0,
+    quality_pass_count INTEGER DEFAULT 0,
+    error_count INTEGER DEFAULT 0,
+    estimated_cost REAL DEFAULT 0.0,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_factory_runs_status ON data_factory_runs(status);
+CREATE INDEX IF NOT EXISTS idx_factory_runs_started ON data_factory_runs(started_at);
+
+CREATE TABLE IF NOT EXISTS data_factory_checkpoints (
+    run_id TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    cursor TEXT,
+    status TEXT NOT NULL,
+    processed_count INTEGER DEFAULT 0,
+    failed_count INTEGER DEFAULT 0,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    PRIMARY KEY (run_id, stage)
+);
+
+CREATE TABLE IF NOT EXISTS data_factory_failed_jobs (
+    id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    stage TEXT NOT NULL,
+    subject_id TEXT,
+    error_code TEXT NOT NULL,
+    attempts INTEGER DEFAULT 1,
+    last_error TEXT,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_factory_failed_run ON data_factory_failed_jobs(run_id);
+
+CREATE TABLE IF NOT EXISTS data_factory_summaries (
+    run_id TEXT PRIMARY KEY,
+    started_at TEXT NOT NULL,
+    completed_at TEXT NOT NULL,
+    queries_run INTEGER DEFAULT 0,
+    new_domains INTEGER DEFAULT 0,
+    companies_created INTEGER DEFAULT 0,
+    companies_updated INTEGER DEFAULT 0,
+    people_created INTEGER DEFAULT 0,
+    facts_added INTEGER DEFAULT 0,
+    facts_changed INTEGER DEFAULT 0,
+    verified_companies INTEGER DEFAULT 0,
+    quality_trusted_entities INTEGER DEFAULT 0,
+    errors INTEGER DEFAULT 0,
+    estimated_cost REAL DEFAULT 0.0,
+    report_markdown TEXT DEFAULT '',
+    metadata_json TEXT DEFAULT '{}'
+);
 """
 
 

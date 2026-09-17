@@ -1,0 +1,23 @@
+name: india_custom_fabrication
+priority: P1
+crawl_depth: 2
+industry_terms:
+  - Precision Sheet Metal
+  - Custom CNC Fabrication
+  - Industrial Manufacturing
+  - Heavy Engineering
+  - Tool & Die Making
+geo_terms:
+  - India
+  - Pune
+  - Bengaluru
+  - Hyderabad
+  - Chennai
+  - Ahmedabad
+company_size_hints:
+  - 50-500
+  - 20-100
+search_queries:
+  - precision sheet metal fabrication companies India
+  - custom CNC machining industrial manufacturers Pune Bengaluru
+  - industrial tool die manufacturers Hyderabad Chennai

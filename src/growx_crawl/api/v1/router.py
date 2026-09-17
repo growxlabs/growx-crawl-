@@ -616,3 +616,137 @@ async def get_quality_state(
     if not state:
         raise HTTPException(status_code=404, detail="Quality state not found")
     return state.model_dump()
+
+
+# ── Data Factory Endpoints ──
+
+class DataFactoryStartRequest(BaseModel):
+    run_type: str = "nightly"
+    custom_config: Optional[Dict[str, Any]] = None
+    seed_candidates: Optional[List[Dict[str, Any]]] = None
+
+
+class DataFactoryReprocessRequest(BaseModel):
+    r2_keys: List[str]
+    run_id: Optional[str] = None
+
+
+@v1_router.post("/data-factory/runs")
+async def start_data_factory_run(
+    req: DataFactoryStartRequest,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Launch a new Data Factory run (nightly, manual, backfill, refresh, targeted)."""
+    from growx_crawl.data_factory import RunType, data_factory_service
+    try:
+        rt = RunType(req.run_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid run_type: {req.run_type}")
+
+    try:
+        run = await data_factory_service.start_run(
+            run_type=rt,
+            seed_candidates=req.seed_candidates,
+            custom_config=req.custom_config,
+        )
+        return run.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@v1_router.get("/data-factory/runs/latest")
+async def get_latest_data_factory_run(auth: Dict[str, Any] = Depends(get_current_api_key)):
+    """Retrieve the most recent Data Factory run."""
+    from growx_crawl.data_factory import data_factory_service
+    run = data_factory_service.get_latest_run()
+    if not run:
+        raise HTTPException(status_code=404, detail="No Data Factory runs found")
+    return run.model_dump()
+
+
+@v1_router.get("/data-factory/runs/{run_id}")
+async def get_data_factory_run(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Get status, stage checkpoint, and counts for a specific Data Factory run."""
+    from growx_crawl.data_factory import data_factory_service
+    run = data_factory_service.get_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+    return run.model_dump()
+
+
+@v1_router.post("/data-factory/runs/{run_id}/pause")
+async def pause_data_factory_run(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Pause an active Data Factory run."""
+    from growx_crawl.data_factory import data_factory_service
+    try:
+        run = data_factory_service.pause_run(run_id)
+        return run.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/data-factory/runs/{run_id}/resume")
+async def resume_data_factory_run(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Resume an interrupted or paused Data Factory run from its last checkpoint."""
+    from growx_crawl.data_factory import data_factory_service
+    try:
+        run = await data_factory_service.resume_run(run_id)
+        return run.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/data-factory/runs/{run_id}/cancel")
+async def cancel_data_factory_run(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Cancel an active Data Factory run."""
+    from growx_crawl.data_factory import data_factory_service
+    try:
+        run = data_factory_service.cancel_run(run_id)
+        return run.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.get("/data-factory/runs/{run_id}/summary")
+async def get_data_factory_run_summary(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Retrieve Morning Intelligence Report summary for a run."""
+    from growx_crawl.data_factory import data_factory_service
+    summary = data_factory_service.get_morning_summary(run_id)
+    if not summary:
+        raise HTTPException(status_code=404, detail="Summary not found for this run")
+    return summary.model_dump()
+
+
+@v1_router.post("/data-factory/runs/{run_id}/retry-failed")
+async def retry_failed_data_factory_jobs(
+    run_id: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Retry isolated failed jobs recorded in dead-letter storage."""
+    from growx_crawl.data_factory import data_factory_service
+    return data_factory_service.retry_failed_jobs(run_id)
+
+
+@v1_router.post("/data-factory/reprocess")
+async def reprocess_r2_artifacts(
+    req: DataFactoryReprocessRequest,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Reprocess raw R2 crawl artifacts through extraction, resolution, and facts without recrawling."""
+    from growx_crawl.data_factory import data_factory_service
+    return data_factory_service.reprocess_from_r2(req.r2_keys, run_id=req.run_id)

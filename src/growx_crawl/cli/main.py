@@ -1,7 +1,7 @@
 import asyncio
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 import typer
 from rich.live import Live
 from rich.panel import Panel
@@ -27,8 +27,111 @@ app = typer.Typer(
 )
 
 agent_app = typer.Typer(help="Autonomous GrowX Crawl AI Agent Runtime commands")
+factory_app = typer.Typer(help="GrowX Continuous Data Factory operations")
 app.add_typer(agent_app, name="agent")
+app.add_typer(factory_app, name="factory")
 app.add_typer(db_cli, name="db")
+
+
+# ── Data Factory CLI Commands ──
+
+@factory_app.command("run")
+def factory_run_command(
+    run_type: str = typer.Option("nightly", "--type", "-t", help="Run type (nightly|manual|backfill|refresh|targeted)"),
+):
+    """Start a new Data Factory run."""
+    from growx_crawl.data_factory import RunType, data_factory_service
+    log_info(f"Initiating GrowX Data Factory run (type=[bold cyan]{run_type}[/bold cyan])...")
+    try:
+        run = asyncio.run(data_factory_service.start_run(run_type=RunType(run_type)))
+        log_success(
+            f"Run [bold yellow]{run.id}[/bold yellow] finished! "
+            f"Entities: [bold green]{run.entity_count}[/bold green] | "
+            f"Quality Passed: [bold cyan]{run.quality_pass_count}[/bold cyan] | "
+            f"Cost: [bold green]${run.estimated_cost:.2f}[/bold green]"
+        )
+    except Exception as e:
+        log_error(f"Factory run failed: {e}")
+
+
+@factory_app.command("status")
+def factory_status_command(
+    run_id: Optional[str] = typer.Option(None, "--id", help="Run ID to inspect (defaults to latest)"),
+):
+    """Check status, counts, and checkpoint for a Data Factory run."""
+    from growx_crawl.data_factory import data_factory_service
+    run = data_factory_service.get_run(run_id) if run_id else data_factory_service.get_latest_run()
+    if not run:
+        log_error(f"No Data Factory run found.")
+        return
+    console.print(Panel.fit(
+        f"[bold cyan]Run ID:[/bold cyan] {run.id}\n"
+        f"[bold cyan]Type:[/bold cyan] {run.run_type.value}\n"
+        f"[bold cyan]Status:[/bold cyan] [bold green]{run.status.value}[/bold green]\n"
+        f"[bold cyan]Checkpoint:[/bold cyan] {run.checkpoint.value}\n"
+        f"[bold cyan]Discovered:[/bold cyan] {run.discovery_count} | [bold cyan]Crawled:[/bold cyan] {run.crawl_count}\n"
+        f"[bold cyan]Entities:[/bold cyan] {run.entity_count} | [bold cyan]Quality Passed:[/bold cyan] {run.quality_pass_count}\n"
+        f"[bold cyan]Errors:[/bold cyan] {run.error_count} | [bold cyan]Cost:[/bold cyan] ${run.estimated_cost:.2f}\n"
+        f"[bold cyan]Started:[/bold cyan] {run.started_at}\n"
+        f"[bold cyan]Completed:[/bold cyan] {run.completed_at or 'In Progress'}",
+        title="🏭 Data Factory Run Status",
+    ))
+
+
+@factory_app.command("summary")
+def factory_summary_command(
+    run_id: Optional[str] = typer.Option(None, "--id", help="Run ID to view morning report summary"),
+):
+    """Display the Morning Intelligence Report for a run."""
+    from growx_crawl.data_factory import data_factory_service
+    target_id = run_id
+    if not target_id:
+        latest = data_factory_service.get_latest_run()
+        if latest:
+            target_id = latest.id
+    if not target_id:
+        log_error("No runs available.")
+        return
+    summary = data_factory_service.get_morning_summary(target_id)
+    if not summary:
+        log_error(f"Summary not found for run: {target_id}")
+        return
+    from rich.markdown import Markdown
+    console.print(Markdown(summary.report_markdown))
+
+
+@factory_app.command("pause")
+def factory_pause_command(run_id: str = typer.Argument(..., help="Run ID to pause")):
+    """Pause an active run."""
+    from growx_crawl.data_factory import data_factory_service
+    run = data_factory_service.pause_run(run_id)
+    log_success(f"Run {run.id} paused at checkpoint {run.checkpoint.value}.")
+
+
+@factory_app.command("resume")
+def factory_resume_command(run_id: str = typer.Argument(..., help="Run ID to resume")):
+    """Resume a paused run."""
+    from growx_crawl.data_factory import data_factory_service
+    run = asyncio.run(data_factory_service.resume_run(run_id))
+    log_success(f"Run {run.id} resumed and completed with status {run.status.value}.")
+
+
+@factory_app.command("retry-failed")
+def factory_retry_failed_command(run_id: str = typer.Argument(..., help="Run ID with failed jobs")):
+    """Retry isolated failed jobs recorded in dead-letter storage."""
+    from growx_crawl.data_factory import data_factory_service
+    res = data_factory_service.retry_failed_jobs(run_id)
+    log_success(f"Retried {res['retried_count']} failed jobs for run {run_id}.")
+
+
+@factory_app.command("reprocess")
+def factory_reprocess_command(
+    keys: List[str] = typer.Argument(..., help="R2 object keys to reprocess"),
+):
+    """Reprocess raw R2 crawl artifacts through extraction and facts without recrawling."""
+    from growx_crawl.data_factory import data_factory_service
+    res = data_factory_service.reprocess_from_r2(keys)
+    log_success(f"Reprocessed {res['r2_keys_processed']} artifacts: {res['observations_produced']} observations, {res['facts_generated']} facts.")
 
 
 @agent_app.command("run")

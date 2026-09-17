@@ -700,6 +700,72 @@ CREATE TABLE IF NOT EXISTS prospect_quality_snapshots (
     required_actions JSONB DEFAULT '[]'::jsonb,
     evaluated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS data_factory_runs (
+    id VARCHAR(64) PRIMARY KEY,
+    run_type VARCHAR(32) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ,
+    plan_version VARCHAR(32) NOT NULL,
+    checkpoint VARCHAR(64) NOT NULL,
+    discovery_count INTEGER DEFAULT 0,
+    crawl_count INTEGER DEFAULT 0,
+    entity_count INTEGER DEFAULT 0,
+    verification_count INTEGER DEFAULT 0,
+    quality_pass_count INTEGER DEFAULT 0,
+    error_count INTEGER DEFAULT 0,
+    estimated_cost DOUBLE PRECISION DEFAULT 0.0,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_factory_runs_status ON data_factory_runs(status);
+CREATE INDEX IF NOT EXISTS idx_pg_factory_runs_started ON data_factory_runs(started_at);
+
+CREATE TABLE IF NOT EXISTS data_factory_checkpoints (
+    run_id VARCHAR(64) NOT NULL,
+    stage VARCHAR(32) NOT NULL,
+    cursor TEXT,
+    status VARCHAR(32) NOT NULL,
+    processed_count INTEGER DEFAULT 0,
+    failed_count INTEGER DEFAULT 0,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb,
+    PRIMARY KEY (run_id, stage)
+);
+
+CREATE TABLE IF NOT EXISTS data_factory_failed_jobs (
+    id VARCHAR(64) PRIMARY KEY,
+    run_id VARCHAR(64) NOT NULL,
+    stage VARCHAR(32) NOT NULL,
+    subject_id VARCHAR(128),
+    error_code VARCHAR(64) NOT NULL,
+    attempts INTEGER DEFAULT 1,
+    last_error TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_factory_failed_run ON data_factory_failed_jobs(run_id);
+
+CREATE TABLE IF NOT EXISTS data_factory_summaries (
+    run_id VARCHAR(64) PRIMARY KEY,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    queries_run INTEGER DEFAULT 0,
+    new_domains INTEGER DEFAULT 0,
+    companies_created INTEGER DEFAULT 0,
+    companies_updated INTEGER DEFAULT 0,
+    people_created INTEGER DEFAULT 0,
+    facts_added INTEGER DEFAULT 0,
+    facts_changed INTEGER DEFAULT 0,
+    verified_companies INTEGER DEFAULT 0,
+    quality_trusted_entities INTEGER DEFAULT 0,
+    errors INTEGER DEFAULT 0,
+    estimated_cost DOUBLE PRECISION DEFAULT 0.0,
+    report_markdown TEXT DEFAULT '',
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
 """
 
 
