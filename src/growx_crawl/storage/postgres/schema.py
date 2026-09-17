@@ -340,6 +340,165 @@ CREATE TABLE IF NOT EXISTS identity_events (
 
 CREATE INDEX IF NOT EXISTS idx_identity_events_entity ON identity_events(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_identity_events_type ON identity_events(event_type);
+
+-- Phase 04 Fact + Evidence Intelligence Schema
+
+CREATE TABLE IF NOT EXISTS fact_predicates (
+    predicate VARCHAR(128) PRIMARY KEY,
+    subject_type VARCHAR(32) NOT NULL,
+    value_type VARCHAR(32) NOT NULL,
+    cardinality VARCHAR(16) NOT NULL DEFAULT 'one',
+    verification_policy VARCHAR(32) DEFAULT 'standard',
+    freshness_policy VARCHAR(32) DEFAULT '90d',
+    merge_policy VARCHAR(32) DEFAULT 'latest_wins',
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS observations (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(32) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL,
+    predicate VARCHAR(128) NOT NULL REFERENCES fact_predicates(predicate) ON DELETE CASCADE,
+    raw_value TEXT,
+    normalized_value_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    value_type VARCHAR(32) NOT NULL,
+    source_id VARCHAR(64) REFERENCES sources(id) ON DELETE SET NULL,
+    object_ref_id VARCHAR(64) REFERENCES object_refs(id) ON DELETE SET NULL,
+    observed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    extractor_name VARCHAR(64) NOT NULL,
+    extractor_version VARCHAR(32) DEFAULT 'v1.0',
+    model_run_id VARCHAR(64),
+    confidence REAL DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_obs_subject ON observations(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_obs_predicate ON observations(predicate);
+CREATE INDEX IF NOT EXISTS idx_obs_source ON observations(source_id);
+CREATE INDEX IF NOT EXISTS idx_obs_observed_at ON observations(observed_at);
+
+CREATE TABLE IF NOT EXISTS evidence (
+    id VARCHAR(64) PRIMARY KEY,
+    observation_id VARCHAR(64) NOT NULL REFERENCES observations(id) ON DELETE CASCADE,
+    source_id VARCHAR(64) REFERENCES sources(id) ON DELETE SET NULL,
+    object_ref_id VARCHAR(64) REFERENCES object_refs(id) ON DELETE SET NULL,
+    evidence_type VARCHAR(32) NOT NULL,
+    source_url TEXT,
+    selector TEXT,
+    text_start INTEGER,
+    text_end INTEGER,
+    page_number INTEGER,
+    quoted_text TEXT,
+    content_hash VARCHAR(64),
+    captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_evidence_obs ON evidence(observation_id);
+CREATE INDEX IF NOT EXISTS idx_evidence_source ON evidence(source_id);
+CREATE INDEX IF NOT EXISTS idx_evidence_obj ON evidence(object_ref_id);
+
+CREATE TABLE IF NOT EXISTS facts (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(32) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL,
+    predicate VARCHAR(128) NOT NULL REFERENCES fact_predicates(predicate) ON DELETE CASCADE,
+    value_type VARCHAR(32) NOT NULL,
+    current_value_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(32) NOT NULL DEFAULT 'accepted',
+    confidence REAL DEFAULT 1.0,
+    verification_state VARCHAR(32) NOT NULL DEFAULT 'unverified',
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_verified_at TIMESTAMPTZ,
+    valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_to TIMESTAMPTZ,
+    scope_type VARCHAR(32) NOT NULL DEFAULT 'global',
+    scope_id VARCHAR(64) NOT NULL DEFAULT 'global',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_facts_subject ON facts(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_facts_predicate ON facts(predicate);
+CREATE INDEX IF NOT EXISTS idx_facts_status ON facts(status);
+CREATE INDEX IF NOT EXISTS idx_facts_scope ON facts(scope_type, scope_id);
+
+CREATE TABLE IF NOT EXISTS fact_values (
+    id VARCHAR(64) PRIMARY KEY,
+    fact_id VARCHAR(64) NOT NULL REFERENCES facts(id) ON DELETE CASCADE,
+    value_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    value_type VARCHAR(32) NOT NULL,
+    confidence REAL DEFAULT 1.0,
+    status VARCHAR(32) NOT NULL DEFAULT 'accepted',
+    valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_to TIMESTAMPTZ,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_fact_values_fact ON fact_values(fact_id);
+CREATE INDEX IF NOT EXISTS idx_fact_values_valid_from ON fact_values(valid_from);
+CREATE INDEX IF NOT EXISTS idx_fact_values_valid_to ON fact_values(valid_to);
+
+CREATE TABLE IF NOT EXISTS fact_evidence (
+    fact_id VARCHAR(64) NOT NULL REFERENCES facts(id) ON DELETE CASCADE,
+    observation_id VARCHAR(64) NOT NULL REFERENCES observations(id) ON DELETE CASCADE,
+    support_type VARCHAR(32) NOT NULL DEFAULT 'supports',
+    weight REAL DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (fact_id, observation_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fact_evidence_obs ON fact_evidence(observation_id);
+
+CREATE TABLE IF NOT EXISTS fact_conflicts (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(32) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL,
+    predicate VARCHAR(128) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'open',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ,
+    resolution_method VARCHAR(32),
+    selected_fact_value_id VARCHAR(64) REFERENCES fact_values(id) ON DELETE SET NULL,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_fact_conflicts_subj ON fact_conflicts(subject_type, subject_id, predicate);
+CREATE INDEX IF NOT EXISTS idx_fact_conflicts_status ON fact_conflicts(status);
+
+CREATE TABLE IF NOT EXISTS observation_rejections (
+    id VARCHAR(64) PRIMARY KEY,
+    payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    reason_code VARCHAR(64) NOT NULL,
+    source_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_obs_rej_reason ON observation_rejections(reason_code);
+
+CREATE TABLE IF NOT EXISTS fact_events (
+    id VARCHAR(64) PRIMARY KEY,
+    fact_id VARCHAR(64) NOT NULL,
+    event_type VARCHAR(64) NOT NULL,
+    payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    actor_type VARCHAR(32) DEFAULT 'system',
+    actor_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fact_events_fact ON fact_events(fact_id);
+CREATE INDEX IF NOT EXISTS idx_fact_events_type ON fact_events(event_type);
 """
 
 

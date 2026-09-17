@@ -358,11 +358,200 @@ CREATE TABLE IF NOT EXISTS canonical_identity_events (
 
 CREATE INDEX IF NOT EXISTS idx_canon_evt_entity ON canonical_identity_events(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_canon_evt_type ON canonical_identity_events(event_type);
+
+-- Phase 04 Fact + Evidence Intelligence SQLite Tables
+
+CREATE TABLE IF NOT EXISTS canonical_fact_predicates (
+    predicate TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    value_type TEXT NOT NULL,
+    cardinality TEXT NOT NULL DEFAULT 'one',
+    verification_policy TEXT DEFAULT 'standard',
+    freshness_policy TEXT DEFAULT '90d',
+    merge_policy TEXT DEFAULT 'latest_wins',
+    description TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS canonical_observations (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    predicate TEXT NOT NULL,
+    raw_value TEXT,
+    normalized_value_json TEXT NOT NULL DEFAULT '{}',
+    value_type TEXT NOT NULL,
+    source_id TEXT,
+    object_ref_id TEXT,
+    observed_at TEXT NOT NULL,
+    extractor_name TEXT NOT NULL,
+    extractor_version TEXT DEFAULT 'v1.0',
+    model_run_id TEXT,
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (predicate) REFERENCES canonical_fact_predicates(predicate) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_obs_subject ON canonical_observations(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_canon_obs_predicate ON canonical_observations(predicate);
+CREATE INDEX IF NOT EXISTS idx_canon_obs_source ON canonical_observations(source_id);
+CREATE INDEX IF NOT EXISTS idx_canon_obs_observed_at ON canonical_observations(observed_at);
+
+CREATE TABLE IF NOT EXISTS canonical_evidence (
+    id TEXT PRIMARY KEY,
+    observation_id TEXT NOT NULL,
+    source_id TEXT,
+    object_ref_id TEXT,
+    evidence_type TEXT NOT NULL,
+    source_url TEXT,
+    selector TEXT,
+    text_start INTEGER,
+    text_end INTEGER,
+    page_number INTEGER,
+    quoted_text TEXT,
+    content_hash TEXT,
+    captured_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (observation_id) REFERENCES canonical_observations(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_evidence_obs ON canonical_evidence(observation_id);
+CREATE INDEX IF NOT EXISTS idx_canon_evidence_source ON canonical_evidence(source_id);
+CREATE INDEX IF NOT EXISTS idx_canon_evidence_obj ON canonical_evidence(object_ref_id);
+
+CREATE TABLE IF NOT EXISTS canonical_facts (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    predicate TEXT NOT NULL,
+    value_type TEXT NOT NULL,
+    current_value_json TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'accepted',
+    confidence REAL DEFAULT 1.0,
+    verification_state TEXT NOT NULL DEFAULT 'unverified',
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    valid_from TEXT NOT NULL,
+    valid_to TEXT,
+    scope_type TEXT NOT NULL DEFAULT 'global',
+    scope_id TEXT NOT NULL DEFAULT 'global',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (predicate) REFERENCES canonical_fact_predicates(predicate) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_facts_subject ON canonical_facts(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_canon_facts_predicate ON canonical_facts(predicate);
+CREATE INDEX IF NOT EXISTS idx_canon_facts_status ON canonical_facts(status);
+CREATE INDEX IF NOT EXISTS idx_canon_facts_scope ON canonical_facts(scope_type, scope_id);
+
+CREATE TABLE IF NOT EXISTS canonical_fact_values (
+    id TEXT PRIMARY KEY,
+    fact_id TEXT NOT NULL,
+    value_json TEXT NOT NULL DEFAULT '{}',
+    value_type TEXT NOT NULL,
+    confidence REAL DEFAULT 1.0,
+    status TEXT NOT NULL DEFAULT 'accepted',
+    valid_from TEXT NOT NULL,
+    valid_to TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (fact_id) REFERENCES canonical_facts(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_fact_values_fact ON canonical_fact_values(fact_id);
+CREATE INDEX IF NOT EXISTS idx_canon_fact_values_valid_from ON canonical_fact_values(valid_from);
+CREATE INDEX IF NOT EXISTS idx_canon_fact_values_valid_to ON canonical_fact_values(valid_to);
+
+CREATE TABLE IF NOT EXISTS canonical_fact_evidence (
+    fact_id TEXT NOT NULL,
+    observation_id TEXT NOT NULL,
+    support_type TEXT NOT NULL DEFAULT 'supports',
+    weight REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (fact_id, observation_id),
+    FOREIGN KEY (fact_id) REFERENCES canonical_facts(id) ON DELETE CASCADE,
+    FOREIGN KEY (observation_id) REFERENCES canonical_observations(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_fact_evidence_obs ON canonical_fact_evidence(observation_id);
+
+CREATE TABLE IF NOT EXISTS canonical_fact_conflicts (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    predicate TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    resolution_method TEXT,
+    selected_fact_value_id TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_fact_conflicts_subj ON canonical_fact_conflicts(subject_type, subject_id, predicate);
+CREATE INDEX IF NOT EXISTS idx_canon_fact_conflicts_status ON canonical_fact_conflicts(status);
+
+CREATE TABLE IF NOT EXISTS canonical_observation_rejections (
+    id TEXT PRIMARY KEY,
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    reason_code TEXT NOT NULL,
+    source_id TEXT,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_obs_rej_reason ON canonical_observation_rejections(reason_code);
+
+CREATE TABLE IF NOT EXISTS canonical_fact_events (
+    id TEXT PRIMARY KEY,
+    fact_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    actor_type TEXT DEFAULT 'system',
+    actor_id TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_fact_events_fact ON canonical_fact_events(fact_id);
+CREATE INDEX IF NOT EXISTS idx_canon_fact_events_type ON canonical_fact_events(event_type);
 """
 
 
 def init_sqlite_canonical_tables(conn: sqlite3.Connection) -> None:
     conn.executescript(SQLITE_CANONICAL_SCHEMA_SQL)
+    from growx_crawl.intelligence.facts.predicates import STANDARD_PREDICATES
+    sql = """
+        INSERT INTO canonical_fact_predicates (
+            predicate, subject_type, value_type, cardinality, verification_policy,
+            freshness_policy, merge_policy, description, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (predicate) DO NOTHING;
+    """
+    params = [
+        (
+            p.predicate,
+            p.subject_type,
+            p.value_type,
+            p.cardinality,
+            p.verification_policy,
+            p.freshness_policy,
+            p.merge_policy,
+            p.description,
+            p.created_at,
+            p.updated_at,
+        )
+        for p in STANDARD_PREDICATES.values()
+    ]
+    conn.executemany(sql, params)
 
 
 class SqliteCompanyRepository(BaseCompanyRepository):
