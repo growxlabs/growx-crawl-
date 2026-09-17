@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -28,6 +28,16 @@ class Settings(BaseSettings):
         default="https://growxlabs.tech/api/internal/lead-ingestion"
     )
     growxlabs_api_key: Optional[str] = Field(default=None)
+
+    # ── CAPTCHA Solver Keys ──────────────────────────────────────────
+    capsolver_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "CAPSOLVER_API_KEY"})
+    twocaptcha_api_key: Optional[str] = Field(default=None, json_schema_extra={"env": "TWOCAPTCHA_API_KEY"})
+
+    # ── Proxy Configuration ──────────────────────────────────────────
+    proxy_url: Optional[str] = Field(default=None, json_schema_extra={"env": "PROXY_URL"})
+    datacenter_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "DATACENTER_PROXIES"})
+    residential_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "RESIDENTIAL_PROXIES"})
+    mobile_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "MOBILE_PROXIES"})
 
     @property
     def config_dir(self) -> Path:

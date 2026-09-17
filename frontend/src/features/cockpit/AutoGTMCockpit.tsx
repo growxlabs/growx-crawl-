@@ -13,6 +13,9 @@ import {
   Send,
   Loader2,
   CheckCircle2,
+  Sparkles,
+  AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { useCockpit } from "./CockpitContext";
 import { CampaignLaunchModal } from "./CampaignLaunchModal";
@@ -29,6 +32,8 @@ export function AutoGTMCockpit() {
     updateDraft,
     sendEmail,
     sendingContactId,
+    enrichContact,
+    isEnriching,
   } = useCockpit();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -119,18 +124,6 @@ export function AutoGTMCockpit() {
             <span>Emails</span>
           </button>
         </div>
-
-        {/* Global Search Bar */}
-        <div className="w-72 relative">
-          <Search className="w-3.5 h-3.5 text-gx-ink-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search accounts, people, or signals..."
-            className="w-full bg-gx-surface border border-gx-border rounded-md pl-8 pr-3 py-1 text-xs text-gx-ink placeholder:text-gx-ink-muted outline-none focus:border-gx-primary transition-colors"
-          />
-        </div>
       </div>
 
       {/* Main Workspace Area */}
@@ -199,7 +192,7 @@ export function AutoGTMCockpit() {
                         onClick={() => setActiveContactId(contact.id)}
                         className={`p-3 rounded-xl border transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-gx-primary-soft border-gx-primary-border shadow-2xs ring-1 ring-gx-primary/30"
+                            ? "bg-gx-surface-hover border-gx-primary ring-1 ring-gx-primary/40 shadow-2xs"
                             : "bg-gx-surface border-gx-border hover:bg-gx-surface-hover hover:border-gx-border-strong"
                         }`}
                       >
@@ -323,13 +316,19 @@ export function AutoGTMCockpit() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleCopyEmail(activeContact.email)}
-                        className="px-3 py-1.5 bg-gx-surface-soft hover:bg-gx-surface-hover border border-gx-border rounded-lg text-xs text-gx-ink font-medium transition-colors"
-                      >
-                        {copiedEmail ? "Copied!" : "Copy Email"}
-                      </button>
+                      {activeContact.email ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyEmail(activeContact.email)}
+                          className="px-3 py-1.5 bg-gx-surface-soft hover:bg-gx-surface-hover border border-gx-border rounded-lg text-xs text-gx-ink font-medium transition-colors"
+                        >
+                          {copiedEmail ? "Copied!" : "Copy Email"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] font-mono text-gx-ink-muted px-2.5 py-1 bg-gx-surface-soft border border-gx-border rounded-md">
+                          No email to copy
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -340,15 +339,26 @@ export function AutoGTMCockpit() {
                       {/* To Field */}
                       <div className="flex items-center gap-3 text-xs">
                         <span className="text-gx-ink-muted w-8 font-mono">To</span>
-                        <input
-                          type="text"
-                          value={activeContact.emailDraft.to}
-                          onChange={(e) =>
-                            updateDraft(activeContact.id, { to: e.target.value })
-                          }
-                          placeholder="recipient@domain.com"
-                          className="flex-1 bg-transparent text-gx-ink font-mono text-xs outline-none border-b border-transparent focus:border-gx-primary py-0.5"
-                        />
+                        {activeContact.email ? (
+                          <input
+                            type="text"
+                            value={activeContact.emailDraft.to}
+                            onChange={(e) =>
+                              updateDraft(activeContact.id, { to: e.target.value })
+                            }
+                            placeholder="recipient@domain.com"
+                            className="flex-1 bg-transparent text-gx-ink font-mono text-xs outline-none border-b border-transparent focus:border-gx-primary py-0.5"
+                          />
+                        ) : (
+                          <div className="flex-1 flex items-center justify-between py-0.5">
+                            <span className="text-gx-ink-muted font-mono italic text-xs">
+                              (No verified email available)
+                            </span>
+                            <span className="text-[10px] font-medium bg-gx-warning-soft text-gx-warning border border-gx-warning/30 px-2 py-0.5 rounded">
+                              Missing Email
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Subj Field */}
@@ -367,6 +377,35 @@ export function AutoGTMCockpit() {
 
                     {/* Email Body Area */}
                     <div className="flex-1 p-4 flex flex-col relative bg-gx-surface">
+                      {!activeContact.email && (
+                        <div className="mb-3 p-3 bg-gx-surface-soft border border-gx-border rounded-lg flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 text-gx-ink-secondary">
+                            <AlertCircle className="w-4 h-4 text-gx-warning flex-shrink-0" />
+                            <span>
+                              No verified corporate email found for <strong>{activeContact.name}</strong> across Hunter, Exreacher, Findymail &amp; Leadmagic.
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => enrichContact(activeContact.id)}
+                            disabled={isEnriching}
+                            className="flex-shrink-0 ml-3 px-2.5 py-1 bg-gx-primary hover:bg-gx-primary-hover text-white rounded text-[11px] font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
+                          >
+                            {isEnriching ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <span>Searching...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3" />
+                                <span>Run Waterfall Search</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+
                       <textarea
                         value={activeContact.emailDraft.body}
                         onChange={(e) =>
@@ -397,11 +436,13 @@ export function AutoGTMCockpit() {
                           </span>
                         ) : activeContact.emailStatus === "catch_all" ? (
                           <span className="text-gx-warning flex items-center gap-1.5 text-xs font-medium">
-                            <span>⚠ Catch-all domain (Hunter verified)</span>
+                            <AlertTriangle className="w-3.5 h-3.5 text-gx-warning" />
+                            <span>Catch-all domain (Hunter verified)</span>
                           </span>
                         ) : (
-                          <span className="text-gx-ink-muted text-xs">
-                            No verified email found for this profile
+                          <span className="text-gx-warning flex items-center gap-1.5 text-xs font-medium">
+                            <AlertCircle className="w-3.5 h-3.5 text-gx-warning" />
+                            <span>No verified email found for this profile</span>
                           </span>
                         )}
                       </div>
@@ -416,6 +457,25 @@ export function AutoGTMCockpit() {
                           >
                             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                             <span>Sent to {activeContact.emailDraft.to}</span>
+                          </button>
+                        ) : !activeContact.email ? (
+                          <button
+                            type="button"
+                            onClick={() => enrichContact(activeContact.id)}
+                            disabled={isEnriching}
+                            className="bg-gx-surface hover:bg-gx-surface-hover border border-gx-border text-gx-ink font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-2xs"
+                          >
+                            {isEnriching ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-gx-primary" />
+                                <span>Searching waterfall...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3.5 h-3.5 text-gx-primary" />
+                                <span>Enrich email to send</span>
+                              </>
+                            )}
                           </button>
                         ) : (
                           <button

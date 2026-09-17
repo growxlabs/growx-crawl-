@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   Users,
   Key,
@@ -14,6 +15,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  Terminal,
 } from "lucide-react";
 import { useTheme, ThemeMode, AccentColor } from "@/context/ThemeContext";
 
@@ -86,6 +88,18 @@ export function AccountPopover({ userEmail = "growxlabstech@gmail.com" }: { user
                 <Key className="w-4 h-4 text-gx-ink-muted" />
                 <span>API Keys</span>
               </button>
+
+              <Link
+                href="/ops"
+                className="w-full flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-gx-surface-hover text-gx-ink-secondary hover:text-gx-ink text-left transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Terminal className="w-4 h-4 text-gx-ink-muted" />
+                  <span>Operations Console</span>
+                </div>
+                <span className="text-[10px] font-mono text-gx-ink-muted">/ops</span>
+              </Link>
 
               <button
                 type="button"

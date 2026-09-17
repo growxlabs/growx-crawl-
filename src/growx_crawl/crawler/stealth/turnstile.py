@@ -7,6 +7,7 @@ import asyncio
 import logging
 import random
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 from growx_crawl.crawler.stealth.behavior import HumanBehavior
 
@@ -139,7 +140,45 @@ class TurnstileDetector:
                             logger.info("Turnstile challenge passed (page redirected).")
                             return {"status": "solved", "solved": True, "method": "navigation"}
 
+        # ── API Fallback: use CapSolver/2Captcha if click-based solve failed ──
+        try:
+            from growx_crawl.crawler.stealth.solver import captcha_solver, CaptchaType
+
+            if captcha_solver.has_active_provider:
+                logger.info("Click-based Turnstile failed. Falling back to API solver...")
+                sitekey = await self._extract_turnstile_sitekey(page)
+                if sitekey:
+                    result = await captcha_solver.solve(
+                        CaptchaType.TURNSTILE, page.url, sitekey
+                    )
+                    if result.success and result.token:
+                        # Inject the token into the page
+                        await page.evaluate(f"""() => {{
+                            const resp = document.querySelector('[name="cf-turnstile-response"]');
+                            if (resp) resp.value = '{result.token}';
+                        }}""")
+                        logger.info(f"Turnstile solved via API ({result.provider}) in {result.solve_time_ms}ms")
+                        return {
+                            "status": "solved",
+                            "solved": True,
+                            "method": f"api_{result.provider}",
+                            "token": result.token,
+                        }
+        except Exception as api_err:
+            logger.warning(f"API solver fallback failed: {api_err}")
+
         return {"status": "failed", "solved": False, "error": "Turnstile timeout or unresolved"}
+
+    @staticmethod
+    async def _extract_turnstile_sitekey(page: Any) -> Optional[str]:
+        """Extract the Turnstile sitekey from the page DOM."""
+        try:
+            return await page.evaluate("""() => {
+                const el = document.querySelector('[data-sitekey], .cf-turnstile[data-sitekey]');
+                return el ? el.getAttribute('data-sitekey') : null;
+            }""")
+        except Exception:
+            return None
 
 
 async def solve_turnstile_if_present(page: Any, timeout_seconds: int = 12) -> bool:

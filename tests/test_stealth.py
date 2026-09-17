@@ -86,3 +86,48 @@ def test_ghost_engine_instantiation():
     from growx_crawl.crawler.stealth.ghost import GhostEngine
     engine = GhostEngine()
     assert hasattr(engine, "fetch")
+
+
+@pytest.mark.asyncio
+async def test_captcha_solver_types_and_stats():
+    """Verify CaptchaType enums and solve stats tracking."""
+    from growx_crawl.crawler.stealth.solver import CaptchaType, CaptchaSolverManager, SolveResult
+
+    manager = CaptchaSolverManager()
+    stats = manager.stats
+    assert "total_solves" in stats
+    assert "total_failures" in stats
+    assert "total_cost_usd" in stats
+    assert "providers" in stats
+
+    # In test env with no keys, solving should fail gracefully without unhandled exception
+    res = await manager.solve(CaptchaType.RECAPTCHA_V2, "https://example.com", "test_sitekey")
+    assert isinstance(res, SolveResult)
+    assert not res.success
+    assert "No solver provider available" in res.error or "failed" in res.error.lower()
+
+
+@pytest.mark.asyncio
+async def test_captcha_detector_signatures():
+    """Verify CaptchaDetector identifies captcha types from page content."""
+    from growx_crawl.crawler.stealth.solver import CaptchaDetector, CaptchaType
+
+    class MockPage:
+        def __init__(self, content_str):
+            self._content = content_str
+
+        async def content(self):
+            return self._content
+
+    turnstile_page = MockPage('<div class="cf-turnstile" data-sitekey="0x4AAAAAA"></div>')
+    assert await CaptchaDetector.detect(turnstile_page) == CaptchaType.TURNSTILE
+
+    recaptcha_page = MockPage('<div class="g-recaptcha" data-sitekey="6Le-w-fake"></div>')
+    assert await CaptchaDetector.detect(recaptcha_page) == CaptchaType.RECAPTCHA_V2
+
+    hcaptcha_page = MockPage('<div class="h-captcha" data-sitekey="fake-uuid"></div>')
+    assert await CaptchaDetector.detect(hcaptcha_page) == CaptchaType.HCAPTCHA
+
+    clean_page = MockPage('<html><body><h1>Welcome</h1></body></html>')
+    assert await CaptchaDetector.detect(clean_page) is None
+

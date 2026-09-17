@@ -21,8 +21,13 @@ from growx_crawl.crawler.stealth.turnstile import (
     solve_turnstile_if_present,
 )
 from growx_crawl.crawler.stealth.solver import (
+    CaptchaType,
+    SolveResult,
     CaptchaSolverManager,
+    CaptchaDetector,
     captcha_solver,
+    captcha_detector,
+    auto_solve_captcha,
 )
 from growx_crawl.crawler.stealth.warmer import (
     SessionAgingManager,
@@ -45,10 +50,16 @@ __all__ = [
     "random_dwell",
     "TurnstileDetector",
     "solve_turnstile_if_present",
+    "CaptchaType",
+    "SolveResult",
     "CaptchaSolverManager",
+    "CaptchaDetector",
     "captcha_solver",
+    "captcha_detector",
+    "auto_solve_captcha",
     "SessionAgingManager",
     "session_aging_manager",
     "GhostEngine",
     "ghost_engine",
 ]
+

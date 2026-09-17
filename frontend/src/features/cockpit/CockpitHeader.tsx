@@ -29,32 +29,29 @@ export function CockpitHeader() {
           </div>
         </div>
 
-        {/* Vertical Divider */}
-        <div className="h-5 w-[1px] bg-gx-border hidden 2xl:block" />
-
-        {/* Future Steps (What happens next) */}
-        <div className="hidden 2xl:flex items-center gap-4 text-xs text-gx-ink-secondary whitespace-nowrap">
-          <span className="text-[10px] uppercase font-semibold text-gx-ink-muted tracking-wider">
+        {/* Future Steps (What happens next - stacked above steps 7, 8, 9 matching Explee) */}
+        <div className="hidden xl:flex flex-col items-center justify-center pl-4 border-l border-gx-border/60">
+          <span className="text-[9px] uppercase font-bold text-gx-ink-muted tracking-widest leading-none mb-1 select-none">
             What happens next
           </span>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-gx-ink-secondary">
+          <div className="flex items-center gap-4 text-xs text-gx-ink-secondary">
+            <div className="flex items-center gap-1.5">
               <span className="w-4 h-4 rounded-full border border-gx-border bg-gx-surface-soft flex items-center justify-center text-[9px] font-semibold text-gx-ink-muted">
                 7
               </span>
               <span>Send emails</span>
             </div>
-            <div className="flex items-center gap-1.5 text-gx-ink-secondary">
+            <div className="flex items-center gap-1.5">
               <span className="w-4 h-4 rounded-full border border-gx-border bg-gx-surface-soft flex items-center justify-center text-[9px] font-semibold text-gx-ink-muted">
                 8
               </span>
               <span>Book meetings</span>
             </div>
-            <div className="flex items-center gap-1.5 text-gx-ink-secondary">
+            <div className="flex items-center gap-1.5">
               <span className="w-4 h-4 rounded-full border border-gx-border bg-gx-surface-soft flex items-center justify-center text-[9px] font-semibold text-gx-ink-muted">
                 9
               </span>
-              <span>Learn & double down</span>
+              <span>Learn &amp; double down</span>
             </div>
           </div>
         </div>

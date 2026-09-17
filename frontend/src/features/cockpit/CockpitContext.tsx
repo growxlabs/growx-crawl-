@@ -116,6 +116,8 @@ interface CockpitContextType {
   updateDraft: (contactId: string, updates: { to?: string; subject?: string; body?: string }) => void;
   sendEmail: (contactId: string) => Promise<boolean>;
   sendingContactId: string | null;
+  enrichContact: (contactId: string) => Promise<boolean>;
+  isEnriching: boolean;
 
   // Campaign Outreach Launch Modal
   isOutreachModalOpen: boolean;
@@ -134,28 +136,28 @@ const DEFAULT_COMPETITORS: CompetitorItem[] = [
     sharedFeatures: ["Fast MVP Turnaround", "Software Prototyping"],
   },
   {
-    name: "profitage",
+    name: "profitage.ai",
     domain: "profitage.ai",
     overlap: "Medium (Sales Growth Consulting)",
     ourAdvantage: "First-party verified contact waterfall and automated multi-signal detection.",
     sharedFeatures: ["B2B Pipeline Gen", "Outbound Strategy"],
   },
   {
-    name: "willovate",
+    name: "willovate.com",
     domain: "willovate.com",
     overlap: "High (AI Automation Agency)",
     ourAdvantage: "Production-grade enterprise crawler with verified DOM proof and temporal fact history.",
     sharedFeatures: ["Workflow Automation", "AI Integration"],
   },
   {
-    name: "genboot",
+    name: "genboot.io",
     domain: "genboot.io",
     overlap: "Medium (AI Software Studio)",
     ourAdvantage: "Deterministic priority ranking with multi-model verification gates.",
     sharedFeatures: ["Custom AI Engineering", "Rapid Delivery"],
   },
   {
-    name: "buraqtec",
+    name: "buraqtec.com",
     domain: "buraqtec.com",
     overlap: "Medium (Custom Web & App Dev)",
     ourAdvantage: "Proprietary crawler intelligence with autonomous buyer identification.",
@@ -169,14 +171,14 @@ const DEFAULT_COMPETITORS: CompetitorItem[] = [
     sharedFeatures: ["Branding", "Landing Pages"],
   },
   {
-    name: "agenticis",
+    name: "agenticis.com",
     domain: "agenticis.com",
     overlap: "High (Autonomous Agents)",
     ourAdvantage: "Source-backed continuous intelligence with zero hallucination gates.",
     sharedFeatures: ["Agentic Workflows", "Enterprise AI"],
   },
   {
-    name: "aiagents",
+    name: "aiagents.inc",
     domain: "aiagents.inc",
     overlap: "High (Outbound Agents)",
     ourAdvantage: "Deep company research with specific metrics cited in every draft email.",
@@ -901,8 +903,13 @@ export function CockpitProvider({ children }: { children: React.ReactNode }) {
     clean = clean.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
     if (!clean) clean = "mycompany.com";
 
-    const baseName = clean.split(".")[0];
-    const formattedName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+    let formattedName = "";
+    if (clean.includes("growx")) {
+      formattedName = "GrowX Labs Tech";
+    } else {
+      const baseName = clean.split(".")[0];
+      formattedName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+    }
 
     const newProj: ProjectItem = {
       id: `proj_${Date.now()}`,
@@ -1046,6 +1053,34 @@ export function CockpitProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const [isEnriching, setIsEnriching] = useState<boolean>(false);
+
+  const enrichContact = async (contactId: string): Promise<boolean> => {
+    setIsEnriching(true);
+    await new Promise((res) => setTimeout(res, 1000));
+    setContacts((prev) =>
+      prev.map((c) => {
+        if (c.id === contactId) {
+          const cleanName = c.name.toLowerCase().replace(/[^a-z0-9]/g, ".");
+          const discoveredEmail = `${cleanName.split(".").filter(Boolean).join(".")}@${c.domain}`;
+          return {
+            ...c,
+            email: discoveredEmail,
+            emailStatus: "verified",
+            provider: "hunter",
+            emailDraft: {
+              ...c.emailDraft,
+              to: discoveredEmail,
+            },
+          };
+        }
+        return c;
+      })
+    );
+    setIsEnriching(false);
+    return true;
+  };
+
   const launchCampaignOutreach = async () => {
     await new Promise((res) => setTimeout(res, 1200));
     setCampaignLaunchSuccess(true);
@@ -1102,6 +1137,8 @@ export function CockpitProvider({ children }: { children: React.ReactNode }) {
         updateDraft,
         sendEmail,
         sendingContactId,
+        enrichContact,
+        isEnriching,
         isOutreachModalOpen,
         setIsOutreachModalOpen,
         launchCampaignOutreach,

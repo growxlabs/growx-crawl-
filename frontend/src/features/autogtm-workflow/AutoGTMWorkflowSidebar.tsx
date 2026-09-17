@@ -274,63 +274,10 @@ export function AutoGTMWorkflowSidebar() {
             })}
           </div>
         </div>
-
-        {/* Completed Steps Below (4, 5, 6) - Clicking switches workspace tab dynamically */}
-        <div className="pt-3 border-t border-gx-border-soft space-y-2 text-[11px]">
-          <button
-            type="button"
-            onClick={() => setActiveTab("companies")}
-            className={`w-full flex items-center gap-2 px-1 text-left transition-colors ${
-              activeTab === "companies"
-                ? "text-gx-primary font-semibold"
-                : "text-gx-ink-secondary hover:text-gx-ink"
-            }`}
-          >
-            <Check className="w-3 h-3 text-gx-success stroke-[2.5]" />
-            <span>step 4 &middot; Find potential customers</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("people")}
-            className={`w-full flex items-center gap-2 px-1 text-left transition-colors ${
-              activeTab === "people"
-                ? "text-gx-primary font-semibold"
-                : "text-gx-ink-secondary hover:text-gx-ink"
-            }`}
-          >
-            <Check className="w-3 h-3 text-gx-success stroke-[2.5]" />
-            <span>step 5 &middot; Find decision makers</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("emails")}
-            className={`w-full flex items-center gap-2 px-1 text-left transition-colors ${
-              activeTab === "emails"
-                ? "text-gx-primary font-semibold"
-                : "text-gx-ink-secondary hover:text-gx-ink"
-            }`}
-          >
-            <Check className="w-3 h-3 text-gx-success stroke-[2.5]" />
-            <span>step 6 &middot; Write emails</span>
-          </button>
-        </div>
       </div>
 
-      {/* 3. Fixed Operations & Account Footer */}
-      <div className="p-2 border-t border-gx-border bg-gx-surface flex-shrink-0 space-y-1">
-        <Link
-          href="/ops"
-          className="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-gx-ink-secondary hover:text-gx-ink hover:bg-gx-surface-hover transition-colors group"
-          title="Open engineering operations console"
-        >
-          <div className="flex items-center gap-2">
-            <Terminal className="w-3.5 h-3.5 text-gx-ink-muted group-hover:text-gx-ink-secondary" />
-            <span className="font-medium">Operations Console</span>
-          </div>
-          <span className="text-[10px] font-mono text-gx-ink-muted">/ops</span>
-        </Link>
+      {/* 3. Clean Fixed Account Footer matching Explee */}
+      <div className="p-2 border-t border-gx-border bg-gx-surface flex-shrink-0">
         <AccountPopover userEmail="growxlabstech@gmail.com" />
       </div>
     </aside>

@@ -61,4 +61,6 @@ out/
 dist/
 .env.local
 *.tsbuildinfo
-
+# Binaries & external tools
+lightpanda
+*.exe

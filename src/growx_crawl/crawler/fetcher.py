@@ -12,6 +12,7 @@ from growx_crawl.crawler.stealth import (
     human_scroll,
     random_dwell,
     solve_turnstile_if_present,
+    auto_solve_captcha,
 )
 
 logger = logging.getLogger("growx_crawl.fetcher")
@@ -194,8 +195,11 @@ class AutoEscalatingFetcher:
                     # Fallback to domcontentloaded if external assets/trackers timeout
                     resp = await page.goto(url, timeout=t * 1000, wait_until="domcontentloaded")
 
-                # Level 4: Auto-detect and solve Cloudflare Turnstile if encountered
+                # Level 4: Auto-detect and solve any CAPTCHA (Turnstile, reCAPTCHA, hCaptcha, etc.)
                 await solve_turnstile_if_present(page, timeout_seconds=8)
+                solve_result = await auto_solve_captcha(page, url)
+                if solve_result.success and solve_result.token:
+                    logger.info(f"CAPTCHA solved: {solve_result.captcha_type} via {solve_result.provider}")
 
                 # Ensure web fonts and external stylesheets finish computing
                 try:
@@ -433,6 +437,16 @@ class AutoEscalatingFetcher:
             # DDoS-Guard & AWS WAF
             "ddos-guard",
             "aws waf captcha",
+            # reCAPTCHA
+            "google.com/recaptcha",
+            "g-recaptcha",
+            "grecaptcha",
+            # hCaptcha
+            "hcaptcha.com",
+            "h-captcha",
+            # FunCaptcha / Arkose Labs
+            "arkoselabs.com",
+            "funcaptcha",
             # Generic challenge phrases
             "please verify you are a human",
             "unusual traffic from your computer network",
