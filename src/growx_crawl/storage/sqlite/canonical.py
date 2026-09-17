@@ -1205,6 +1205,26 @@ CREATE TABLE IF NOT EXISTS ranking_explanations (
 );
 
 CREATE INDEX IF NOT EXISTS idx_rex_score ON ranking_explanations(score_id);
+
+-- Phase 14 AutoGTM Projects Table
+
+CREATE TABLE IF NOT EXISTS projects (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    seller_company_id TEXT NOT NULL,
+    active_icp_id TEXT,
+    active_icp_version_id TEXT,
+    target_geography TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    notes TEXT,
+    metadata_json TEXT DEFAULT '{}',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_prj_seller ON projects(seller_company_id);
+CREATE INDEX IF NOT EXISTS idx_prj_status ON projects(status);
+CREATE INDEX IF NOT EXISTS idx_prj_icp ON projects(active_icp_id);
 """
 
 

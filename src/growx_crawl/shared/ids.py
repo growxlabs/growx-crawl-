@@ -47,6 +47,7 @@ CANONICAL_PREFIXES = {
     "ver_": "verification result",
 
     # Platform / Execution
+    "prj_": "project",
     "job_": "job",
     "wrk_": "worker",
     "cpg_": "campaign",
