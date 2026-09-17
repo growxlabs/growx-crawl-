@@ -130,3 +130,21 @@ class BaseCrawlRunRepository(ABC):
 
     @abstractmethod
     def count(self) -> int: ...
+
+
+class BaseObjectRefRepository(ABC):
+    @abstractmethod
+    def get(self, object_id: str) -> Optional[Any]: ...
+
+    @abstractmethod
+    def get_by_key(self, bucket: str, object_key: str) -> Optional[Any]: ...
+
+    @abstractmethod
+    def upsert(self, ref: Any) -> Any: ...
+
+    @abstractmethod
+    def list_by_run(self, run_id: str) -> List[Any]: ...
+
+    @abstractmethod
+    def count(self) -> int: ...
+

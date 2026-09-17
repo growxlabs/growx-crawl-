@@ -157,6 +157,29 @@ CREATE TABLE IF NOT EXISTS crawl_runs (
 
 CREATE INDEX IF NOT EXISTS idx_crawl_runs_domain ON crawl_runs(domain_id);
 CREATE INDEX IF NOT EXISTS idx_crawl_runs_started ON crawl_runs(started_at);
+
+CREATE TABLE IF NOT EXISTS object_refs (
+    id VARCHAR(64) PRIMARY KEY,
+    object_type VARCHAR(32) NOT NULL,
+    bucket TEXT NOT NULL,
+    object_key TEXT NOT NULL,
+    provider VARCHAR(16) NOT NULL,
+    content_type TEXT NOT NULL,
+    content_encoding VARCHAR(16),
+    content_hash VARCHAR(64) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    source_url TEXT,
+    company_id VARCHAR(64) REFERENCES companies(id) ON DELETE SET NULL,
+    domain_id VARCHAR(64) REFERENCES domains(id) ON DELETE SET NULL,
+    crawl_run_id VARCHAR(64) REFERENCES crawl_runs(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_object_refs_key ON object_refs(object_key);
+CREATE INDEX IF NOT EXISTS idx_object_refs_hash ON object_refs(content_hash);
+CREATE INDEX IF NOT EXISTS idx_object_refs_run ON object_refs(crawl_run_id);
+CREATE INDEX IF NOT EXISTS idx_object_refs_comp ON object_refs(company_id);
 """
 
 

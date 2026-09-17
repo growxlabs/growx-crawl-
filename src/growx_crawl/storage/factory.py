@@ -104,6 +104,16 @@ class StorageFactory:
         return SqliteCrawlRunRepository()
 
     @classmethod
+    def get_object_ref_repository(cls):
+        backend = get_active_backend()
+        if backend == "postgres":
+            cls._verify_postgres_or_fail()
+            from growx_crawl.storage.postgres.repository import PostgresObjectRefRepository
+            return PostgresObjectRefRepository()
+        from growx_crawl.storage.sqlite.canonical import SqliteObjectRefRepository
+        return SqliteObjectRefRepository()
+
+    @classmethod
     def _verify_postgres_or_fail(cls):
         """
         Section 26 Failure Strategy:

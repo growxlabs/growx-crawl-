@@ -754,3 +754,109 @@ class PostgresCrawlRunRepository(BaseCrawlRunRepository):
             error_code=r[11],
             metadata_json=meta or {},
         )
+
+
+class PostgresObjectRefRepository:
+    def get(self, object_id: str) -> Optional[Any]:
+        sql = """
+            SELECT id, object_type, bucket, object_key, provider, content_type,
+                   content_encoding, content_hash, size_bytes, source_url,
+                   company_id, domain_id, crawl_run_id, created_at, metadata_json
+            FROM object_refs WHERE id = %s;
+        """
+        with get_pg_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (object_id,))
+                row = cur.fetchone()
+                return self._row_to_dict(row) if row else None
+
+    def get_by_key(self, bucket: str, object_key: str) -> Optional[Any]:
+        sql = """
+            SELECT id, object_type, bucket, object_key, provider, content_type,
+                   content_encoding, content_hash, size_bytes, source_url,
+                   company_id, domain_id, crawl_run_id, created_at, metadata_json
+            FROM object_refs WHERE bucket = %s AND object_key = %s;
+        """
+        with get_pg_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (bucket, object_key))
+                row = cur.fetchone()
+                return self._row_to_dict(row) if row else None
+
+    def upsert(self, ref: Any) -> Any:
+        sql = """
+            INSERT INTO object_refs (
+                id, object_type, bucket, object_key, provider, content_type,
+                content_encoding, content_hash, size_bytes, source_url,
+                company_id, domain_id, crawl_run_id, created_at, metadata_json
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                content_hash = EXCLUDED.content_hash,
+                size_bytes = EXCLUDED.size_bytes,
+                metadata_json = object_refs.metadata_json || EXCLUDED.metadata_json;
+        """
+        ref_dict = ref.model_dump() if hasattr(ref, "model_dump") else dict(ref)
+        with get_pg_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    sql,
+                    (
+                        ref_dict["id"],
+                        ref_dict["object_type"],
+                        ref_dict["bucket"],
+                        ref_dict["object_key"],
+                        ref_dict["provider"],
+                        ref_dict["content_type"],
+                        ref_dict.get("content_encoding"),
+                        ref_dict["content_hash"],
+                        ref_dict["size_bytes"],
+                        ref_dict.get("source_url"),
+                        ref_dict.get("company_id"),
+                        ref_dict.get("domain_id"),
+                        ref_dict.get("crawl_run_id"),
+                        ref_dict["created_at"],
+                        json.dumps(ref_dict.get("metadata_json", {})),
+                    ),
+                )
+        return ref
+
+    def list_by_run(self, run_id: str) -> List[Any]:
+        sql = """
+            SELECT id, object_type, bucket, object_key, provider, content_type,
+                   content_encoding, content_hash, size_bytes, source_url,
+                   company_id, domain_id, crawl_run_id, created_at, metadata_json
+            FROM object_refs WHERE crawl_run_id = %s ORDER BY created_at DESC;
+        """
+        with get_pg_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql, (run_id,))
+                return [self._row_to_dict(r) for r in cur.fetchall()]
+
+    def count(self) -> int:
+        with get_pg_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) FROM object_refs;")
+                return cur.fetchone()[0]
+
+    def _row_to_dict(self, r) -> Dict[str, Any]:
+        meta = r[14]
+        if isinstance(meta, str):
+            meta = json.loads(meta)
+        return {
+            "id": r[0],
+            "object_type": r[1],
+            "bucket": r[2],
+            "object_key": r[3],
+            "provider": r[4],
+            "content_type": r[5],
+            "content_encoding": r[6],
+            "content_hash": r[7],
+            "size_bytes": int(r[8]),
+            "source_url": r[9],
+            "company_id": r[10],
+            "domain_id": r[11],
+            "crawl_run_id": r[12],
+            "created_at": str(r[13]),
+            "metadata_json": meta or {},
+        }
+

@@ -170,6 +170,28 @@ CREATE TABLE IF NOT EXISTS canonical_crawl_runs (
     metadata_json TEXT DEFAULT '{}',
     FOREIGN KEY (job_id) REFERENCES canonical_crawl_jobs(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS canonical_object_refs (
+    id TEXT PRIMARY KEY,
+    object_type TEXT NOT NULL,
+    bucket TEXT NOT NULL,
+    object_key TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    content_encoding TEXT,
+    content_hash TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL,
+    source_url TEXT,
+    company_id TEXT,
+    domain_id TEXT,
+    crawl_run_id TEXT,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_obj_key ON canonical_object_refs(object_key);
+CREATE INDEX IF NOT EXISTS idx_canon_obj_hash ON canonical_object_refs(content_hash);
+CREATE INDEX IF NOT EXISTS idx_canon_obj_run ON canonical_object_refs(crawl_run_id);
 """
 
 
@@ -851,3 +873,78 @@ class SqliteCrawlRunRepository(BaseCrawlRunRepository):
             error_code=r["error_code"],
             metadata_json=meta or {},
         )
+
+
+class SqliteObjectRefRepository:
+    def __init__(self, db_path: Optional[str] = None):
+        self.db_path = db_path
+
+    def _ensure_schema(self, conn: sqlite3.Connection):
+        init_sqlite_canonical_tables(conn)
+
+    def get(self, object_id: str) -> Optional[Any]:
+        with get_db(self.db_path) as conn:
+            self._ensure_schema(conn)
+            row = conn.execute("SELECT * FROM canonical_object_refs WHERE id = ?", (object_id,)).fetchone()
+            return dict(row) if row else None
+
+    def get_by_key(self, bucket: str, object_key: str) -> Optional[Any]:
+        with get_db(self.db_path) as conn:
+            self._ensure_schema(conn)
+            row = conn.execute(
+                "SELECT * FROM canonical_object_refs WHERE bucket = ? AND object_key = ?",
+                (bucket, object_key),
+            ).fetchone()
+            return dict(row) if row else None
+
+    def upsert(self, ref: Any) -> Any:
+        sql = """
+            INSERT INTO canonical_object_refs (
+                id, object_type, bucket, object_key, provider, content_type,
+                content_encoding, content_hash, size_bytes, source_url,
+                company_id, domain_id, crawl_run_id, created_at, metadata_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                content_hash = excluded.content_hash,
+                size_bytes = excluded.size_bytes,
+                metadata_json = excluded.metadata_json;
+        """
+        ref_dict = ref.model_dump() if hasattr(ref, "model_dump") else dict(ref)
+        with get_db(self.db_path) as conn:
+            self._ensure_schema(conn)
+            conn.execute(
+                sql,
+                (
+                    ref_dict["id"],
+                    ref_dict["object_type"],
+                    ref_dict["bucket"],
+                    ref_dict["object_key"],
+                    ref_dict["provider"],
+                    ref_dict["content_type"],
+                    ref_dict.get("content_encoding"),
+                    ref_dict["content_hash"],
+                    ref_dict["size_bytes"],
+                    ref_dict.get("source_url"),
+                    ref_dict.get("company_id"),
+                    ref_dict.get("domain_id"),
+                    ref_dict.get("crawl_run_id"),
+                    ref_dict["created_at"],
+                    json.dumps(ref_dict.get("metadata_json", {})),
+                ),
+            )
+        return ref
+
+    def list_by_run(self, run_id: str) -> List[Any]:
+        with get_db(self.db_path) as conn:
+            self._ensure_schema(conn)
+            rows = conn.execute(
+                "SELECT * FROM canonical_object_refs WHERE crawl_run_id = ? ORDER BY created_at DESC",
+                (run_id,),
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def count(self) -> int:
+        with get_db(self.db_path) as conn:
+            self._ensure_schema(conn)
+            return conn.execute("SELECT COUNT(*) FROM canonical_object_refs;").fetchone()[0]
+
