@@ -1084,7 +1084,98 @@ CREATE TABLE IF NOT EXISTS icp_evidence (
 );
 
 CREATE INDEX IF NOT EXISTS idx_iev_ver ON icp_evidence(icp_version_id);
+
+-- Phase 13: Prospect Ranking
+CREATE TABLE IF NOT EXISTS prospects (
+    id VARCHAR(64) PRIMARY KEY,
+    project_id VARCHAR(64) NOT NULL,
+    company_id VARCHAR(64) NOT NULL,
+    person_id VARCHAR(64),
+    icp_version_id VARCHAR(64),
+    status VARCHAR(32) NOT NULL DEFAULT 'candidate',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_prsp_proj ON prospects(project_id);
+CREATE INDEX IF NOT EXISTS idx_pg_prsp_comp ON prospects(company_id);
+CREATE INDEX IF NOT EXISTS idx_pg_prsp_pers ON prospects(person_id);
+CREATE INDEX IF NOT EXISTS idx_pg_prsp_status ON prospects(status);
+CREATE INDEX IF NOT EXISTS idx_pg_prsp_icp ON prospects(icp_version_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pg_prsp_proj_comp_pers ON prospects(project_id, company_id, COALESCE(person_id, ''));
+
+CREATE TABLE IF NOT EXISTS ranking_profiles (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    config_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pg_rkp_name_ver ON ranking_profiles(name, version);
+
+CREATE TABLE IF NOT EXISTS prospect_scores (
+    id VARCHAR(64) PRIMARY KEY,
+    prospect_id VARCHAR(64) NOT NULL,
+    company_id VARCHAR(64) NOT NULL,
+    person_id VARCHAR(64),
+    icp_version_id VARCHAR(64),
+    ranking_profile_id VARCHAR(64) NOT NULL,
+    account_score DOUBLE PRECISION DEFAULT 0.0,
+    person_score DOUBLE PRECISION DEFAULT 0.0,
+    signal_score DOUBLE PRECISION DEFAULT 0.0,
+    timing_score DOUBLE PRECISION DEFAULT 0.0,
+    quality_score DOUBLE PRECISION DEFAULT 0.0,
+    verification_score DOUBLE PRECISION DEFAULT 0.0,
+    contactability_score DOUBLE PRECISION DEFAULT 0.0,
+    penalty_score DOUBLE PRECISION DEFAULT 0.0,
+    raw_score DOUBLE PRECISION DEFAULT 0.0,
+    confidence_factor DOUBLE PRECISION DEFAULT 1.0,
+    final_score DOUBLE PRECISION DEFAULT 0.0,
+    status VARCHAR(32) NOT NULL DEFAULT 'possible',
+    rank_position INTEGER,
+    calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_until TIMESTAMPTZ,
+    fingerprint VARCHAR(128),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pg_prs_prosp_prof ON prospect_scores(prospect_id, ranking_profile_id);
+CREATE INDEX IF NOT EXISTS idx_pg_prs_comp ON prospect_scores(company_id);
+CREATE INDEX IF NOT EXISTS idx_pg_prs_status ON prospect_scores(status);
+CREATE INDEX IF NOT EXISTS idx_pg_prs_final_score ON prospect_scores(final_score);
+
+CREATE TABLE IF NOT EXISTS prospect_score_history (
+    id VARCHAR(64) PRIMARY KEY,
+    prospect_id VARCHAR(64) NOT NULL,
+    score_id VARCHAR(64) NOT NULL,
+    ranking_profile_id VARCHAR(64) NOT NULL,
+    rank_position INTEGER,
+    final_score DOUBLE PRECISION NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_rkh_prosp ON prospect_score_history(prospect_id);
+
+CREATE TABLE IF NOT EXISTS ranking_explanations (
+    id VARCHAR(64) PRIMARY KEY,
+    score_id VARCHAR(64) NOT NULL,
+    reason_code VARCHAR(64) NOT NULL,
+    component VARCHAR(64) NOT NULL,
+    contribution DOUBLE PRECISION NOT NULL,
+    direction VARCHAR(16) NOT NULL DEFAULT 'positive',
+    evidence_refs JSONB DEFAULT '[]'::jsonb,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_pg_rex_score ON ranking_explanations(score_id);
 """
+
 
 
 def init_pg_schema(conn) -> None:

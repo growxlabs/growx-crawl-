@@ -1115,7 +1115,98 @@ CREATE TABLE IF NOT EXISTS icp_evidence (
 );
 
 CREATE INDEX IF NOT EXISTS idx_iev_ver ON icp_evidence(icp_version_id);
+
+-- Phase 13: Prospect Ranking
+CREATE TABLE IF NOT EXISTS prospects (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    person_id TEXT,
+    icp_version_id TEXT,
+    status TEXT NOT NULL DEFAULT 'candidate',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_prsp_proj ON prospects(project_id);
+CREATE INDEX IF NOT EXISTS idx_prsp_comp ON prospects(company_id);
+CREATE INDEX IF NOT EXISTS idx_prsp_pers ON prospects(person_id);
+CREATE INDEX IF NOT EXISTS idx_prsp_status ON prospects(status);
+CREATE INDEX IF NOT EXISTS idx_prsp_icp ON prospects(icp_version_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_prsp_proj_comp_pers ON prospects(project_id, company_id, COALESCE(person_id, ''));
+
+CREATE TABLE IF NOT EXISTS ranking_profiles (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    config_json TEXT NOT NULL DEFAULT '{}',
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rkp_name_ver ON ranking_profiles(name, version);
+
+CREATE TABLE IF NOT EXISTS prospect_scores (
+    id TEXT PRIMARY KEY,
+    prospect_id TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    person_id TEXT,
+    icp_version_id TEXT,
+    ranking_profile_id TEXT NOT NULL,
+    account_score REAL DEFAULT 0.0,
+    person_score REAL DEFAULT 0.0,
+    signal_score REAL DEFAULT 0.0,
+    timing_score REAL DEFAULT 0.0,
+    quality_score REAL DEFAULT 0.0,
+    verification_score REAL DEFAULT 0.0,
+    contactability_score REAL DEFAULT 0.0,
+    penalty_score REAL DEFAULT 0.0,
+    raw_score REAL DEFAULT 0.0,
+    confidence_factor REAL DEFAULT 1.0,
+    final_score REAL DEFAULT 0.0,
+    status TEXT NOT NULL DEFAULT 'possible',
+    rank_position INTEGER,
+    calculated_at TEXT NOT NULL,
+    valid_until TEXT,
+    fingerprint TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_prs_prosp_prof ON prospect_scores(prospect_id, ranking_profile_id);
+CREATE INDEX IF NOT EXISTS idx_prs_comp ON prospect_scores(company_id);
+CREATE INDEX IF NOT EXISTS idx_prs_status ON prospect_scores(status);
+CREATE INDEX IF NOT EXISTS idx_prs_final_score ON prospect_scores(final_score);
+
+CREATE TABLE IF NOT EXISTS prospect_score_history (
+    id TEXT PRIMARY KEY,
+    prospect_id TEXT NOT NULL,
+    score_id TEXT NOT NULL,
+    ranking_profile_id TEXT NOT NULL,
+    rank_position INTEGER,
+    final_score REAL NOT NULL,
+    status TEXT NOT NULL,
+    calculated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_rkh_prosp ON prospect_score_history(prospect_id);
+
+CREATE TABLE IF NOT EXISTS ranking_explanations (
+    id TEXT PRIMARY KEY,
+    score_id TEXT NOT NULL,
+    reason_code TEXT NOT NULL,
+    component TEXT NOT NULL,
+    contribution REAL NOT NULL,
+    direction TEXT NOT NULL DEFAULT 'positive',
+    evidence_refs TEXT DEFAULT '[]',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_rex_score ON ranking_explanations(score_id);
 """
+
 
 
 def init_sqlite_canonical_tables(conn: sqlite3.Connection) -> None:

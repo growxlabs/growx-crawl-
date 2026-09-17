@@ -37,8 +37,15 @@ CANONICAL_PREFIXES = {
     "prn_": "icp persona",
     "sc_": "icp company score",
     "psc_": "icp person score",
+    # Ranking
+    "prsp_": "prospect",
+    "rkp_": "ranking profile",
+    "prs_": "prospect score",
+    "rkh_": "prospect score history",
+    "rex_": "ranking explanation",
     # Verification
     "ver_": "verification result",
+
     # Platform / Execution
     "job_": "job",
     "wrk_": "worker",

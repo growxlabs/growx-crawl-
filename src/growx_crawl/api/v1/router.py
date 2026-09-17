@@ -1131,4 +1131,227 @@ def get_icp_matches_endpoint(
     return [m.model_dump() for m in matches]
 
 
+# ── Phase 13: Prospect Ranking Models & Endpoints ──
+
+class CreateProspectRequest(BaseModel):
+    project_id: str
+    company_id: str
+    person_id: Optional[str] = None
+    icp_version_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class RankProspectRequest(BaseModel):
+    company_data: Optional[Dict[str, Any]] = None
+    person_data: Optional[Dict[str, Any]] = None
+    signals: Optional[List[Any]] = None
+    icp_score: Optional[float] = None
+    icp_version_id: Optional[str] = None
+    ranking_profile_id: str = "default_v1"
+    is_competitor: bool = False
+    is_hard_excluded: bool = False
+    quality_gate_blocked: bool = False
+
+
+class BatchRankProspectRequest(BaseModel):
+    candidates: List[Dict[str, Any]]
+    ranking_profile_id: str = "default_v1"
+
+
+class CreateRankingProfileRequest(BaseModel):
+    name: str
+    config: Dict[str, Any]
+    profile_id: Optional[str] = None
+
+
+class CompareProfilesRequest(BaseModel):
+    prospect_id: str
+    company_data: Dict[str, Any]
+    person_data: Optional[Dict[str, Any]] = None
+    signals: Optional[List[Any]] = None
+    icp_score: Optional[float] = None
+    profile_a: str = "default_v1"
+    profile_b: str = "high_intent_v1"
+
+
+@v1_router.post("/prospects")
+def create_prospect_endpoint(req: CreateProspectRequest):
+    """Registers a prospect associating a target company and optional buyer person."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    prospect = prospect_ranking_service.create_prospect(
+        project_id=req.project_id,
+        company_id=req.company_id,
+        person_id=req.person_id,
+        icp_version_id=req.icp_version_id,
+        metadata=req.metadata,
+    )
+    return prospect.model_dump()
+
+
+@v1_router.get("/prospects")
+def list_prospects_endpoint(
+    project_id: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 50,
+):
+    """Lists registered prospects with optional project or status filters."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    prospects = prospect_ranking_service.list_prospects(
+        project_id=project_id, status=status, limit=limit
+    )
+    return [p.model_dump() for p in prospects]
+
+
+@v1_router.get("/prospects/{prospect_id}")
+def get_prospect_endpoint(prospect_id: str):
+    """Retrieves a single prospect by canonical ID."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    prospect = prospect_ranking_service.get_prospect(prospect_id)
+    if not prospect:
+        raise HTTPException(status_code=404, detail="Prospect not found")
+    return prospect.model_dump()
+
+
+@v1_router.post("/prospects/{prospect_id}/rank")
+def rank_prospect_endpoint(prospect_id: str, req: RankProspectRequest = RankProspectRequest()):
+    """Evaluates multidimensional score and rank status for a prospect."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    try:
+        score_ent, exps = prospect_ranking_service.rank_prospect(
+            prospect_id=prospect_id,
+            company_data=req.company_data,
+            person_data=req.person_data,
+            signals=req.signals,
+            icp_score=req.icp_score,
+            icp_version_id=req.icp_version_id,
+            ranking_profile_id=req.ranking_profile_id,
+            is_competitor=req.is_competitor,
+            is_hard_excluded=req.is_hard_excluded,
+            quality_gate_blocked=req.quality_gate_blocked,
+        )
+        return {
+            "score": score_ent.model_dump(),
+            "explanations": [e.model_dump() for e in exps],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/prospects/batch-rank")
+def batch_rank_prospects_endpoint(req: BatchRankProspectRequest):
+    """Ranks an entire batch of prospect candidates, assigning ordered positions."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    try:
+        scored_pairs = prospect_ranking_service.rank_batch(
+            candidates=req.candidates,
+            ranking_profile_id=req.ranking_profile_id,
+        )
+        return [
+            {
+                "score": score_ent.model_dump(),
+                "explanations": [e.model_dump() for e in exps],
+            }
+            for score_ent, exps in scored_pairs
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.get("/prospects/ranked/queue")
+def get_ranked_queue_endpoint(
+    ranking_profile_id: Optional[str] = None,
+    status: Optional[str] = None,
+    min_score: float = 0.0,
+    limit: int = 50,
+):
+    """Queries prioritized queue of ranked prospect scores."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    scores = prospect_ranking_service.get_ranked_queue(
+        ranking_profile_id=ranking_profile_id,
+        status=status,
+        min_score=min_score,
+        limit=limit,
+    )
+    return [s.model_dump() for s in scores]
+
+
+@v1_router.get("/prospects/{prospect_id}/score")
+def get_prospect_score_endpoint(prospect_id: str, ranking_profile_id: Optional[str] = None):
+    """Retrieves latest score for a prospect."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    score = prospect_ranking_service.get_prospect_score(
+        prospect_id=prospect_id, ranking_profile_id=ranking_profile_id
+    )
+    if not score:
+        raise HTTPException(status_code=404, detail="Score not found for prospect")
+    return score.model_dump()
+
+
+@v1_router.get("/prospects/{prospect_id}/history")
+def get_prospect_score_history_endpoint(prospect_id: str):
+    """Retrieves chronological score history snapshots for a prospect."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    history = prospect_ranking_service.get_score_history(prospect_id)
+    return [h.model_dump() for h in history]
+
+
+@v1_router.get("/prospect-scores/{score_id}/explanations")
+def get_score_explanations_endpoint(score_id: str):
+    """Retrieves atomic explanation contributions for a score ID."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    exps = prospect_ranking_service.get_score_explanations(score_id)
+    return [e.model_dump() for e in exps]
+
+
+@v1_router.get("/ranking-profiles")
+def list_ranking_profiles_endpoint(limit: int = 50):
+    """Lists available ranking profiles."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    profiles = prospect_ranking_service.list_profiles(limit=limit)
+    return [p.model_dump() for p in profiles]
+
+
+@v1_router.get("/ranking-profiles/{profile_id}")
+def get_ranking_profile_endpoint(profile_id: str):
+    """Retrieves ranking profile configuration."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    profile = prospect_ranking_service.get_profile(profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile.model_dump()
+
+
+@v1_router.post("/ranking-profiles")
+def create_ranking_profile_endpoint(req: CreateRankingProfileRequest):
+    """Registers a new ranking profile."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    try:
+        profile = prospect_ranking_service.create_profile(
+            name=req.name, config=req.config, profile_id=req.profile_id
+        )
+        return profile.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@v1_router.post("/prospects/compare-profiles")
+def compare_profiles_endpoint(req: CompareProfilesRequest):
+    """Analyzes ranking sensitivity across two profiles."""
+    from growx_crawl.scoring.service import prospect_ranking_service
+    try:
+        diff = prospect_ranking_service.compare_profiles(
+            prospect_id=req.prospect_id,
+            company_data=req.company_data,
+            person_data=req.person_data,
+            signals=req.signals,
+            icp_score=req.icp_score,
+            profile_a=req.profile_a,
+            profile_b=req.profile_b,
+        )
+        return diff
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
 
