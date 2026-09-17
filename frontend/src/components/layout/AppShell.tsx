@@ -3,9 +3,11 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { CockpitProvider } from "@/features/cockpit/CockpitContext";
+import { CockpitProvider, useCockpit } from "@/features/cockpit/CockpitContext";
 import { AutoGTMWorkflowSidebar } from "@/features/autogtm-workflow/AutoGTMWorkflowSidebar";
 import { CockpitHeader } from "@/features/cockpit/CockpitHeader";
+import { OnboardingSidebar } from "@/features/onboarding/OnboardingSidebar";
+import { ProjectLauncher } from "@/features/onboarding/ProjectLauncher";
 import { EvidenceProvider } from "../inspector/EvidenceContext";
 import { EvidenceInspector } from "../inspector/EvidenceInspector";
 import { FactCorrectionModal } from "../inspector/FactCorrectionModal";
@@ -13,6 +15,43 @@ import { CompetitorModal } from "@/features/cockpit/CompetitorModal";
 
 interface AppShellProps {
   children: React.ReactNode;
+}
+
+function CockpitShellContent({ children }: { children: React.ReactNode }) {
+  const { activeProjectId } = useCockpit();
+
+  // If no project is selected, render the Explee Project Launcher / Onboarding page
+  if (!activeProjectId) {
+    return (
+      <div className="flex h-screen w-screen overflow-hidden bg-gx-canvas text-gx-ink font-sans">
+        <OnboardingSidebar />
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col bg-gx-canvas">
+          <ProjectLauncher />
+        </main>
+      </div>
+    );
+  }
+
+  // Active project workflow cockpit view
+  return (
+    <div className="flex h-screen w-screen overflow-hidden bg-gx-canvas text-gx-ink font-sans">
+      {/* Workflow Stages Sidebar */}
+      <AutoGTMWorkflowSidebar />
+
+      {/* Right Main Column (Top Stepper + Unified Cockpit Area) */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-gx-canvas">
+        <CockpitHeader />
+        <main className="flex-1 min-h-0 overflow-hidden flex flex-col bg-gx-canvas">
+          {children}
+        </main>
+      </div>
+
+      {/* Global Slide-out Drawer and Modals */}
+      <EvidenceInspector />
+      <FactCorrectionModal />
+      <CompetitorModal />
+    </div>
+  );
 }
 
 export function AppShell({ children }: AppShellProps) {
@@ -37,23 +76,7 @@ export function AppShell({ children }: AppShellProps) {
     <ThemeProvider>
       <EvidenceProvider>
         <CockpitProvider>
-          <div className="flex h-screen w-screen overflow-hidden bg-gx-canvas text-gx-ink font-sans">
-            {/* Workflow Stages Sidebar */}
-            <AutoGTMWorkflowSidebar />
-
-            {/* Right Main Column (Top Stepper + Unified Cockpit Area) */}
-            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-gx-canvas">
-              <CockpitHeader />
-              <main className="flex-1 min-h-0 overflow-hidden flex flex-col bg-gx-canvas">
-                {children}
-              </main>
-            </div>
-
-            {/* Global Slide-out Drawer and Modals */}
-            <EvidenceInspector />
-            <FactCorrectionModal />
-            <CompetitorModal />
-          </div>
+          <CockpitShellContent>{children}</CockpitShellContent>
         </CockpitProvider>
       </EvidenceProvider>
     </ThemeProvider>

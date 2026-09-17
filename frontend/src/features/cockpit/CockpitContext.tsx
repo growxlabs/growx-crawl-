@@ -61,7 +61,21 @@ export interface TargetCompanyItem {
   campaignId: string;
 }
 
+export interface ProjectItem {
+  id: string;
+  name: string;
+  domain: string;
+  createdAt: string;
+}
+
 interface CockpitContextType {
+  // Projects & Launcher
+  projects: ProjectItem[];
+  activeProjectId: string | null;
+  selectProject: (id: string | null) => void;
+  createProject: (domain: string) => Promise<string>;
+  isCreatingProject: boolean;
+
   // Company & Competitors
   company: {
     name: string;
@@ -837,14 +851,94 @@ const INITIAL_COMPANIES: TargetCompanyItem[] = [
   },
 ];
 
+const DEFAULT_PROJECTS: ProjectItem[] = [
+  {
+    id: "proj_growx",
+    name: "GrowX Labs Tech",
+    domain: "growxlabs.tech",
+    createdAt: "2026-09-15T10:00:00Z",
+  },
+];
+
 const CockpitContext = createContext<CockpitContextType | undefined>(undefined);
 
 export function CockpitProvider({ children }: { children: React.ReactNode }) {
-  const [company] = useState({
-    name: "GrowX Labs Tech",
-    domain: "growxlabs.tech",
-    tagline: "AI systems and rapid MVP engineering",
-  });
+  const [projects, setProjects] = useState<ProjectItem[]>(DEFAULT_PROJECTS);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [isCreatingProject, setIsCreatingProject] = useState<boolean>(false);
+
+  // Initialize projects and active project from localStorage on client
+  useEffect(() => {
+    try {
+      const savedProjects = localStorage.getItem("growx_projects");
+      if (savedProjects) {
+        const parsed = JSON.parse(savedProjects);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setProjects(parsed);
+        }
+      }
+      const savedActive = localStorage.getItem("growx_active_project_id");
+      if (savedActive !== null) {
+        setActiveProjectId(savedActive === "" ? null : savedActive);
+      }
+    } catch {}
+  }, []);
+
+  const selectProject = (id: string | null) => {
+    setActiveProjectId(id);
+    try {
+      if (id) {
+        localStorage.setItem("growx_active_project_id", id);
+      } else {
+        localStorage.removeItem("growx_active_project_id");
+      }
+    } catch {}
+  };
+
+  const createProject = async (rawDomain: string): Promise<string> => {
+    setIsCreatingProject(true);
+    let clean = rawDomain.trim().toLowerCase();
+    clean = clean.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    if (!clean) clean = "mycompany.com";
+
+    const baseName = clean.split(".")[0];
+    const formattedName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+
+    const newProj: ProjectItem = {
+      id: `proj_${Date.now()}`,
+      name: formattedName,
+      domain: clean,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Simulate crawl & GTM setup delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const updated = [newProj, ...projects];
+    setProjects(updated);
+    setActiveProjectId(newProj.id);
+    setIsCreatingProject(false);
+
+    try {
+      localStorage.setItem("growx_projects", JSON.stringify(updated));
+      localStorage.setItem("growx_active_project_id", newProj.id);
+    } catch {}
+
+    return newProj.id;
+  };
+
+  const activeProject = projects.find((p) => p.id === activeProjectId);
+  const company = activeProject
+    ? {
+        name: activeProject.name,
+        domain: activeProject.domain,
+        tagline: `${activeProject.name} AI and GTM Automation`,
+      }
+    : {
+        name: "GrowX Labs Tech",
+        domain: "growxlabs.tech",
+        tagline: "AI systems and rapid MVP engineering",
+      };
 
   const [competitors] = useState<CompetitorItem[]>(DEFAULT_COMPETITORS);
   const [selectedCompetitor, setSelectedCompetitor] = useState<CompetitorItem | null>(null);
@@ -980,6 +1074,11 @@ export function CockpitProvider({ children }: { children: React.ReactNode }) {
   return (
     <CockpitContext.Provider
       value={{
+        projects,
+        activeProjectId,
+        selectProject,
+        createProject,
+        isCreatingProject,
         company,
         competitors,
         selectedCompetitor,

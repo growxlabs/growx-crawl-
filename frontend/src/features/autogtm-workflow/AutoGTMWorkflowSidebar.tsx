@@ -15,9 +15,10 @@ import {
   Building,
   Wrench,
   Clock,
+  Plus,
 } from "lucide-react";
 import { useCockpit, CampaignItem } from "@/features/cockpit/CockpitContext";
-import { AppearancePopover } from "@/features/theme/ThemeSelector";
+import { AccountPopover } from "@/features/account/AccountPopover";
 
 export function AutoGTMWorkflowSidebar() {
   const {
@@ -29,6 +30,9 @@ export function AutoGTMWorkflowSidebar() {
     setActiveCampaignId,
     activeTab,
     setActiveTab,
+    projects,
+    activeProjectId,
+    selectProject,
   } = useCockpit();
 
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
@@ -116,19 +120,53 @@ export function AutoGTMWorkflowSidebar() {
             </button>
 
             {isCompanyDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-gx-surface border border-gx-border rounded-lg p-1.5 shadow-lg z-30 text-xs">
-                <div className="px-2 py-1 text-[10px] text-gx-ink-muted uppercase tracking-wider font-semibold">
-                  Configured Companies
-                </div>
-                <button
-                  type="button"
+              <>
+                <div
+                  className="fixed inset-0 z-30"
                   onClick={() => setIsCompanyDropdownOpen(false)}
-                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gx-surface-soft text-gx-ink flex items-center justify-between"
-                >
-                  <span className="font-medium">GrowX Labs Tech</span>
-                  <Check className="w-3.5 h-3.5 text-gx-success" />
-                </button>
-              </div>
+                />
+                <div className="absolute top-full left-0 right-0 mt-1 bg-gx-surface border border-gx-border rounded-xl p-1.5 shadow-lg z-40 text-xs text-gx-ink space-y-1">
+                  <div className="px-2 py-1 text-[10px] text-gx-ink-muted uppercase tracking-wider font-semibold">
+                    Projects
+                  </div>
+                  {projects.map((proj) => {
+                    const isSelected = proj.id === activeProjectId;
+                    return (
+                      <button
+                        key={proj.id}
+                        type="button"
+                        onClick={() => {
+                          selectProject(proj.id);
+                          setIsCompanyDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-center justify-between transition-colors ${
+                          isSelected
+                            ? "bg-gx-primary-soft text-gx-primary font-semibold"
+                            : "hover:bg-gx-surface-soft text-gx-ink"
+                        }`}
+                      >
+                        <span className="font-medium truncate">{proj.name}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-gx-primary flex-shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                  <div className="pt-1 border-t border-gx-border-soft">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectProject(null);
+                        setIsCompanyDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-2 py-1.5 rounded hover:bg-gx-surface-soft text-gx-ink flex items-center gap-1.5 font-medium"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-gx-ink-muted" />
+                      <span>New project</span>
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -280,19 +318,20 @@ export function AutoGTMWorkflowSidebar() {
         </div>
       </div>
 
-      {/* 3. Fixed Operations & Appearance Footer */}
-      <div className="p-2.5 border-t border-gx-border bg-gx-canvas flex-shrink-0 flex items-center justify-between">
+      {/* 3. Fixed Operations & Account Footer */}
+      <div className="p-2 border-t border-gx-border bg-gx-surface flex-shrink-0 space-y-1">
         <Link
           href="/ops"
-          className="flex items-center gap-2 px-2 py-1 rounded text-xs text-gx-ink-secondary hover:text-gx-ink hover:bg-gx-surface-hover transition-colors group"
+          className="flex items-center justify-between px-2.5 py-1.5 rounded text-xs text-gx-ink-secondary hover:text-gx-ink hover:bg-gx-surface-hover transition-colors group"
           title="Open engineering operations console"
         >
-          <Terminal className="w-3.5 h-3.5 text-gx-ink-muted group-hover:text-gx-ink-secondary" />
-          <span className="font-medium">Ops</span>
+          <div className="flex items-center gap-2">
+            <Terminal className="w-3.5 h-3.5 text-gx-ink-muted group-hover:text-gx-ink-secondary" />
+            <span className="font-medium">Operations Console</span>
+          </div>
           <span className="text-[10px] font-mono text-gx-ink-muted">/ops</span>
         </Link>
-
-        <AppearancePopover />
+        <AccountPopover userEmail="growxlabstech@gmail.com" />
       </div>
     </aside>
   );
