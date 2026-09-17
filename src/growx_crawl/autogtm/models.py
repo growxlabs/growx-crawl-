@@ -53,6 +53,9 @@ class ProspectLead(BaseModel):
     relevance_score: int = 90
     personalization_hook: str = ""
     outreach: Optional[OutreachSequence] = None
+    canonical_company_id: Optional[str] = None
+    canonical_domain_id: Optional[str] = None
+    canonical_person_id: Optional[str] = None
 
 
 class AutoGTMResult(BaseModel):

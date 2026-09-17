@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from growx_crawl.autogtm.models import CompanyAnalysis, ICPProfile, ProspectLead
 from growx_crawl.autogtm.verifier import email_verifier
+from growx_crawl.identity import identity_service
 
 logger = logging.getLogger("growx_crawl.autogtm.prospector")
 
@@ -90,6 +91,26 @@ class ProspectHarvester:
             if status == "verified":
                 relevance += 3
 
+            # Resolve canonical identity
+            canon_cmp_id = None
+            canon_dom_id = None
+            canon_per_id = None
+            try:
+                canon_comp = identity_service.get_or_create_company(company, domain=domain)
+                canon_cmp_id = canon_comp.id
+                canon_dom_id = canon_comp.primary_domain_id
+                person_ent, _ = identity_service.get_or_create_person(
+                    full_name=full_name,
+                    company_id=canon_comp.id,
+                    title=title,
+                    email=primary_email,
+                    linkedin_url=f"https://www.linkedin.com/in/{first_name.lower()}-{last_name.lower()}-{hash(domain) % 999}",
+                    location_text=location,
+                )
+                canon_per_id = person_ent.id
+            except Exception as e:
+                logger.warning("Failed to resolve canonical identity for %s: %s", full_name, e)
+
             lead = ProspectLead(
                 id=f"lead_{uuid.uuid4().hex[:10]}",
                 name=full_name,
@@ -106,6 +127,9 @@ class ProspectHarvester:
                 location=location,
                 relevance_score=min(relevance, 100),
                 personalization_hook=hook,
+                canonical_company_id=canon_cmp_id,
+                canonical_domain_id=canon_dom_id,
+                canonical_person_id=canon_per_id,
             )
             leads.append(lead)
 

@@ -192,6 +192,172 @@ CREATE TABLE IF NOT EXISTS canonical_object_refs (
 CREATE INDEX IF NOT EXISTS idx_canon_obj_key ON canonical_object_refs(object_key);
 CREATE INDEX IF NOT EXISTS idx_canon_obj_hash ON canonical_object_refs(content_hash);
 CREATE INDEX IF NOT EXISTS idx_canon_obj_run ON canonical_object_refs(crawl_run_id);
+
+-- Phase 03 Canonical Entity Identity Expansion SQLite Tables
+
+CREATE TABLE IF NOT EXISTS canonical_locations (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    city TEXT,
+    region TEXT,
+    country_code TEXT,
+    postal_code TEXT,
+    latitude REAL,
+    longitude REAL,
+    location_type TEXT DEFAULT 'office',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_loc_norm ON canonical_locations(normalized_name);
+CREATE INDEX IF NOT EXISTS idx_canon_loc_country ON canonical_locations(country_code);
+
+CREATE TABLE IF NOT EXISTS canonical_company_locations (
+    company_id TEXT NOT NULL,
+    location_id TEXT NOT NULL,
+    relationship_type TEXT DEFAULT 'office',
+    is_primary INTEGER DEFAULT 1,
+    confidence REAL DEFAULT 1.0,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    PRIMARY KEY (company_id, location_id),
+    FOREIGN KEY (company_id) REFERENCES canonical_companies(id) ON DELETE CASCADE,
+    FOREIGN KEY (location_id) REFERENCES canonical_locations(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_comp_loc_comp ON canonical_company_locations(company_id);
+CREATE INDEX IF NOT EXISTS idx_canon_comp_loc_loc ON canonical_company_locations(location_id);
+
+CREATE TABLE IF NOT EXISTS canonical_brands (
+    id TEXT PRIMARY KEY,
+    canonical_name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    company_id TEXT NOT NULL,
+    primary_domain_id TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (company_id) REFERENCES canonical_companies(id) ON DELETE CASCADE,
+    FOREIGN KEY (primary_domain_id) REFERENCES canonical_domains(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_brands_comp ON canonical_brands(company_id);
+CREATE INDEX IF NOT EXISTS idx_canon_brands_norm ON canonical_brands(normalized_name);
+
+CREATE TABLE IF NOT EXISTS canonical_person_aliases (
+    id TEXT PRIMARY KEY,
+    person_id TEXT NOT NULL,
+    alias TEXT NOT NULL,
+    normalized_alias TEXT NOT NULL,
+    alias_type TEXT DEFAULT 'name_variant',
+    source_id TEXT,
+    confidence REAL DEFAULT 1.0,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    FOREIGN KEY (person_id) REFERENCES canonical_people(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_person_alias_per ON canonical_person_aliases(person_id);
+CREATE INDEX IF NOT EXISTS idx_canon_person_alias_norm ON canonical_person_aliases(normalized_alias);
+
+CREATE TABLE IF NOT EXISTS canonical_company_relationships (
+    id TEXT PRIMARY KEY,
+    from_company_id TEXT NOT NULL,
+    to_company_id TEXT NOT NULL,
+    relationship_type TEXT NOT NULL,
+    confidence REAL DEFAULT 1.0,
+    source_id TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (from_company_id) REFERENCES canonical_companies(id) ON DELETE CASCADE,
+    FOREIGN KEY (to_company_id) REFERENCES canonical_companies(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_rel_from ON canonical_company_relationships(from_company_id);
+CREATE INDEX IF NOT EXISTS idx_canon_rel_to ON canonical_company_relationships(to_company_id);
+
+CREATE TABLE IF NOT EXISTS canonical_external_identities (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    external_id TEXT NOT NULL,
+    external_url TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    UNIQUE (provider, external_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_ext_ident ON canonical_external_identities(entity_type, entity_id);
+
+CREATE TABLE IF NOT EXISTS canonical_identity_keys (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    key_type TEXT NOT NULL,
+    key_value TEXT NOT NULL,
+    is_unique INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    last_verified_at TEXT,
+    UNIQUE (key_type, key_value)
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_ident_keys ON canonical_identity_keys(entity_type, entity_id);
+
+CREATE TABLE IF NOT EXISTS canonical_identity_candidates (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    candidate_payload_json TEXT NOT NULL DEFAULT '{}',
+    candidate_key TEXT NOT NULL,
+    source_id TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    resolved_entity_id TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_cand_status ON canonical_identity_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_canon_cand_key ON canonical_identity_candidates(candidate_key);
+
+CREATE TABLE IF NOT EXISTS canonical_entity_merges (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    source_entity_id TEXT NOT NULL,
+    target_entity_id TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    method TEXT DEFAULT 'manual',
+    confidence REAL DEFAULT 1.0,
+    created_at TEXT NOT NULL,
+    created_by TEXT DEFAULT 'system',
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_merge_src ON canonical_entity_merges(source_entity_id);
+CREATE INDEX IF NOT EXISTS idx_canon_merge_tgt ON canonical_entity_merges(target_entity_id);
+
+CREATE TABLE IF NOT EXISTS canonical_identity_events (
+    id TEXT PRIMARY KEY,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    source_id TEXT,
+    created_at TEXT NOT NULL,
+    actor_type TEXT DEFAULT 'system',
+    actor_id TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_evt_entity ON canonical_identity_events(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_canon_evt_type ON canonical_identity_events(event_type);
 """
 
 

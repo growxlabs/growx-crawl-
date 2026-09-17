@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import socket
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import httpx
 
 logger = logging.getLogger("growx_crawl.autogtm.verifier")

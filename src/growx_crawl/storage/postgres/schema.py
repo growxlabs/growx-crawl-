@@ -180,6 +180,166 @@ CREATE INDEX IF NOT EXISTS idx_object_refs_key ON object_refs(object_key);
 CREATE INDEX IF NOT EXISTS idx_object_refs_hash ON object_refs(content_hash);
 CREATE INDEX IF NOT EXISTS idx_object_refs_run ON object_refs(crawl_run_id);
 CREATE INDEX IF NOT EXISTS idx_object_refs_comp ON object_refs(company_id);
+
+-- Phase 03 Canonical Entity Identity Expansion Tables
+
+CREATE TABLE IF NOT EXISTS locations (
+    id VARCHAR(64) PRIMARY KEY,
+    name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    city TEXT,
+    region TEXT,
+    country_code VARCHAR(8),
+    postal_code VARCHAR(32),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    location_type VARCHAR(32) DEFAULT 'office',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_locations_norm_name ON locations(normalized_name);
+CREATE INDEX IF NOT EXISTS idx_locations_country ON locations(country_code);
+
+CREATE TABLE IF NOT EXISTS company_locations (
+    company_id VARCHAR(64) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    location_id VARCHAR(64) NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    relationship_type VARCHAR(32) DEFAULT 'office',
+    is_primary BOOLEAN DEFAULT TRUE,
+    confidence REAL DEFAULT 1.0,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_verified_at TIMESTAMPTZ,
+    PRIMARY KEY (company_id, location_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_company_locations_comp ON company_locations(company_id);
+CREATE INDEX IF NOT EXISTS idx_company_locations_loc ON company_locations(location_id);
+
+CREATE TABLE IF NOT EXISTS brands (
+    id VARCHAR(64) PRIMARY KEY,
+    canonical_name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    company_id VARCHAR(64) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    primary_domain_id VARCHAR(64) REFERENCES domains(id) ON DELETE SET NULL,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_brands_company ON brands(company_id);
+CREATE INDEX IF NOT EXISTS idx_brands_normalized ON brands(normalized_name);
+
+CREATE TABLE IF NOT EXISTS person_aliases (
+    id VARCHAR(64) PRIMARY KEY,
+    person_id VARCHAR(64) NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+    alias TEXT NOT NULL,
+    normalized_alias TEXT NOT NULL,
+    alias_type VARCHAR(32) DEFAULT 'name_variant',
+    source_id VARCHAR(64),
+    confidence REAL DEFAULT 1.0,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_person_aliases_person ON person_aliases(person_id);
+CREATE INDEX IF NOT EXISTS idx_person_aliases_normalized ON person_aliases(normalized_alias);
+
+CREATE TABLE IF NOT EXISTS company_relationships (
+    id VARCHAR(64) PRIMARY KEY,
+    from_company_id VARCHAR(64) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    to_company_id VARCHAR(64) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    relationship_type VARCHAR(32) NOT NULL,
+    confidence REAL DEFAULT 1.0,
+    source_id VARCHAR(64),
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_verified_at TIMESTAMPTZ,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_company_rel_from ON company_relationships(from_company_id);
+CREATE INDEX IF NOT EXISTS idx_company_rel_to ON company_relationships(to_company_id);
+CREATE INDEX IF NOT EXISTS idx_company_rel_type ON company_relationships(relationship_type);
+
+CREATE TABLE IF NOT EXISTS external_identities (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    provider VARCHAR(32) NOT NULL,
+    external_id TEXT NOT NULL,
+    external_url TEXT,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb,
+    CONSTRAINT uq_external_identities UNIQUE (provider, external_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_external_identities_entity ON external_identities(entity_type, entity_id);
+
+CREATE TABLE IF NOT EXISTS identity_keys (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    key_type VARCHAR(32) NOT NULL,
+    key_value TEXT NOT NULL,
+    is_unique BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_verified_at TIMESTAMPTZ,
+    CONSTRAINT uq_identity_keys UNIQUE (key_type, key_value)
+);
+
+CREATE INDEX IF NOT EXISTS idx_identity_keys_entity ON identity_keys(entity_type, entity_id);
+
+CREATE TABLE IF NOT EXISTS identity_candidates (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    candidate_payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    candidate_key TEXT NOT NULL,
+    source_id VARCHAR(64),
+    status VARCHAR(32) DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ,
+    resolved_entity_id VARCHAR(64),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_identity_candidates_status ON identity_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_identity_candidates_key ON identity_candidates(candidate_key);
+
+CREATE TABLE IF NOT EXISTS entity_merges (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    source_entity_id VARCHAR(64) NOT NULL,
+    target_entity_id VARCHAR(64) NOT NULL,
+    reason TEXT NOT NULL,
+    method VARCHAR(32) DEFAULT 'manual',
+    confidence REAL DEFAULT 1.0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(64) DEFAULT 'system',
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_entity_merges_source ON entity_merges(source_entity_id);
+CREATE INDEX IF NOT EXISTS idx_entity_merges_target ON entity_merges(target_entity_id);
+
+CREATE TABLE IF NOT EXISTS identity_events (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    event_type VARCHAR(64) NOT NULL,
+    payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+    source_id VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    actor_type VARCHAR(32) DEFAULT 'system',
+    actor_id VARCHAR(64)
+);
+
+CREATE INDEX IF NOT EXISTS idx_identity_events_entity ON identity_events(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_identity_events_type ON identity_events(event_type);
 """
 
 

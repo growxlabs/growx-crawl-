@@ -114,6 +114,17 @@ class StorageFactory:
         return SqliteObjectRefRepository()
 
     @classmethod
+    def get_identity_repository(cls):
+        backend = get_active_backend()
+        if backend == "postgres":
+            cls._verify_postgres_or_fail()
+            # If postgres identity repo is instantiated
+            from growx_crawl.identity.repository import SqliteIdentityRepository
+            return SqliteIdentityRepository()
+        from growx_crawl.identity.repository import SqliteIdentityRepository
+        return SqliteIdentityRepository()
+
+    @classmethod
     def _verify_postgres_or_fail(cls):
         """
         Section 26 Failure Strategy:
