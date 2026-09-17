@@ -186,79 +186,48 @@ class DomainAnalyzer:
         )
 
     async def _llm_synthesize(self, domain: str, pages: List[Dict[str, Any]]) -> Optional[CompanyAnalysis]:
-        """Calls OpenRouter/OpenAI/Groq if an API key is available in environment."""
-        api_key = (
-            os.environ.get("OPENROUTER_API_KEY")
-            or os.environ.get("OPENAI_API_KEY")
-            or os.environ.get("GROQ_API_KEY")
-            or os.environ.get("GEMINI_API_KEY")
-        )
-        if not api_key:
-            return None
+        """Calls GrowX AI Gateway for structured company analysis."""
+        from growx_crawl.ai.gateway import ai_gateway
+        from growx_crawl.ai.models import StructuredAIRequest
 
         combined_text = "\n\n".join(
             [f"--- Page: {p.get('url', domain)} ---\n{p.get('data', {}).get('text_content', '')[:1500]}" for p in pages]
         )[:4000]
 
         prompt = f"""
-You are an expert Chief Marketing Officer and B2B GTM Strategist.
-Analyze the following text extracted from the website of {domain}:
-
+Analyze the website text of {domain} and return a structured company profile.
+Content:
 {combined_text}
 
-Return ONLY a valid JSON object matching this exact schema:
-{{
-  "company_name": "clean company name",
-  "tagline": "punchy 1-sentence value proposition",
-  "summary": "2-3 sentence overview of what the company does",
-  "primary_offer": "their main flagship product or service",
-  "value_proposition": "why customers buy from them (the transformation)",
-  "target_audience": ["Target Audience 1", "Target Audience 2", "Target Audience 3"],
-  "features": ["Key Feature 1", "Key Feature 2", "Key Feature 3", "Key Feature 4"],
-  "pricing_model": "e.g. SaaS Subscription / Usage-based / Agency Retainer",
-  "tech_stack": ["detected tech if any"],
-  "recent_announcements": ["notable news or product launches"]
-}}
+Return valid JSON with: company_name, tagline, summary, primary_offer, value_proposition, target_audience, features, pricing_model, tech_stack, recent_announcements.
 """
-        endpoint = "https://api.openai.com/v1/chat/completions"
-        model = "gpt-4o-mini"
-        if os.environ.get("OPENROUTER_API_KEY"):
-            endpoint = "https://openrouter.ai/api/v1/chat/completions"
-            model = "meta-llama/llama-3.3-70b-instruct:free"
-        elif os.environ.get("GROQ_API_KEY"):
-            endpoint = "https://api.groq.com/openai/v1/chat/completions"
-            model = "llama-3.3-70b-versatile"
+        req = StructuredAIRequest(
+            task="company_analysis",
+            prompt=prompt,
+            input_data={"domain": domain, "content": combined_text},
+            metadata_json={"domain": domain},
+        )
 
         try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                res = await client.post(
-                    endpoint,
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                    json={
-                        "model": model,
-                        "messages": [{"role": "user", "content": prompt}],
-                        "response_format": {"type": "json_object"},
-                    },
+            res = await ai_gateway.generate_structured(req)
+            if res.structured_output:
+                parsed = res.structured_output
+                return CompanyAnalysis(
+                    domain=domain,
+                    company_name=parsed.get("company_name", domain.split(".")[0].capitalize()),
+                    tagline=parsed.get("tagline", ""),
+                    summary=parsed.get("summary", ""),
+                    primary_offer=parsed.get("primary_offer", ""),
+                    value_proposition=parsed.get("value_proposition", ""),
+                    target_audience=parsed.get("target_audience", []),
+                    features=parsed.get("features", []),
+                    pricing_model=parsed.get("pricing_model", "Subscription"),
+                    tech_stack=parsed.get("tech_stack", self._extract_tech_stack(pages[0].get("data", {}).get("html", "") if pages else "")),
+                    recent_announcements=parsed.get("recent_announcements", []),
+                    crawled_pages_count=len(pages),
                 )
-                if res.status_code == 200:
-                    data = res.json()["choices"][0]["message"]["content"]
-                    parsed = json.loads(data)
-                    return CompanyAnalysis(
-                        domain=domain,
-                        company_name=parsed.get("company_name", domain.split(".")[0].capitalize()),
-                        tagline=parsed.get("tagline", ""),
-                        summary=parsed.get("summary", ""),
-                        primary_offer=parsed.get("primary_offer", ""),
-                        value_proposition=parsed.get("value_proposition", ""),
-                        target_audience=parsed.get("target_audience", []),
-                        features=parsed.get("features", []),
-                        pricing_model=parsed.get("pricing_model", "Subscription"),
-                        tech_stack=parsed.get("tech_stack", self._extract_tech_stack(pages[0].get("data", {}).get("html", ""))),
-                        recent_announcements=parsed.get("recent_announcements", []),
-                        crawled_pages_count=len(pages),
-                    )
         except Exception as e:
-            logger.warning(f"LLM synthesis failed, falling back to heuristic: {e}")
+            logger.warning(f"AI Gateway company analysis failed, falling back to heuristic: {e}")
 
         return None
 

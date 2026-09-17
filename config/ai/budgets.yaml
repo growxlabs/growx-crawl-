@@ -1,0 +1,16 @@
+# GrowX AI Budget & Guardrails
+version: "1.0"
+
+cost_guard_enabled: true
+
+thresholds:
+  max_cost_per_request_usd: 0.50
+  max_input_tokens_per_request: 100000
+  max_output_tokens_per_request: 4096
+  max_input_chars_untrusted: 50000
+
+policy_on_exceeded:
+  cost: "reject"          # "reject" or "downgrade"
+  context: "truncate"     # "truncate" or "reject"
+
+daily_budget_limit_usd: 50.00

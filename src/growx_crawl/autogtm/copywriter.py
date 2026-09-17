@@ -86,29 +86,14 @@ class MultiChannelCopywriter:
         sender: CompanyAnalysis,
     ) -> OutreachSequence:
         """
-        Attempts LLM copywriting if API key exists, otherwise falls back
-        to battle-tested heuristic framework.
+        Generates personalized multi-channel copy using GrowX AI Gateway,
+        falling back to battle-tested heuristics on failure.
         """
-        api_key = (
-            os.environ.get("OPENROUTER_API_KEY")
-            or os.environ.get("OPENAI_API_KEY")
-            or os.environ.get("GROQ_API_KEY")
-            or os.environ.get("GEMINI_API_KEY")
-        )
+        from growx_crawl.ai.gateway import ai_gateway
+        from growx_crawl.ai.models import StructuredAIRequest
 
-        if api_key:
-            try:
-                endpoint = "https://api.openai.com/v1/chat/completions"
-                model = "gpt-4o-mini"
-                if os.environ.get("OPENROUTER_API_KEY"):
-                    endpoint = "https://openrouter.ai/api/v1/chat/completions"
-                    model = "meta-llama/llama-3.3-70b-instruct:free"
-                elif os.environ.get("GROQ_API_KEY"):
-                    endpoint = "https://api.groq.com/openai/v1/chat/completions"
-                    model = "llama-3.3-70b-versatile"
-
-                prompt = f"""
-You are a world-class elite B2B sales copywriter trained on Josh Braun, Chris Voss, and Alex Hormozi.
+        prompt = f"""
+You are an elite B2B sales copywriter trained on Josh Braun, Chris Voss, and Alex Hormozi.
 Write a 3-step cold email sequence and LinkedIn note for this prospect:
 - Prospect: {lead.name} ({lead.title} at {lead.company_name}, {lead.company_domain})
 - Live Crawled Fact / Hook: {lead.personalization_hook}
@@ -120,39 +105,29 @@ RULES:
 3. The email body must cite the crawled fact in line 1.
 4. Call to action must be low-friction (interest-based, e.g. "Worth a look?").
 
-Return ONLY valid JSON matching:
-{{
-  "email_subject": "...",
-  "email_body": "...",
-  "email_followup_1": "...",
-  "email_followup_2": "...",
-  "linkedin_note": "under 300 chars",
-  "twitter_dm": "..."
-}}
+Return strictly valid JSON with keys: email_subject, email_body, email_followup_1, email_followup_2, linkedin_note, twitter_dm.
 """
-                async with httpx.AsyncClient(timeout=12.0) as client:
-                    res = await client.post(
-                        endpoint,
-                        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                        json={
-                            "model": model,
-                            "messages": [{"role": "user", "content": prompt}],
-                            "response_format": {"type": "json_object"},
-                        },
-                    )
-                    if res.status_code == 200:
-                        import json
-                        data = json.loads(res.json()["choices"][0]["message"]["content"])
-                        return OutreachSequence(
-                            email_subject=data.get("email_subject", f"quick question re {lead.company_name}"),
-                            email_body=data.get("email_body", ""),
-                            email_followup_1=data.get("email_followup_1", ""),
-                            email_followup_2=data.get("email_followup_2", ""),
-                            linkedin_note=data.get("linkedin_note", "")[:295],
-                            twitter_dm=data.get("twitter_dm", ""),
-                        )
-            except Exception as e:
-                logger.warning(f"LLM copywriting failed, falling back to heuristic: {e}")
+        req = StructuredAIRequest(
+            task="email_personalization",
+            prompt=prompt,
+            schema_class=OutreachSequence,
+            metadata_json={"lead_id": lead.id, "company": lead.company_name},
+        )
+
+        try:
+            res = await ai_gateway.generate_structured(req)
+            if res.structured_output:
+                data = res.structured_output
+                return OutreachSequence(
+                    email_subject=data.get("email_subject", f"quick question re {lead.company_name}"),
+                    email_body=data.get("email_body", ""),
+                    email_followup_1=data.get("email_followup_1", ""),
+                    email_followup_2=data.get("email_followup_2", ""),
+                    linkedin_note=data.get("linkedin_note", "")[:295],
+                    twitter_dm=data.get("twitter_dm", ""),
+                )
+        except Exception as e:
+            logger.warning(f"AI Gateway copywriting failed, falling back to heuristic: {e}")
 
         return self.generate_heuristic_sequence(lead, sender)
 

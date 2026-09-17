@@ -1,0 +1,156 @@
+# GrowX AI Tasks Catalog
+version: "1.0"
+
+tasks:
+  company_analysis:
+    description: "Deep structured extraction of company offerings, target audience, pricing, and tech stack"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 604800  # 7 days
+    max_output_tokens: 1500
+    timeout_seconds: 30
+    untrusted_input_delimiter: true
+
+  competitor_analysis:
+    description: "Identify key competitors and market differentiation"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 1000
+    timeout_seconds: 25
+    untrusted_input_delimiter: true
+
+  icp_generation:
+    description: "Synthesize high-probability Ideal Customer Profile from company data"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 1200
+    timeout_seconds: 25
+    untrusted_input_delimiter: false
+
+  prospect_research:
+    description: "Research individual prospect facts, hooks, and background"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 259200  # 3 days
+    max_output_tokens: 1000
+    timeout_seconds: 25
+    untrusted_input_delimiter: true
+
+  prospect_qualification:
+    description: "Evaluate prospect fit against ICP criteria"
+    quality_tier: "fast"
+    cacheable: true
+    cache_ttl_seconds: 259200
+    max_output_tokens: 600
+    timeout_seconds: 15
+    untrusted_input_delimiter: false
+
+  fact_interpretation:
+    description: "Interpret raw unstructured page text into candidate facts"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 1000
+    timeout_seconds: 25
+    untrusted_input_delimiter: true
+
+  verification_reasoning:
+    description: "High-stakes reasoning on conflicting entity or employment evidence"
+    quality_tier: "high"
+    cacheable: false
+    cache_ttl_seconds: 0
+    max_output_tokens: 1000
+    timeout_seconds: 30
+    untrusted_input_delimiter: true
+
+  entity_resolution_assist:
+    description: "Disambiguate difficult entity merge or link candidates"
+    quality_tier: "high"
+    cacheable: false
+    cache_ttl_seconds: 0
+    max_output_tokens: 800
+    timeout_seconds: 25
+    untrusted_input_delimiter: false
+
+  email_personalization:
+    description: "Craft personalized multi-channel sales outreach sequence"
+    quality_tier: "standard"
+    cacheable: false  # Outreach copy should be dynamic
+    cache_ttl_seconds: 0
+    max_output_tokens: 1200
+    timeout_seconds: 25
+    untrusted_input_delimiter: true
+
+  reply_classification:
+    description: "Classify incoming prospect email reply intent"
+    quality_tier: "fast"
+    cacheable: false
+    cache_ttl_seconds: 0
+    max_output_tokens: 300
+    timeout_seconds: 10
+    untrusted_input_delimiter: true
+
+  reply_drafting:
+    description: "Draft context-aware response to prospect reply"
+    quality_tier: "standard"
+    cacheable: false
+    cache_ttl_seconds: 0
+    max_output_tokens: 800
+    timeout_seconds: 20
+    untrusted_input_delimiter: true
+
+  meeting_brief:
+    description: "Generate structured pre-meeting intelligence dossier"
+    quality_tier: "standard"
+    cacheable: false
+    cache_ttl_seconds: 0
+    max_output_tokens: 1500
+    timeout_seconds: 30
+    untrusted_input_delimiter: false
+
+  signal_interpretation:
+    description: "Evaluate raw hiring, funding, or technology change signals"
+    quality_tier: "standard"
+    cacheable: true
+    cache_ttl_seconds: 86400  # 1 day
+    max_output_tokens: 800
+    timeout_seconds: 20
+    untrusted_input_delimiter: true
+
+  summary:
+    description: "Fast summarization of document or web content"
+    quality_tier: "fast"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 600
+    timeout_seconds: 15
+    untrusted_input_delimiter: true
+
+  extraction:
+    description: "Structured attribute extraction from text"
+    quality_tier: "fast"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 800
+    timeout_seconds: 15
+    untrusted_input_delimiter: true
+
+  classification:
+    description: "Fast zero/few-shot category classification"
+    quality_tier: "fast"
+    cacheable: true
+    cache_ttl_seconds: 604800
+    max_output_tokens: 200
+    timeout_seconds: 10
+    untrusted_input_delimiter: true
+
+  embedding:
+    description: "Generate semantic vector embedding"
+    quality_tier: "fast"
+    cacheable: true
+    cache_ttl_seconds: 2592000  # 30 days
+    max_output_tokens: 0
+    timeout_seconds: 10
+    untrusted_input_delimiter: false

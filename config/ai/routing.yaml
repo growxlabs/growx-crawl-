@@ -1,0 +1,64 @@
+# GrowX AI Routing Matrix
+version: "1.0"
+
+default_provider: "gemini"
+default_quality_tier: "standard"
+
+quality_tiers:
+  fast:
+    primary:
+      provider: "gemini"
+      model: "gemini-1.5-flash"
+    fallback:
+      provider: "openai"
+      model: "gpt-4o-mini"
+  standard:
+    primary:
+      provider: "gemini"
+      model: "gemini-2.0-flash"
+    fallback:
+      provider: "openai"
+      model: "gpt-4o-mini"
+  high:
+    primary:
+      provider: "openai"
+      model: "gpt-4o"
+    fallback:
+      provider: "gemini"
+      model: "gemini-1.5-pro"
+
+task_routes:
+  company_analysis:
+    tier: "standard"
+  competitor_analysis:
+    tier: "standard"
+  icp_generation:
+    tier: "standard"
+  prospect_research:
+    tier: "standard"
+  prospect_qualification:
+    tier: "fast"
+  fact_interpretation:
+    tier: "standard"
+  verification_reasoning:
+    tier: "high"
+  entity_resolution_assist:
+    tier: "high"
+  email_personalization:
+    tier: "standard"
+  reply_classification:
+    tier: "fast"
+  reply_drafting:
+    tier: "standard"
+  meeting_brief:
+    tier: "standard"
+  signal_interpretation:
+    tier: "standard"
+  summary:
+    tier: "fast"
+  extraction:
+    tier: "fast"
+  classification:
+    tier: "fast"
+  embedding:
+    tier: "fast"

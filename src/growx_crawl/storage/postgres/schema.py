@@ -563,6 +563,58 @@ CREATE TABLE IF NOT EXISTS verification_state (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ver_state_lookup ON verification_state(subject_type, subject_id);
+
+CREATE TABLE IF NOT EXISTS model_runs (
+    id VARCHAR(64) PRIMARY KEY,
+    task VARCHAR(128) NOT NULL,
+    provider VARCHAR(64) NOT NULL,
+    model VARCHAR(128) NOT NULL,
+    prompt_id VARCHAR(128),
+    prompt_version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    quality_tier VARCHAR(32) NOT NULL DEFAULT 'standard',
+    input_hash VARCHAR(64),
+    output_hash VARCHAR(64),
+    status VARCHAR(32) NOT NULL,
+    input_tokens INTEGER DEFAULT 0,
+    output_tokens INTEGER DEFAULT 0,
+    total_tokens INTEGER DEFAULT 0,
+    estimated_cost DOUBLE PRECISION DEFAULT 0.0,
+    latency_ms INTEGER DEFAULT 0,
+    fallback_used BOOLEAN DEFAULT FALSE,
+    fallback_reason TEXT,
+    cache_hit BOOLEAN DEFAULT FALSE,
+    error_code VARCHAR(64),
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_model_runs_task ON model_runs(task);
+CREATE INDEX IF NOT EXISTS idx_model_runs_prov_model ON model_runs(provider, model);
+CREATE INDEX IF NOT EXISTS idx_model_runs_started ON model_runs(started_at);
+
+CREATE TABLE IF NOT EXISTS ai_cost_profiles (
+    id VARCHAR(64) PRIMARY KEY,
+    provider VARCHAR(64) NOT NULL,
+    model VARCHAR(128) NOT NULL,
+    input_unit_cost DOUBLE PRECISION NOT NULL,
+    output_unit_cost DOUBLE PRECISION NOT NULL,
+    effective_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    effective_to TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ai_evaluations (
+    id VARCHAR(64) PRIMARY KEY,
+    task VARCHAR(128) NOT NULL,
+    dataset_version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    candidate_config TEXT NOT NULL,
+    score_json JSONB DEFAULT '{}'::jsonb,
+    cost DOUBLE PRECISION DEFAULT 0.0,
+    latency_ms INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_ai_evals_task ON ai_evaluations(task);
 """
 
 

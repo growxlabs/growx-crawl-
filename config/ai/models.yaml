@@ -1,0 +1,66 @@
+# GrowX AI Models Catalog
+version: "1.0"
+
+models:
+  # Google Gemini
+  gemini-2.0-flash:
+    provider: "gemini"
+    quality_tier: "standard"
+    max_context_tokens: 1048576
+    max_output_tokens: 8192
+    supports_structured: true
+    input_cost_per_m: 0.10
+    output_cost_per_m: 0.40
+    enabled: true
+
+  gemini-1.5-flash:
+    provider: "gemini"
+    quality_tier: "fast"
+    max_context_tokens: 1048576
+    max_output_tokens: 8192
+    supports_structured: true
+    input_cost_per_m: 0.075
+    output_cost_per_m: 0.30
+    enabled: true
+
+  gemini-1.5-pro:
+    provider: "gemini"
+    quality_tier: "high"
+    max_context_tokens: 2097152
+    max_output_tokens: 8192
+    supports_structured: true
+    input_cost_per_m: 1.25
+    output_cost_per_m: 5.00
+    enabled: true
+
+  # OpenAI
+  gpt-4o:
+    provider: "openai"
+    quality_tier: "high"
+    max_context_tokens: 128000
+    max_output_tokens: 4096
+    supports_structured: true
+    input_cost_per_m: 2.50
+    output_cost_per_m: 10.00
+    enabled: true
+
+  gpt-4o-mini:
+    provider: "openai"
+    quality_tier: "fast"
+    max_context_tokens: 128000
+    max_output_tokens: 4096
+    supports_structured: true
+    input_cost_per_m: 0.15
+    output_cost_per_m: 0.60
+    enabled: true
+
+  # Deterministic Testing Mock Model
+  mock-model:
+    provider: "mock"
+    quality_tier: "fast"
+    max_context_tokens: 128000
+    max_output_tokens: 2048
+    supports_structured: true
+    input_cost_per_m: 0.00
+    output_cost_per_m: 0.00
+    enabled: true

@@ -588,6 +588,58 @@ CREATE TABLE IF NOT EXISTS canonical_verification_state (
 );
 
 CREATE INDEX IF NOT EXISTS idx_canon_ver_state_lookup ON canonical_verification_state(subject_type, subject_id);
+
+CREATE TABLE IF NOT EXISTS model_runs (
+    id TEXT PRIMARY KEY,
+    task TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    prompt_id TEXT,
+    prompt_version TEXT NOT NULL DEFAULT 'v1',
+    quality_tier TEXT NOT NULL DEFAULT 'standard',
+    input_hash TEXT,
+    output_hash TEXT,
+    status TEXT NOT NULL,
+    input_tokens INTEGER DEFAULT 0,
+    output_tokens INTEGER DEFAULT 0,
+    total_tokens INTEGER DEFAULT 0,
+    estimated_cost REAL DEFAULT 0.0,
+    latency_ms INTEGER DEFAULT 0,
+    fallback_used INTEGER DEFAULT 0,
+    fallback_reason TEXT,
+    cache_hit INTEGER DEFAULT 0,
+    error_code TEXT,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_model_runs_task ON model_runs(task);
+CREATE INDEX IF NOT EXISTS idx_model_runs_prov_model ON model_runs(provider, model);
+CREATE INDEX IF NOT EXISTS idx_model_runs_started ON model_runs(started_at);
+
+CREATE TABLE IF NOT EXISTS ai_cost_profiles (
+    id TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    input_unit_cost REAL NOT NULL,
+    output_unit_cost REAL NOT NULL,
+    effective_from TEXT NOT NULL,
+    effective_to TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ai_evaluations (
+    id TEXT PRIMARY KEY,
+    task TEXT NOT NULL,
+    dataset_version TEXT NOT NULL DEFAULT 'v1',
+    candidate_config TEXT NOT NULL,
+    score_json TEXT NOT NULL DEFAULT '{}',
+    cost REAL DEFAULT 0.0,
+    latency_ms INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ai_evals_task ON ai_evaluations(task);
 """
 
 

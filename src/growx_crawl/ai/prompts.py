@@ -1,8 +1,10 @@
 """
-GrowX AI Prompt Version Registry.
+GrowX AI Prompt Version Registry (Adapter & Facade).
+Maintains exact backward compatibility with existing tests and imports.
 """
 
 from typing import Dict
+from growx_crawl.ai.prompt_registry import prompt_registry, wrap_untrusted_input
 
 PROMPT_REGISTRY: Dict[str, Dict[str, str]] = {
     "icp_synthesis": {
@@ -18,5 +20,11 @@ PROMPT_REGISTRY: Dict[str, Dict[str, str]] = {
 
 
 def get_prompt_template(task: str, version: str = "v1") -> str:
-    task_prompts = PROMPT_REGISTRY.get(task, {})
-    return task_prompts.get(version, "{context}")
+    """Retrieves prompt template string for task and version."""
+    if task in PROMPT_REGISTRY and version in PROMPT_REGISTRY[task]:
+        return PROMPT_REGISTRY[task][version]
+    tpl = prompt_registry.get(task, version)
+    return tpl.user_template
+
+
+__all__ = ["PROMPT_REGISTRY", "get_prompt_template", "prompt_registry", "wrap_untrusted_input"]
