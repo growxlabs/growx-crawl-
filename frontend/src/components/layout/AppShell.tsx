@@ -3,7 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { CockpitProvider } from "@/features/cockpit/CockpitContext";
-import { CockpitSidebar } from "@/features/cockpit/CockpitSidebar";
+import { AutoGTMWorkflowSidebar } from "@/features/autogtm-workflow/AutoGTMWorkflowSidebar";
 import { CockpitHeader } from "@/features/cockpit/CockpitHeader";
 import { EvidenceProvider } from "../inspector/EvidenceContext";
 import { EvidenceInspector } from "../inspector/EvidenceInspector";
@@ -33,8 +33,8 @@ export function AppShell({ children }: AppShellProps) {
     <EvidenceProvider>
       <CockpitProvider>
         <div className="flex h-screen w-screen overflow-hidden bg-[#0a0c10] text-slate-100 font-sans">
-          {/* Explee Left Control Column */}
-          <CockpitSidebar />
+          {/* Workflow Stages Sidebar */}
+          <AutoGTMWorkflowSidebar />
 
           {/* Right Main Column (Top Stepper + Unified Cockpit Area) */}
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#0a0c10]">
