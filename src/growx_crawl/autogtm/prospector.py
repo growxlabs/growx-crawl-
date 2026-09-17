@@ -8,6 +8,7 @@ from growx_crawl.autogtm.models import CompanyAnalysis, ICPProfile, ProspectLead
 from growx_crawl.verification.email import email_verifier
 from growx_crawl.verification.gate import VerificationGate
 from growx_crawl.identity import identity_service
+from growx_crawl.quality import GateType, quality_service
 
 logger = logging.getLogger("growx_crawl.autogtm.prospector")
 
@@ -117,8 +118,35 @@ class ProspectHarvester:
                 email_res=await self.verifier.verify_entity(primary_email)
             )
 
+            lead_id = f"lead_{uuid.uuid4().hex[:10]}"
+
+            # Run data quality gate
+            quality_status = None
+            quality_score = None
+            quality_reasons = []
+            try:
+                quality_dec = quality_service.evaluate(
+                    subject_type="prospect",
+                    subject_id=lead_id,
+                    gate_type=GateType.PROSPECT_ELIGIBILITY,
+                    data={
+                        "id": lead_id,
+                        "name": company,
+                        "domain": domain,
+                        "verification_status": status,
+                        "verification_confidence": float(confidence) / 100.0 if confidence > 1 else float(confidence),
+                        "industry": icp.target_industries[0] if icp.target_industries else "Technology",
+                        "description": hook,
+                    },
+                )
+                quality_status = quality_dec.status.value
+                quality_score = quality_dec.score
+                quality_reasons = quality_dec.reasons
+            except Exception as e:
+                logger.warning("Failed to evaluate quality gate for %s: %s", full_name, e)
+
             lead = ProspectLead(
-                id=f"lead_{uuid.uuid4().hex[:10]}",
+                id=lead_id,
                 name=full_name,
                 first_name=first_name,
                 last_name=last_name,
@@ -138,6 +166,9 @@ class ProspectHarvester:
                 canonical_person_id=canon_per_id,
                 verification_gate_decision=gate_eval.decision.value,
                 verification_status=status,
+                quality_status=quality_status,
+                quality_score=quality_score,
+                quality_reasons=quality_reasons,
             )
             leads.append(lead)
 

@@ -640,6 +640,92 @@ CREATE TABLE IF NOT EXISTS ai_evaluations (
     created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_ai_evals_task ON ai_evaluations(task);
+
+CREATE TABLE IF NOT EXISTS quality_policies (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    gate_type TEXT NOT NULL,
+    profile TEXT NOT NULL,
+    version TEXT NOT NULL DEFAULT 'v1',
+    min_score REAL DEFAULT 0.70,
+    rules_config TEXT DEFAULT '{}',
+    ttl_hours INTEGER DEFAULT 168,
+    enabled INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS quality_results (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    gate_type TEXT NOT NULL,
+    profile TEXT NOT NULL,
+    status TEXT NOT NULL,
+    score REAL NOT NULL,
+    policy_id TEXT NOT NULL,
+    policy_version TEXT NOT NULL DEFAULT 'v1',
+    reasons TEXT DEFAULT '[]',
+    required_actions TEXT DEFAULT '[]',
+    evaluated_at TEXT NOT NULL,
+    valid_until TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_qual_res_subject ON quality_results(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_qual_res_gate ON quality_results(gate_type);
+
+CREATE TABLE IF NOT EXISTS quality_rule_results (
+    id TEXT PRIMARY KEY,
+    quality_result_id TEXT NOT NULL,
+    rule_name TEXT NOT NULL,
+    rule_type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    score_delta REAL DEFAULT 0.0,
+    reason_code TEXT NOT NULL,
+    details_json TEXT DEFAULT '{}',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (quality_result_id) REFERENCES quality_results(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_qual_rule_res ON quality_rule_results(quality_result_id);
+
+CREATE TABLE IF NOT EXISTS quality_state (
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    gate_type TEXT NOT NULL,
+    latest_result_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    score REAL NOT NULL,
+    valid_until TEXT,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (subject_type, subject_id, gate_type)
+);
+
+CREATE TABLE IF NOT EXISTS quality_quarantine (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    candidate_payload_json TEXT NOT NULL,
+    reason_codes TEXT DEFAULT '[]',
+    source_id TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS prospect_quality_snapshots (
+    prospect_id TEXT PRIMARY KEY,
+    company_score REAL DEFAULT 0.0,
+    person_score REAL DEFAULT 0.0,
+    employment_score REAL DEFAULT 0.0,
+    email_score REAL DEFAULT 0.0,
+    personalization_score REAL DEFAULT 0.0,
+    outreach_score REAL DEFAULT 0.0,
+    overall_status TEXT NOT NULL,
+    reasons TEXT DEFAULT '[]',
+    required_actions TEXT DEFAULT '[]',
+    evaluated_at TEXT NOT NULL
+);
 """
 
 

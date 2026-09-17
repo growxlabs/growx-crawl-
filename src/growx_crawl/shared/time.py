@@ -3,7 +3,7 @@ GrowX Platform Standard Time Primitives.
 Ensures timezone-aware UTC timestamps and standard ISO 8601 formatting.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 
@@ -15,6 +15,12 @@ def utc_now() -> datetime:
 def utc_iso_now() -> str:
     """Returns the current ISO 8601 UTC timestamp string formatted with 'Z'."""
     return utc_now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def calculate_future_utc_iso(hours: int = 0, days: int = 0, seconds: int = 0) -> str:
+    """Calculates future ISO 8601 timestamp string based on delta."""
+    future = utc_now() + timedelta(hours=hours, days=days, seconds=seconds)
+    return future.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def format_iso(dt: Optional[datetime]) -> Optional[str]:

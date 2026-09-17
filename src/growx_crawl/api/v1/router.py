@@ -523,3 +523,96 @@ async def get_search_stats(auth: Dict[str, Any] = Depends(get_current_api_key)):
     """Retrieve search engine index size, link graph statistics, and query telemetry."""
     from growx_crawl.search.engine import search_engine
     return search_engine.get_stats()
+
+
+# ── Data Quality Gate Endpoints ──
+
+class QualityEvaluateRequest(BaseModel):
+    subject_type: str = "prospect"
+    subject_id: str
+    gate_type: str
+    profile: Optional[str] = None
+    data: Optional[Dict[str, Any]] = None
+    policy_name: Optional[str] = None
+
+
+class ProspectBundleEvaluateRequest(BaseModel):
+    prospect_data: Dict[str, Any]
+    existing_prospect_ids: Optional[List[str]] = None
+    suppressed_emails: Optional[List[str]] = None
+
+
+@v1_router.post("/quality/evaluate")
+async def evaluate_quality_gate(
+    req: QualityEvaluateRequest,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Evaluate a subject record against a specific Data Quality Gate."""
+    from growx_crawl.quality import GateType, quality_service
+    try:
+        gt = GateType(req.gate_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid gate_type: {req.gate_type}")
+
+    decision = quality_service.evaluate(
+        subject_type=req.subject_type,
+        subject_id=req.subject_id,
+        gate_type=gt,
+        profile=req.profile,
+        data=req.data,
+        policy_name=req.policy_name,
+    )
+    return decision.model_dump()
+
+
+@v1_router.post("/quality/prospect-bundle")
+async def evaluate_prospect_bundle(
+    req: ProspectBundleEvaluateRequest,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Run comprehensive quality evaluation for a full prospect bundle."""
+    from growx_crawl.quality import quality_service
+    snapshot = quality_service.evaluate_prospect_bundle(
+        prospect_data=req.prospect_data,
+        existing_prospect_ids=req.existing_prospect_ids,
+        suppressed_emails=req.suppressed_emails,
+    )
+    return snapshot.model_dump()
+
+
+@v1_router.get("/quality/metrics")
+async def get_quality_metrics(auth: Dict[str, Any] = Depends(get_current_api_key)):
+    """Retrieve telemetry metrics summary across all Data Quality Gates."""
+    from growx_crawl.quality import quality_service
+    return quality_service.get_metrics_summary()
+
+
+@v1_router.get("/quality/quarantine")
+async def list_quarantine_records(
+    status: Optional[str] = Query(None, description="Filter status (pending, accepted, rejected, reprocessed)"),
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """List quarantined observation payloads for review and repair."""
+    from growx_crawl.quality import quality_service
+    records = quality_service.list_quarantined(status=status)
+    return {"total": len(records), "quarantined": [r.model_dump() for r in records]}
+
+
+@v1_router.get("/quality/state/{subject_type}/{subject_id}/{gate_type}")
+async def get_quality_state(
+    subject_type: str,
+    subject_id: str,
+    gate_type: str,
+    auth: Dict[str, Any] = Depends(get_current_api_key),
+):
+    """Get current cached quality state for a subject and gate."""
+    from growx_crawl.quality import GateType, quality_service
+    try:
+        gt = GateType(gate_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid gate_type: {gate_type}")
+
+    state = quality_service.get_current(subject_type, subject_id, gt)
+    if not state:
+        raise HTTPException(status_code=404, detail="Quality state not found")
+    return state.model_dump()

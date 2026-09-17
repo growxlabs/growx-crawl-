@@ -615,6 +615,91 @@ CREATE TABLE IF NOT EXISTS ai_evaluations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_ai_evals_task ON ai_evaluations(task);
+
+CREATE TABLE IF NOT EXISTS quality_policies (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(128) NOT NULL UNIQUE,
+    gate_type VARCHAR(64) NOT NULL,
+    profile VARCHAR(64) NOT NULL,
+    version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    min_score DOUBLE PRECISION DEFAULT 0.70,
+    rules_config JSONB DEFAULT '{}'::jsonb,
+    ttl_hours INTEGER DEFAULT 168,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS quality_results (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(128) NOT NULL,
+    gate_type VARCHAR(64) NOT NULL,
+    profile VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    score DOUBLE PRECISION NOT NULL,
+    policy_id VARCHAR(64) NOT NULL,
+    policy_version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    reasons JSONB DEFAULT '[]'::jsonb,
+    required_actions JSONB DEFAULT '[]'::jsonb,
+    evaluated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_until TIMESTAMPTZ,
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_qual_res_subject ON quality_results(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_qual_res_gate ON quality_results(gate_type);
+
+CREATE TABLE IF NOT EXISTS quality_rule_results (
+    id VARCHAR(64) PRIMARY KEY,
+    quality_result_id VARCHAR(64) NOT NULL REFERENCES quality_results(id) ON DELETE CASCADE,
+    rule_name VARCHAR(128) NOT NULL,
+    rule_type VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    score_delta DOUBLE PRECISION DEFAULT 0.0,
+    reason_code VARCHAR(128) NOT NULL,
+    details_json JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_qual_rule_res ON quality_rule_results(quality_result_id);
+
+CREATE TABLE IF NOT EXISTS quality_state (
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(128) NOT NULL,
+    gate_type VARCHAR(64) NOT NULL,
+    latest_result_id VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    score DOUBLE PRECISION NOT NULL,
+    valid_until TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (subject_type, subject_id, gate_type)
+);
+
+CREATE TABLE IF NOT EXISTS quality_quarantine (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(64) NOT NULL,
+    candidate_payload_json JSONB NOT NULL,
+    reason_codes JSONB DEFAULT '[]'::jsonb,
+    source_id VARCHAR(128),
+    status VARCHAR(32) DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS prospect_quality_snapshots (
+    prospect_id VARCHAR(128) PRIMARY KEY,
+    company_score DOUBLE PRECISION DEFAULT 0.0,
+    person_score DOUBLE PRECISION DEFAULT 0.0,
+    employment_score DOUBLE PRECISION DEFAULT 0.0,
+    email_score DOUBLE PRECISION DEFAULT 0.0,
+    personalization_score DOUBLE PRECISION DEFAULT 0.0,
+    outreach_score DOUBLE PRECISION DEFAULT 0.0,
+    overall_status VARCHAR(32) NOT NULL,
+    reasons JSONB DEFAULT '[]'::jsonb,
+    required_actions JSONB DEFAULT '[]'::jsonb,
+    evaluated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 """
 
 

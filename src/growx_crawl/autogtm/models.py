@@ -58,6 +58,9 @@ class ProspectLead(BaseModel):
     canonical_person_id: Optional[str] = None
     verification_gate_decision: Optional[str] = None
     verification_status: Optional[str] = None
+    quality_status: Optional[str] = None
+    quality_score: Optional[float] = None
+    quality_reasons: List[str] = Field(default_factory=list)
 
 
 class AutoGTMResult(BaseModel):
