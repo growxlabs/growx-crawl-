@@ -9,18 +9,19 @@ import {
 import { triggerBulkAction } from "@/lib/api/prospects";
 import { DataTable, ColumnDef } from "@/components/data-table/DataTable";
 import { StatusBadge } from "@/components/status/StatusBadge";
-import { ConfidenceIndicator } from "@/components/status/ConfidenceIndicator";
 import {
-  Building2,
-  ExternalLink,
   RefreshCw,
   Search,
   Flame,
   CheckCircle2,
-  AlertTriangle,
   FileSearch,
 } from "lucide-react";
 import { useEvidence } from "@/components/inspector/EvidenceContext";
+import {
+  formatPriority,
+  formatReadiness,
+  formatScorePercent,
+} from "@/lib/product-language";
 
 interface ProjectProspectsTableProps {
   projectId: string;
@@ -65,103 +66,115 @@ export function ProjectProspectsTable({ projectId }: ProjectProspectsTableProps)
 
   const columns: ColumnDef<ProjectProspectItem>[] = [
     {
-      header: "Target Account",
+      header: "Company",
       accessorKey: "company_name",
       sortable: true,
       cell: (row) => (
         <div>
-          <div className="font-semibold text-neutral-900 text-xs flex items-center gap-1.5">
-            <span>{row.company_name}</span>
-            {row.rank_tier === "Priority" && (
-              <Flame className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
-            )}
+          <div className="font-semibold text-neutral-900 text-xs">
+            {row.company_name}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] font-mono text-neutral-400">
-            <span>{row.domain}</span>
-            <span>•</span>
-            <span>{row.industry}</span>
+          <div className="text-[11px] text-neutral-400 mt-0.5">
+            {row.domain}
           </div>
         </div>
       ),
     },
     {
-      header: "Rank Tier",
+      header: "Priority",
       accessorKey: "rank_tier",
       sortable: true,
-      cell: (row) => <StatusBadge status={row.rank_tier} size="sm" />,
+      cell: (row) => {
+        const p = formatPriority(row.rank_tier || row.priority);
+        return <StatusBadge status={p.label} size="sm" />;
+      },
     },
     {
-      header: "ICP Fit Score",
+      header: "Why now",
+      cell: (row) => {
+        const signalText =
+          row.top_signal ||
+          row.top_signals?.[0] ||
+          row.reasons?.[0] ||
+          "Target market alignment";
+        return (
+          <span className="text-xs text-neutral-700 max-w-xs truncate block" title={signalText}>
+            {signalText}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Best person",
+      cell: (row) => {
+        if (row.best_person && row.best_person.name) {
+          return (
+            <div>
+              <div className="font-medium text-xs text-neutral-900">
+                {row.best_person.name}
+              </div>
+              <div className="text-[11px] text-neutral-500">
+                {row.best_person.title}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <span className="text-xs text-neutral-600">
+            {row.buyer_roles_count ? `${row.buyer_roles_count} personas matched` : "Head of Operations"}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Fit",
       accessorKey: "final_score",
       sortable: true,
       cell: (row) => (
-        <ConfidenceIndicator score={row.final_score} size="sm" />
-      ),
-    },
-    {
-      header: "Verification",
-      accessorKey: "verification_status",
-      sortable: true,
-      cell: (row) => (
-        <div className="flex items-center gap-1.5">
-          <StatusBadge status={row.verification_status} size="sm" />
-          {row.requires_reverification && (
-            <span className="text-[10px] text-amber-700 bg-amber-50 px-1 py-0.5 rounded border border-amber-200">
-              Needs Sync
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: "Top Signals",
-      cell: (row) => (
-        <div className="flex flex-wrap gap-1 max-w-xs">
-          {row.top_signals && row.top_signals.length > 0 ? (
-            row.top_signals.slice(0, 2).map((sig, sIdx) => (
-              <span
-                key={sIdx}
-                className="text-[10px] bg-neutral-100 text-neutral-700 px-1.5 py-0.5 rounded border border-neutral-200 font-mono truncate max-w-[120px]"
-              >
-                {sig}
-              </span>
-            ))
-          ) : (
-            <span className="text-neutral-400 text-[11px] font-mono">-</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: "Contacts",
-      accessorKey: "buyer_roles_count",
-      sortable: true,
-      cell: (row) => (
-        <span className="font-mono text-xs font-semibold text-neutral-800">
-          {row.buyer_roles_count} personas
+        <span className="text-xs font-semibold text-neutral-900">
+          {formatScorePercent(row.final_score)}
         </span>
       ),
     },
     {
-      header: "Actions",
+      header: "Readiness",
+      accessorKey: "verification_status",
+      sortable: true,
+      cell: (row) => {
+        const r = formatReadiness(row.verification_status, row.requires_reverification);
+        return <StatusBadge status={r.label} size="sm" />;
+      },
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      sortable: true,
+      cell: (row) => (
+        <span className="text-xs text-neutral-600 capitalize">
+          {row.status || "Ready"}
+        </span>
+      ),
+    },
+    {
+      header: "",
       cell: (row) => (
         <div
-          className="flex items-center gap-2"
+          className="flex items-center justify-end"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() =>
               openEvidenceDrawer({
-                claim: `${row.company_name} ICP Fit Score: ${Math.round(
-                  row.final_score * 100
-                )}%`,
+                claim: `${row.company_name} Priority Qualification (${formatScorePercent(
+                  row.final_score
+                )})`,
                 sourceUrl: `https://${row.domain}`,
                 verificationStatus: row.verification_status,
                 confidenceScore: row.final_score,
               })
             }
             className="p-1 rounded text-neutral-400 hover:text-neutral-800"
-            title="Inspect Verification Evidence"
+            title="View verification sources"
           >
             <FileSearch className="w-3.5 h-3.5" />
           </button>
@@ -180,7 +193,7 @@ export function ProjectProspectsTable({ projectId }: ProjectProspectsTableProps)
         selectable
         selectedKeys={selectedIds}
         onSelectionChange={setSelectedIds}
-        searchPlaceholder="Filter prospects by name, domain, signal, or industry..."
+        searchPlaceholder="Filter prospects by company, person, or signal..."
         searchFilter={(r, q) =>
           r.company_name.toLowerCase().includes(q.toLowerCase()) ||
           r.domain.toLowerCase().includes(q.toLowerCase()) ||
@@ -196,7 +209,7 @@ export function ProjectProspectsTable({ projectId }: ProjectProspectsTableProps)
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 text-neutral-800 text-xs font-medium"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>Reverify</span>
+                <span>Refresh data</span>
               </button>
               <button
                 onClick={() => handleBulkAction("research")}
@@ -204,7 +217,7 @@ export function ProjectProspectsTable({ projectId }: ProjectProspectsTableProps)
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 text-neutral-800 text-xs font-medium"
               >
                 <Search className="w-3 h-3" />
-                <span>Deep Research</span>
+                <span>Research deeper</span>
               </button>
               <button
                 onClick={() => handleBulkAction("mark_priority")}
@@ -212,7 +225,7 @@ export function ProjectProspectsTable({ projectId }: ProjectProspectsTableProps)
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800"
               >
                 <Flame className="w-3 h-3" />
-                <span>Mark Priority</span>
+                <span>Mark priority</span>
               </button>
             </div>
           )

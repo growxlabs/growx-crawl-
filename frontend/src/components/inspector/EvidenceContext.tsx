@@ -13,6 +13,9 @@ export interface EvidenceDrawerData {
   extractedAt?: string;
   rawSnippet?: string;
   method?: string;
+  observationId?: string;
+  verificationRunId?: string;
+  objectRef?: string;
 }
 
 interface EvidenceContextType {
@@ -43,7 +46,10 @@ export function EvidenceProvider({ children }: { children: React.ReactNode }) {
       confidenceScore: data.confidenceScore ?? 0.95,
       extractedAt: data.extractedAt || new Date().toISOString(),
       rawSnippet: data.rawSnippet,
-      method: data.method || "crawler_dom_extractor",
+      method: data.method || "dom_text_parser",
+      observationId: data.observationId,
+      verificationRunId: data.verificationRunId,
+      objectRef: data.objectRef,
     });
   };
 

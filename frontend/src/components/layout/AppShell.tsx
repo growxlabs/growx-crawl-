@@ -27,9 +27,6 @@ export function AppShell({ children }: AppShellProps) {
           {/* Subheader / Breadcrumbs bar */}
           <div className="h-10 border-b border-neutral-200/80 bg-white px-6 flex items-center justify-between flex-shrink-0">
             <Breadcrumbs />
-            <div className="text-[11px] font-mono text-neutral-400">
-              GrowX Canonical Intelligence Engine
-            </div>
           </div>
 
           {/* Scrollable Page Body */}

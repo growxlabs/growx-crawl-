@@ -5,18 +5,16 @@ import {
   getSellerCompetitors,
   CompetitorRelationship,
 } from "@/lib/api/company";
-import { ConfidenceIndicator } from "@/components/status/ConfidenceIndicator";
 import { useEvidence } from "@/components/inspector/EvidenceContext";
 import {
-  GitCompare,
   ExternalLink,
-  ShieldAlert,
-  ShieldCheck,
   CheckCircle2,
   FileSearch,
   ArrowUpRight,
+  ShieldCheck,
+  Building2,
 } from "lucide-react";
-import { StatusBadge } from "@/components/status/StatusBadge";
+import { formatScorePercent } from "@/lib/product-language";
 
 export function CompetitorView() {
   const [competitors, setCompetitors] = useState<CompetitorRelationship[]>([]);
@@ -41,31 +39,32 @@ export function CompetitorView() {
       competitor_domain: "zoominfo.com",
       overlap_score: 0.88,
       relationship_type: "direct",
-      shared_features: ["B2B Contact Database", "Firmographics", "Org Charts"],
+      shared_features: ["Sales intelligence", "B2B contact directory", "Firmographics"],
       advantages: [
-        "First-party DOM verified proof for every claim",
-        "Autonomous temporal diff tracking vs stale database exports",
-        "Explainable deterministic scoring transparent to user",
+        "Continuous company research vs static database exports",
+        "Historical change intelligence tracking leadership & tech adoption",
+        "Evidence-backed prospect ranking with transparent proof",
       ],
       disadvantages: [
-        "ZoomInfo has broader legacy enterprise footprint",
-        "ZoomInfo maintains larger raw phone directory",
+        "Broad legacy enterprise footprint",
+        "Extensive historical phone records",
       ],
       evidence_count: 14,
     },
     {
-      competitor_id: "cmp_apollo",
-      competitor_name: "Apollo.io",
-      competitor_domain: "apollo.io",
-      overlap_score: 0.82,
+      competitor_id: "cmp_cognism",
+      competitor_name: "Cognism",
+      competitor_domain: "cognism.com",
+      overlap_score: 0.76,
       relationship_type: "direct",
-      shared_features: ["Sales Engagement", "Lead Prospecting", "Data Enrichment"],
+      shared_features: ["B2B intelligence", "Contact data", "Prospecting workflows"],
       advantages: [
-        "Zero hallucination canonical verification",
-        "Deeper technical stack and intent detection",
+        "Continuous company research",
+        "Historical change intelligence",
+        "Evidence-backed prospect ranking",
       ],
-      disadvantages: ["Apollo includes native mass cold email sequencing"],
-      evidence_count: 11,
+      disadvantages: ["Specialized phone-verified focus in European regions"],
+      evidence_count: 6,
     },
     {
       competitor_id: "cmp_clay",
@@ -73,26 +72,27 @@ export function CompetitorView() {
       competitor_domain: "clay.com",
       overlap_score: 0.74,
       relationship_type: "adjacent",
-      shared_features: ["Data Enrichment Workflows", "Waterfall Providers"],
+      shared_features: ["Data enrichment workflows", "Waterfall integrations"],
       advantages: [
-        "Native deep crawler engine vs purely relying on 3rd party credits",
-        "Built-in temporal change detection and verification gates",
+        "Native deep crawler engine vs purely relying on external provider credits",
+        "Autonomous entity resolution and verification gates",
       ],
-      disadvantages: ["Clay offers flexible spreadsheet canvas UX"],
+      disadvantages: ["Flexible spreadsheet canvas user interface"],
       evidence_count: 8,
     },
     {
-      competitor_id: "cmp_cognism",
-      competitor_name: "Cognism",
-      competitor_domain: "cognism.com",
+      competitor_id: "cmp_apollo",
+      competitor_name: "Apollo.io",
+      competitor_domain: "apollo.io",
       overlap_score: 0.71,
       relationship_type: "direct",
-      shared_features: ["EMEA B2B Intelligence", "Phone Verification"],
+      shared_features: ["Lead prospecting", "Contact enrichment", "Account filters"],
       advantages: [
-        "Automated deep entity analysis and autonomous prospect ranking",
+        "Zero hallucination canonical verification",
+        "Deep technographic and operational signal tracking",
       ],
-      disadvantages: ["Cognism has specialized phone-verified focus in Europe"],
-      evidence_count: 6,
+      disadvantages: ["Mass cold email sequencing built-in"],
+      evidence_count: 11,
     },
   ];
 
@@ -100,69 +100,65 @@ export function CompetitorView() {
   const activeComp = selectedComp || list[0];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white border border-neutral-200 rounded p-6 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GitCompare className="w-4 h-4 text-neutral-800" />
-            <h1 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Competitor Graph & Market Overlap
-            </h1>
-          </div>
-          <span className="text-xs font-mono text-neutral-500">
-            {list.length} Verified Competitor Entities
-          </span>
-        </div>
+    <div className="space-y-6 max-w-6xl py-2">
+      {/* Page Header */}
+      <div className="border-b border-neutral-200 pb-5">
+        <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
+          Competitors
+        </h1>
         <p className="text-xs text-neutral-500 mt-1">
-          Evidence-backed competitive positioning graph mapping direct and adjacent
-          market alternatives, overlap percentages, and verified differentiators.
+          Companies competing for similar customers and problems.
         </p>
       </div>
 
-      {/* Grid: Left Competitor List, Right Selected Detail */}
+      {/* Split Layout: Competitor list (left) | Selected competitor detail (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Competitor Cards (5 cols) */}
-        <div className="lg:col-span-5 space-y-3">
+        {/* Left List (5 cols) */}
+        <div className="lg:col-span-5 space-y-2">
           {list.map((c) => {
             const isSelected = activeComp?.competitor_id === c.competitor_id;
+            const overlapPercent = formatScorePercent(c.overlap_score);
+            const isDirect = c.relationship_type.toLowerCase() === "direct";
+
             return (
               <div
                 key={c.competitor_id}
                 onClick={() => setSelectedComp(c)}
-                className={`p-4 rounded border cursor-pointer transition-all ${
+                className={`p-4 rounded-md border cursor-pointer transition-all ${
                   isSelected
                     ? "bg-white border-neutral-900 shadow-xs"
                     : "bg-white border-neutral-200 hover:border-neutral-300"
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between">
                   <div>
-                    <span className="font-semibold text-xs text-neutral-900">
+                    <div className="font-semibold text-sm text-neutral-900">
                       {c.competitor_name}
-                    </span>
-                    <span className="text-[11px] text-neutral-400 font-mono ml-2">
-                      {c.competitor_domain}
-                    </span>
+                    </div>
+                    <div className="text-xs text-neutral-500 mt-0.5">
+                      {c.shared_features?.[0] || "Sales intelligence"}
+                    </div>
                   </div>
+
                   <span
-                    className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border ${
-                      c.relationship_type === "direct"
-                        ? "bg-purple-50 text-purple-700 border-purple-200"
-                        : "bg-neutral-100 text-neutral-600 border-neutral-200"
+                    className={`text-[11px] px-2 py-0.5 rounded font-medium ${
+                      isDirect
+                        ? "bg-neutral-900 text-white"
+                        : "bg-neutral-100 text-neutral-600"
                     }`}
                   >
-                    {c.relationship_type}
+                    {isDirect ? "Direct" : "Adjacent"}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between mt-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-neutral-500">Overlap:</span>
-                    <ConfidenceIndicator score={c.overlap_score} size="sm" />
-                  </div>
-                  <span className="text-[11px] font-mono text-neutral-400">
-                    {c.evidence_count} citations
+                <div className="flex items-center justify-between mt-4 pt-2 border-t border-neutral-100 text-xs">
+                  <span className="font-medium text-neutral-700">
+                    {c.overlap_score >= 0.8 ? "Strong overlap" : `${overlapPercent} overlap`}
+                  </span>
+
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-medium text-[11px]">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span>Verified</span>
                   </span>
                 </div>
               </div>
@@ -170,99 +166,104 @@ export function CompetitorView() {
           })}
         </div>
 
-        {/* Selected Competitor Comparison Panel (7 cols) */}
-        <div className="lg:col-span-7 bg-white border border-neutral-200 rounded p-6 shadow-2xs space-y-5">
+        {/* Right Detail Pane (7 cols) */}
+        <div className="lg:col-span-7 bg-white border border-neutral-200 rounded-md p-6 space-y-6">
           {activeComp && (
             <>
-              {/* Profile Card */}
-              <div className="flex items-start justify-between border-b border-neutral-200 pb-4">
+              {/* Header */}
+              <div className="border-b border-neutral-200 pb-4 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-neutral-900">
+                    <h2 className="text-lg font-bold text-neutral-900">
                       {activeComp.competitor_name}
                     </h2>
                     <a
                       href={`https://${activeComp.competitor_domain}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-neutral-400 hover:text-neutral-800"
+                      className="text-neutral-400 hover:text-neutral-900"
                     >
                       <ArrowUpRight className="w-4 h-4" />
                     </a>
                   </div>
-                  <div className="text-xs text-neutral-500 mt-0.5 font-mono">
-                    {activeComp.competitor_domain} • {activeComp.relationship_type} relationship
+
+                  <div className="mt-1 flex items-center gap-2 text-xs text-neutral-500">
+                    <span className="font-medium text-neutral-800">
+                      {activeComp.relationship_type.toLowerCase() === "direct"
+                        ? "Direct competitor"
+                        : "Adjacent competitor"}
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Verified</span>
+                    </span>
                   </div>
+                </div>
+
+                <span className="text-xs font-semibold text-neutral-900 px-2.5 py-1 bg-neutral-100 rounded">
+                  {formatScorePercent(activeComp.overlap_score)} overlap
+                </span>
+              </div>
+
+              {/* Why they overlap */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+                  Why they overlap
+                </div>
+                <div className="space-y-1.5">
+                  {activeComp.shared_features.map((feat, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 text-xs font-medium text-neutral-800 p-2 bg-neutral-50 rounded border border-neutral-200"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-900" />
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Where GrowX differs */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+                  Where GrowX differs
+                </div>
+                <div className="space-y-1.5">
+                  {activeComp.advantages.map((adv, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2.5 text-xs text-neutral-800 p-2.5 bg-emerald-50/50 rounded border border-emerald-200"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="font-medium leading-relaxed">{adv}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sources & Inspection Footer */}
+              <div className="pt-4 border-t border-neutral-200 flex items-center justify-between text-xs text-neutral-500">
+                <div className="flex items-center gap-2">
+                  <span>Sources {activeComp.evidence_count}</span>
+                  <span>•</span>
+                  <span>Updated today</span>
                 </div>
 
                 <button
                   onClick={() =>
                     openEvidenceDrawer({
-                      claim: `Competitive overlap between GrowxLabs and ${activeComp.competitor_name}`,
+                      claim: `Competitive overlap and differentiators between GrowxLabs and ${activeComp.competitor_name}`,
                       sourceUrl: `https://${activeComp.competitor_domain}`,
                       verificationStatus: "Verified",
                       confidenceScore: activeComp.overlap_score,
                     })
                   }
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-neutral-300 hover:bg-neutral-100 text-xs font-medium text-neutral-700"
+                  className="inline-flex items-center gap-1.5 text-neutral-900 hover:underline font-medium"
                 >
-                  <FileSearch className="w-3.5 h-3.5 text-neutral-600" />
-                  <span>Inspect Citations ({activeComp.evidence_count})</span>
+                  <FileSearch className="w-3.5 h-3.5 text-neutral-500" />
+                  <span>View sources</span>
                 </button>
-              </div>
-
-              {/* Shared Capabilities */}
-              <div>
-                <div className="text-[10px] uppercase font-mono text-neutral-400 mb-2">
-                  Shared Capabilities & Features
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {activeComp.shared_features.map((feat, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2.5 py-1 rounded bg-neutral-100 text-neutral-800 text-xs font-medium border border-neutral-200"
-                    >
-                      {feat}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* GrowxLabs Verified Advantages */}
-              <div className="space-y-2">
-                <div className="text-[10px] uppercase font-mono text-emerald-700 font-semibold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Our Verified Differentiators vs {activeComp.competitor_name}</span>
-                </div>
-                <div className="space-y-2">
-                  {activeComp.advantages.map((adv, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded bg-emerald-50/50 border border-emerald-200/80 text-xs text-emerald-900 flex items-start gap-2"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span>{adv}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Competitor Strengths / Disadvantages */}
-              <div className="space-y-2">
-                <div className="text-[10px] uppercase font-mono text-neutral-500 font-medium">
-                  {activeComp.competitor_name} Market Strengths
-                </div>
-                <div className="space-y-2">
-                  {activeComp.disadvantages.map((dis, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded bg-neutral-50 border border-neutral-200 text-xs text-neutral-700 flex items-start gap-2"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 flex-shrink-0" />
-                      <span>{dis}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </>
           )}

@@ -3,6 +3,6 @@
 import React from "react";
 import { CompanyHistory } from "@/features/company/CompanyHistory";
 
-export default function HistoryRedirectPage() {
+export default function ChangesPage() {
   return <CompanyHistory />;
 }

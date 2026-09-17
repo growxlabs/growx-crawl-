@@ -88,7 +88,7 @@ export default function SettingsPage() {
             Canonical Demonstration Environment
           </h2>
           <p className="text-xs text-neutral-500 mt-0.5">
-            Populate canonical companies, competitor graphs, ICP definitions, and ranked prospects.
+            Populate company profiles, target customer profiles, and prioritized prospects.
           </p>
         </div>
 

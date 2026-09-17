@@ -32,7 +32,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         .replace(/_/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      // Format known ID patterns
+      // Format known ID and route patterns to product language
       if (segment.startsWith("prj_")) {
         label = "Project Details";
       } else if (segment.startsWith("cmp_")) {
@@ -40,7 +40,15 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       } else if (segment.startsWith("prs_")) {
         label = "Person Details";
       } else if (segment.startsWith("icp_")) {
-        label = "ICP Profile";
+        label = "Target Profile";
+      } else if (segment === "analysis") {
+        label = "Positioning";
+      } else if (segment === "history") {
+        label = "Changes";
+      } else if (segment === "icp") {
+        label = "Target Profile";
+      } else if (segment === "ops") {
+        label = "Operations Console";
       }
 
       crumbs.push({
@@ -61,6 +69,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       <Link
         href="/projects"
         className="hover:text-neutral-700 transition-colors flex items-center gap-1"
+        title="Home"
       >
         <Home className="w-3 h-3" />
       </Link>

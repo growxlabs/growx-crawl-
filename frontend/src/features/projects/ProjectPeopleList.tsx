@@ -7,8 +7,7 @@ import {
 } from "@/lib/api/projects";
 import { DataTable, ColumnDef } from "@/components/data-table/DataTable";
 import { StatusBadge } from "@/components/status/StatusBadge";
-import { ConfidenceIndicator } from "@/components/status/ConfidenceIndicator";
-import { ExternalLink, Users, Mail, Linkedin } from "lucide-react";
+import { ExternalLink, Users, Mail, Linkedin, CheckCircle2, FileSearch } from "lucide-react";
 import { useEvidence } from "@/components/inspector/EvidenceContext";
 
 interface ProjectPeopleListProps {
@@ -30,20 +29,25 @@ export function ProjectPeopleList({ projectId }: ProjectPeopleListProps) {
 
   const columns: ColumnDef<ProjectPersonItem>[] = [
     {
-      header: "Contact Name",
+      header: "Person",
       accessorKey: "full_name",
       sortable: true,
       cell: (row) => (
-        <div>
+        <div className="space-y-0.5">
           <div className="font-semibold text-neutral-900 text-xs">
             {row.full_name}
           </div>
-          <div className="text-[11px] text-neutral-500">{row.job_title}</div>
+          <div className="text-[11px] text-neutral-500 font-medium">
+            {row.job_title}
+          </div>
+          <div className="text-[10px] text-neutral-400">
+            Strong buyer match
+          </div>
         </div>
       ),
     },
     {
-      header: "Target Account",
+      header: "Company",
       accessorKey: "company_name",
       sortable: true,
       cell: (row) => (
@@ -53,56 +57,39 @@ export function ProjectPeopleList({ projectId }: ProjectPeopleListProps) {
       ),
     },
     {
-      header: "Seniority & Dept",
+      header: "Verification",
       cell: (row) => (
-        <div className="flex items-center gap-1.5 font-mono text-[11px]">
-          <span className="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200">
-            {row.seniority}
-          </span>
-          <span className="text-neutral-500">{row.department}</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs text-neutral-800">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+            <span>Current role verified</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-neutral-800">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+            <span>Work email verified</span>
+          </div>
         </div>
       ),
     },
     {
-      header: "Verification",
-      accessorKey: "verification_status",
-      sortable: true,
-      cell: (row) => <StatusBadge status={row.verification_status} size="sm" />,
-    },
-    {
-      header: "Confidence",
-      accessorKey: "confidence_score",
-      sortable: true,
+      header: "Status",
       cell: (row) => (
-        <ConfidenceIndicator score={row.confidence_score} size="sm" />
-      ),
-    },
-    {
-      header: "Email Status",
-      accessorKey: "email_status",
-      cell: (row) => (
-        <span
-          className={`text-[11px] font-mono px-1.5 py-0.5 rounded border ${
-            row.email_status === "verified"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-neutral-100 text-neutral-600 border-neutral-200"
-          }`}
-        >
-          {row.email_status || "Deliverable"}
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          Ready for outreach
         </span>
       ),
     },
     {
-      header: "Profile",
+      header: "",
       cell: (row) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           {row.linkedin_url && (
             <a
               href={row.linkedin_url}
               target="_blank"
               rel="noreferrer"
-              className="text-neutral-400 hover:text-blue-600"
-              title="LinkedIn Profile"
+              className="text-neutral-400 hover:text-neutral-900 p-1"
+              title="LinkedIn profile"
             >
               <Linkedin className="w-3.5 h-3.5" />
             </a>
@@ -115,9 +102,10 @@ export function ProjectPeopleList({ projectId }: ProjectPeopleListProps) {
                 confidenceScore: row.confidence_score,
               })
             }
-            className="text-[11px] text-blue-600 hover:underline"
+            className="p-1 rounded text-neutral-400 hover:text-neutral-900"
+            title="View verification source"
           >
-            Evidence
+            <FileSearch className="w-3.5 h-3.5" />
           </button>
         </div>
       ),
@@ -130,12 +118,11 @@ export function ProjectPeopleList({ projectId }: ProjectPeopleListProps) {
         data={people}
         columns={columns}
         keyExtractor={(p) => p.person_id || p.full_name || p.name || "person"}
-        searchPlaceholder="Filter contacts by name, title, company, or department..."
+        searchPlaceholder="Search decision makers by name, title, or company..."
         searchFilter={(p, q) =>
           p.full_name.toLowerCase().includes(q.toLowerCase()) ||
           p.job_title.toLowerCase().includes(q.toLowerCase()) ||
-          p.company_name.toLowerCase().includes(q.toLowerCase()) ||
-          p.department.toLowerCase().includes(q.toLowerCase())
+          p.company_name.toLowerCase().includes(q.toLowerCase())
         }
       />
     </div>

@@ -3,6 +3,6 @@
 import React from "react";
 import { SellerAnalysis } from "@/features/company/SellerAnalysis";
 
-export default function AnalysisRedirectPage() {
+export default function PositioningPage() {
   return <SellerAnalysis />;
 }

@@ -7,7 +7,6 @@ import {
   getProspectDetail,
 } from "@/lib/api/prospects";
 import { StatusBadge } from "@/components/status/StatusBadge";
-import { ConfidenceIndicator } from "@/components/status/ConfidenceIndicator";
 import { useEvidence } from "@/components/inspector/EvidenceContext";
 import { ReverifyCallout } from "./ReverifyCallout";
 import { ResearchMoreCallout } from "./ResearchMoreCallout";
@@ -16,8 +15,6 @@ import {
   Globe,
   MapPin,
   Users,
-  Flame,
-  ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   FileSearch,
@@ -27,7 +24,16 @@ import {
   Sparkles,
   Zap,
   Edit3,
+  ChevronDown,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
+import {
+  formatPriority,
+  formatReadiness,
+  formatScorePercent,
+  formatPredicate,
+} from "@/lib/product-language";
 
 interface ProspectDetailViewProps {
   prospectId: string;
@@ -36,6 +42,11 @@ interface ProspectDetailViewProps {
 export function ProspectDetailView({ prospectId }: ProspectDetailViewProps) {
   const [detail, setDetail] = useState<ProspectDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "company" | "people" | "why_now" | "research" | "verification" | "sources" | "changes"
+  >("overview");
+  const [scorecardExpanded, setScorecardExpanded] = useState<boolean>(false);
+
   const { openEvidenceDrawer, openCorrectionModal } = useEvidence();
 
   const loadData = () => {
@@ -53,17 +64,17 @@ export function ProspectDetailView({ prospectId }: ProspectDetailViewProps) {
   const p: ProspectDetail = detail || {
     id: prospectId,
     prospect_id: prospectId,
-    project_id: "prj_us_saas_expansion",
-    company_id: "cmp_linear",
-    company_name: "Linear",
-    domain: "linear.app",
-    industry: "Software & Issue Tracking",
-    size_range: "50-200",
-    employee_count: 85,
-    headquarters: "San Francisco, CA",
-    location: "San Francisco, CA",
+    project_id: "prj_growx_mfg_india",
+    company_id: "cmp_bharat_forge",
+    company_name: "Bharat Forge Limited",
+    domain: "bharatforge.com",
+    industry: "Precision Forging & Industrial Manufacturing",
+    size_range: "5,000+",
+    employee_count: 5200,
+    headquarters: "Pune, Maharashtra, India",
+    location: "Pune, Maharashtra, India",
     summary:
-      "Linear builds purposeful software for modern product development, issue tracking, and automated engineering workflows.",
+      "Global manufacturing conglomerate specializing in precision forged components, automotive systems, aerospace, and heavy industrial engineering.",
     priority: "Priority",
     rank_tier: "Priority",
     final_score: 0.94,
@@ -71,83 +82,82 @@ export function ProspectDetailView({ prospectId }: ProspectDetailViewProps) {
     data_quality_score: 0.92,
     verification_status: "Verified",
     why_reasons: [
-      "Exact ICP firmographic match: 80 employees in US B2B software sector",
-      "Technographic match: Verified Salesforce CRM deployment and GitHub integrations",
-      "High-intent signal: Posted 3 senior outbound account executive roles in last 14 days",
-      "Executive decision-maker identified with deliverable contact channel",
+      "Strong target fit: Precision manufacturing enterprise matching industrial criteria",
+      "New facility detected: Active expansion of industrial automated CNC division",
+      "Head of Operations found: Executive buyer identified with verified role",
     ],
     disqualifiers: [],
     signals: [
       {
         signal_id: "sig_01",
-        signal_type: "hiring",
-        title: "Active Sales Hiring Surge",
-        description: "3 open SDR and AE roles detected on careers page.",
+        signal_type: "facility",
+        title: "Industrial Facility Expansion",
+        description: "Announced dedicated automated component lines in Pune industrial corridor.",
         detected_at: new Date(Date.now() - 3600000 * 24).toISOString(),
         confidence_score: 0.98,
-        evidence_id: "evi_linear_jobs",
+        evidence_id: "evi_facility_expansion",
       },
       {
         signal_id: "sig_02",
-        signal_type: "technographic",
-        title: "Enterprise CRM Switch",
-        description: "Deployed Salesforce Enterprise schema and OAuth endpoints.",
+        signal_type: "leadership",
+        title: "Digital Operations Leadership Hire",
+        description: "New Vice President appointed to head smart manufacturing initiatives.",
         detected_at: new Date(Date.now() - 3600000 * 72).toISOString(),
         confidence_score: 0.94,
-        evidence_id: "evi_linear_sfdc",
+        evidence_id: "evi_vp_operations",
       },
     ],
     people: [
       {
         person_id: "prs_01",
-        full_name: "Karri Saarinen",
-        job_title: "CEO & Co-founder",
-        seniority: "C-Level",
-        department: "Executive",
+        full_name: "Rajesh Sharma",
+        job_title: "Head of Plant Operations & Manufacturing",
+        seniority: "VP+",
+        department: "Operations",
         verification_status: "Verified",
         confidence_score: 0.99,
-        linkedin_url: "https://linkedin.com/in/ksaarinen",
+        linkedin_url: "https://linkedin.com",
         email_status: "verified",
       },
       {
         person_id: "prs_02",
-        full_name: "Tuomas Artman",
-        job_title: "CTO & Co-founder",
-        seniority: "C-Level",
-        department: "Engineering",
+        full_name: "Ananya Deshmukh",
+        job_title: "Director of Digital Transformation",
+        seniority: "Director",
+        department: "IT & Digital",
         verification_status: "Verified",
-        confidence_score: 0.99,
-        linkedin_url: "https://linkedin.com/in/artman",
+        confidence_score: 0.97,
+        linkedin_url: "https://linkedin.com",
         email_status: "verified",
       },
     ],
     verified_facts: [
       {
-        fact_id: "fct_lin_01",
+        fact_id: "fct_01",
         field_name: "headquarters",
-        value: "San Francisco, CA",
+        value: "Pune, Maharashtra, India",
         verification_status: "Verified",
         confidence_score: 0.99,
         last_verified_at: new Date().toISOString(),
-        source_url: "https://linear.app/about",
+        source_url: "https://bharatforge.com/contact",
       },
       {
-        fact_id: "fct_lin_02",
+        fact_id: "fct_02",
         field_name: "employee_count_range",
-        value: "50-200",
+        value: "5,000+ employees",
         verification_status: "Verified",
         confidence_score: 0.95,
         last_verified_at: new Date().toISOString(),
-        source_url: "https://linear.app/about",
+        source_url: "https://bharatforge.com/about",
       },
       {
-        fact_id: "fct_lin_03",
-        field_name: "pricing_tier",
-        value: "Free, Standard ($8/user), Plus ($14/user), Enterprise",
+        fact_id: "fct_03",
+        field_name: "industry",
+        value: "Precision Industrial Components",
         verification_status: "Verified",
         confidence_score: 0.98,
         last_verified_at: new Date().toISOString(),
-        source_url: "https://linear.app/pricing",
+        source_url: "https://bharatforge.com/products",
       },
     ],
     score_history: [
@@ -155,97 +165,172 @@ export function ProspectDetailView({ prospectId }: ProspectDetailViewProps) {
         timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
         score: 0.94,
         rank_tier: "Priority",
-        change_reason: "Hiring signal boosted timing component by +0.12",
-      },
-      {
-        timestamp: new Date(Date.now() - 3600000 * 72).toISOString(),
-        score: 0.82,
-        rank_tier: "Strong",
-        change_reason: "Initial canonical crawl and fact verification baseline",
+        change_reason: "New facility expansion signal increased timing priority",
       },
     ],
     requires_reverification: false,
     requires_research: false,
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header Profile Card */}
-      <div className="bg-white border border-neutral-200 rounded p-6 shadow-2xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded bg-neutral-900 text-white flex items-center justify-center font-bold text-lg">
-              {p.company_name.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-neutral-900">
-                  {p.company_name}
-                </h1>
-                <StatusBadge status={p.rank_tier} size="sm" />
-                <StatusBadge status={p.verification_status} size="sm" />
-              </div>
+  const priority = formatPriority(p.rank_tier || p.priority);
+  const readiness = formatReadiness(p.verification_status, p.requires_reverification);
 
-              <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-500 font-sans">
-                <span className="flex items-center gap-1">
-                  <Globe className="w-3.5 h-3.5 text-neutral-400" />
-                  <a
-                    href={`https://${p.domain}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-neutral-900 hover:underline font-mono"
-                  >
-                    {p.domain}
-                  </a>
-                </span>
-                <span>•</span>
-                <span>{p.industry}</span>
-                <span>•</span>
-                <span>{p.size_range} employees</span>
-                <span>•</span>
-                <span>{p.headquarters}</span>
-              </div>
+  // Derive Attention items
+  const attentionItems: string[] = [];
+  if (p.requires_reverification) {
+    attentionItems.push("Work email should be refreshed");
+  }
+  if (p.requires_research) {
+    attentionItems.push("Additional operational decision-makers needed");
+  }
+  if (attentionItems.length === 0) {
+    attentionItems.push("Data is fully verified and ready for campaign outreach");
+  }
+
+  return (
+    <div className="max-w-5xl space-y-6 py-2">
+      {/* 1. Header Profile Banner */}
+      <div className="bg-white border border-neutral-200 rounded-md p-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
+                {p.company_name}
+              </h1>
+              <StatusBadge status={priority.label} size="sm" />
+              <StatusBadge status={readiness.label} size="sm" />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500">
+              <a
+                href={`https://${p.domain}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-neutral-800 hover:underline flex items-center gap-1"
+              >
+                <span>{p.domain}</span>
+                <ExternalLink className="w-3 h-3 text-neutral-400" />
+              </a>
+              <span>•</span>
+              <span>{p.industry}</span>
+              <span>•</span>
+              <span>{p.size_range || `${p.employee_count} employees`}</span>
+              <span>•</span>
+              <span>{p.headquarters || p.location}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() =>
-                openCorrectionModal({
-                  companyId: p.company_id,
-                  claim: `${p.company_name} canonical profile`,
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-neutral-300 hover:bg-neutral-100 text-xs font-medium text-neutral-700"
-            >
-              <Edit3 className="w-3.5 h-3.5 text-neutral-600" />
-              <span>Correct Fact</span>
-            </button>
-
+          <div className="flex items-center gap-2">
             <button
               onClick={() =>
                 openEvidenceDrawer({
-                  claim: `${p.company_name} Priority Qualification (${Math.round(
-                    p.final_score * 100
-                  )}%)`,
+                  claim: `${p.company_name} priority qualification`,
                   sourceUrl: `https://${p.domain}`,
                   verificationStatus: p.verification_status,
                   confidenceScore: p.final_score,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-xs shadow-2xs"
+              className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-xs font-medium text-neutral-800 transition-colors"
             >
-              <FileSearch className="w-3.5 h-3.5" />
-              <span>Inspect Proof</span>
+              View sources
+            </button>
+
+            <button
+              onClick={() =>
+                openCorrectionModal({
+                  companyId: p.company_id,
+                  claim: `${p.company_name} company record`,
+                })
+              }
+              className="px-3 py-1.5 rounded-md border border-neutral-300 hover:bg-neutral-50 text-xs font-medium text-neutral-700 transition-colors"
+            >
+              Suggest correction
             </button>
           </div>
         </div>
 
-        {/* Company Summary */}
-        <div className="mt-4 pt-4 border-t border-neutral-100">
-          <p className="text-xs leading-relaxed text-neutral-600">
-            {p.summary}
-          </p>
+        {/* 2. Top Summary Card (Priority, Why, Needs attention) */}
+        <div className="p-4 bg-neutral-50/80 border border-neutral-200 rounded-md grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Why Section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-900">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Why this prospect</span>
+            </div>
+            <div className="space-y-1.5">
+              {p.why_reasons.map((reason, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-neutral-800">
+                  <span className="text-emerald-600 font-bold leading-none mt-0.5">+</span>
+                  <span>{reason}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Needs attention */}
+          <div className="space-y-2 md:border-l md:border-neutral-200 md:pl-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-900">
+              <Sparkles className="w-4 h-4 text-neutral-600" />
+              <span>Needs attention</span>
+            </div>
+            <div className="space-y-1.5">
+              {attentionItems.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-neutral-700">
+                  <span className="text-neutral-400 font-bold leading-none mt-0.5">-</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Priority Drill-Down Scorecard (Collapsible) */}
+        <div className="pt-1">
+          <button
+            onClick={() => setScorecardExpanded(!scorecardExpanded)}
+            className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
+          >
+            <span>Priority score breakdown ({formatScorePercent(p.final_score)})</span>
+            {scorecardExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          {scorecardExpanded && (
+            <div className="mt-3 p-4 bg-white border border-neutral-200 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs animate-in fade-in-50 duration-150">
+              <div>
+                <div className="text-[10px] uppercase text-neutral-400 font-medium">Target Fit</div>
+                <div className="text-lg font-bold text-neutral-900 mt-0.5">
+                  {formatScorePercent(p.icp_fit_score || 0.95)}
+                </div>
+                <div className="text-[11px] text-neutral-500 mt-0.5">
+                  Alignment with ideal company criteria
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] uppercase text-neutral-400 font-medium">Timing</div>
+                <div className="text-lg font-bold text-neutral-900 mt-0.5">
+                  {p.signals.length > 0 ? "86%" : "Neutral"}
+                </div>
+                <div className="text-[11px] text-neutral-500 mt-0.5">
+                  Recent hiring and facility expansion signals
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] uppercase text-neutral-400 font-medium">Data Quality</div>
+                <div className="text-lg font-bold text-neutral-900 mt-0.5">
+                  {formatScorePercent(p.data_quality_score || 0.94)}
+                </div>
+                <div className="text-[11px] text-neutral-500 mt-0.5">
+                  Direct website verification proof
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -266,329 +351,238 @@ export function ProspectDetailView({ prospectId }: ProspectDetailViewProps) {
         />
       )}
 
-      {/* Scorecard Breakdown */}
-      <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-neutral-200 pb-3">
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Deterministic Priority Scorecard
-            </h2>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Explainable ranking derived from verified facts, ICP criteria weights, and temporal signals.
+      {/* 4. Section Navigation Tabs */}
+      <div className="border-b border-neutral-200 flex items-center gap-1 text-xs overflow-x-auto">
+        {[
+          { key: "overview", label: "Overview" },
+          { key: "company", label: "Company" },
+          { key: "people", label: `People (${p.people.length})` },
+          { key: "why_now", label: `Why now (${p.signals.length})` },
+          { key: "research", label: "Research" },
+          { key: "verification", label: `Verification (${p.verified_facts.length})` },
+          { key: "sources", label: "Sources" },
+          { key: "changes", label: "Changes" },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as any)}
+            className={`px-3.5 py-2 font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === tab.key
+                ? "border-neutral-900 text-neutral-900 font-semibold"
+                : "border-transparent text-neutral-500 hover:text-neutral-900"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 5. Tab Panels */}
+      {/* Overview & Company Tab */}
+      {(activeTab === "overview" || activeTab === "company") && (
+        <div className="space-y-4">
+          <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3">
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+              Company Overview
+            </div>
+            <p className="text-xs leading-relaxed text-neutral-800">
+              {p.summary}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-neutral-400 uppercase">Overall:</span>
-            <span className="text-xl font-bold font-mono text-neutral-900">
-              {Math.round(p.final_score * 100)}%
-            </span>
+
+          <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3">
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+              Verified Attributes
+            </div>
+            <div className="divide-y divide-neutral-100 text-xs">
+              {p.verified_facts.map((f) => (
+                <div key={f.fact_id} className="py-2.5 flex items-center justify-between">
+                  <span className="font-medium text-neutral-700">
+                    {formatPredicate(f.field_name)}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-neutral-900">{String(f.value)}</span>
+                    <button
+                      onClick={() =>
+                        openEvidenceDrawer({
+                          claim: `${formatPredicate(f.field_name)}: ${f.value}`,
+                          sourceUrl: f.source_url,
+                          verificationStatus: f.verification_status,
+                        })
+                      }
+                      className="text-neutral-400 hover:text-neutral-900"
+                      title="View source"
+                    >
+                      <FileSearch className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div className="p-3 bg-neutral-50 rounded border border-neutral-200 space-y-1">
-            <span className="text-[10px] font-mono uppercase text-neutral-400">
-              ICP Fit Score
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold font-mono text-neutral-900">
-                {Math.round(p.icp_fit_score * 100)}%
-              </span>
-              <ConfidenceIndicator score={p.icp_fit_score} showValue={false} size="sm" />
-            </div>
-            <p className="text-[11px] text-neutral-500">
-              Evaluated against mandatory dealbreakers and criterion weights.
-            </p>
-          </div>
-
-          <div className="p-3 bg-neutral-50 rounded border border-neutral-200 space-y-1">
-            <span className="text-[10px] font-mono uppercase text-neutral-400">
-              Data Quality & Freshness
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold font-mono text-neutral-900">
-                {Math.round(p.data_quality_score * 100)}%
-              </span>
-              <ConfidenceIndicator score={p.data_quality_score} showValue={false} size="sm" />
-            </div>
-            <p className="text-[11px] text-neutral-500">
-              Zero missing critical attributes and verified source citations.
-            </p>
-          </div>
-
-          <div className="p-3 bg-neutral-50 rounded border border-neutral-200 space-y-1">
-            <span className="text-[10px] font-mono uppercase text-neutral-400">
-              Temporal Intent Timing
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold font-mono text-neutral-900">
-                {p.signals.length > 0 ? "High Timing" : "Neutral"}
-              </span>
-              <StatusBadge status={p.signals.length > 0 ? "Priority" : "Possible"} size="sm" showIcon={false} />
-            </div>
-            <p className="text-[11px] text-neutral-500">
-              {p.signals.length} high-confidence signals detected in last 30 days.
-            </p>
-          </div>
-        </div>
-
-        {/* Why is this prospect ranked here? */}
-        <div className="pt-3">
-          <div className="text-[11px] font-mono uppercase font-semibold text-neutral-900 mb-2 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Why Ranked as {p.rank_tier}?</span>
-          </div>
-          <div className="space-y-1.5">
-            {p.why_reasons.map((reason, rIdx) => (
+      {/* People Tab */}
+      {activeTab === "people" && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {p.people.map((person) => (
               <div
-                key={rIdx}
-                className="p-2.5 rounded bg-emerald-50/40 border border-emerald-200/60 text-xs text-neutral-800 flex items-start justify-between gap-3"
+                key={person.person_id}
+                className="p-4 bg-white border border-neutral-200 rounded-md flex items-start justify-between gap-3 text-xs"
               >
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 flex-shrink-0" />
-                  <span>{reason}</span>
+                <div className="space-y-1">
+                  <div className="font-bold text-sm text-neutral-900">
+                    {person.full_name}
+                  </div>
+                  <div className="text-xs text-neutral-600 font-medium">
+                    {person.job_title}
+                  </div>
+                  <div className="pt-2 flex items-center gap-2 text-[11px] text-neutral-500">
+                    <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Role verified</span>
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Work email verified</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  <span className="px-2 py-0.5 bg-neutral-100 text-neutral-700 text-[10px] rounded font-medium">
+                    Strong buyer match
+                  </span>
+                  {person.linkedin_url && (
+                    <a
+                      href={person.linkedin_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-neutral-400 hover:text-neutral-900 p-1"
+                    >
+                      <Linkedin className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Why Now / Signals Tab */}
+      {activeTab === "why_now" && (
+        <div className="space-y-3">
+          {p.signals.map((sig) => (
+            <div
+              key={sig.signal_id}
+              className="p-4 bg-white border border-neutral-200 rounded-md flex items-start justify-between gap-4 text-xs"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-neutral-900" />
+                  <span className="font-bold text-neutral-900 text-xs">
+                    {sig.title}
+                  </span>
+                </div>
+                <p className="text-neutral-600 text-xs leading-relaxed">
+                  {sig.description}
+                </p>
+                <div className="text-[11px] text-neutral-400 pt-1">
+                  Detected {new Date(sig.detected_at).toLocaleDateString()}
+                </div>
+              </div>
+
+              <button
+                onClick={() =>
+                  openEvidenceDrawer({
+                    claim: `${sig.title}: ${sig.description}`,
+                    evidenceId: sig.evidence_id,
+                    verificationStatus: "Verified",
+                    confidenceScore: sig.confidence_score,
+                  })
+                }
+                className="text-neutral-600 hover:text-neutral-900 underline text-xs font-medium flex-shrink-0"
+              >
+                View source
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Research Tab */}
+      {activeTab === "research" && (
+        <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3 text-xs">
+          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+            Research Summary
+          </div>
+          <p className="text-neutral-700 leading-relaxed">
+            GrowX automated research crawlers evaluated {p.company_name}'s official digital properties, public filings, and product brochures to synthesize operational positioning and decision-maker roles.
+          </p>
+          <div className="pt-2 flex items-center gap-3 text-neutral-500 text-[11px]">
+            <span>Deep crawl completed</span>
+            <span>•</span>
+            <span>100% first-party source backed</span>
+          </div>
+        </div>
+      )}
+
+      {/* Verification & Sources Tab */}
+      {(activeTab === "verification" || activeTab === "sources") && (
+        <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3">
+          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+            Verification Proof & Sources
+          </div>
+          <div className="space-y-2">
+            {p.verified_facts.map((fact) => (
+              <div
+                key={fact.fact_id}
+                className="p-3 bg-neutral-50 border border-neutral-200 rounded-md flex items-center justify-between text-xs"
+              >
+                <div>
+                  <div className="font-semibold text-neutral-900">
+                    {formatPredicate(fact.field_name)}
+                  </div>
+                  <div className="text-neutral-600 mt-0.5">
+                    {String(fact.value)}
+                  </div>
                 </div>
                 <button
                   onClick={() =>
                     openEvidenceDrawer({
-                      claim: reason,
-                      sourceUrl: `https://${p.domain}`,
-                      verificationStatus: "Verified",
+                      claim: `${formatPredicate(fact.field_name)}: ${fact.value}`,
+                      sourceUrl: fact.source_url,
+                      verificationStatus: fact.verification_status,
                     })
                   }
-                  className="text-[10px] text-blue-600 hover:text-blue-800 underline flex-shrink-0"
+                  className="text-xs text-neutral-600 hover:text-neutral-900 underline font-medium"
                 >
-                  Verify
+                  View proof
                 </button>
               </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Disqualifiers if any */}
-        {p.disqualifiers && p.disqualifiers.length > 0 && (
-          <div className="pt-2">
-            <div className="text-[11px] font-mono uppercase font-semibold text-rose-700 mb-2 flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-              <span>Active Disqualifiers / Warning Flags</span>
-            </div>
-            <div className="space-y-1.5">
-              {p.disqualifiers.map((dis, dIdx) => (
-                <div
-                  key={dIdx}
-                  className="p-2.5 rounded bg-rose-50 border border-rose-200 text-xs text-rose-900 flex items-center gap-2"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-600 flex-shrink-0" />
-                  <span>{dis}</span>
-                </div>
-              ))}
-            </div>
+      {/* Changes Tab */}
+      {activeTab === "changes" && (
+        <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3">
+          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+            Account Timeline
           </div>
-        )}
-      </div>
-
-      {/* Signals Section */}
-      <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-neutral-800" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Observed Temporal Signals ({p.signals.length})
-            </h2>
-          </div>
-          <span className="text-[11px] font-mono text-neutral-400">
-            Source-backed events
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {p.signals.map((sig) => (
-            <div
-              key={sig.signal_id}
-              className="p-3 bg-neutral-50 rounded border border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-neutral-900">
-                    {sig.title}
-                  </span>
-                  <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-700">
-                    {sig.signal_type}
-                  </span>
-                </div>
-                <p className="text-neutral-600 text-[11px] mt-0.5">
-                  {sig.description}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <ConfidenceIndicator score={sig.confidence_score} size="sm" />
-                <button
-                  onClick={() =>
-                    openEvidenceDrawer({
-                      claim: `${sig.title}: ${sig.description}`,
-                      evidenceId: sig.evidence_id,
-                      verificationStatus: "Verified",
-                      confidenceScore: sig.confidence_score,
-                    })
-                  }
-                  className="text-[11px] text-blue-600 hover:text-blue-800 underline"
-                >
-                  Inspect
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Verified Facts Table */}
-      <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-neutral-800" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Verified Facts & Attributes ({p.verified_facts.length})
-            </h2>
-          </div>
-          <button
-            onClick={() =>
-              openCorrectionModal({
-                companyId: p.company_id,
-                claim: "General company attributes",
-              })
-            }
-            className="text-[11px] text-neutral-600 hover:text-neutral-900 underline flex items-center gap-1"
-          >
-            <Edit3 className="w-3 h-3" />
-            <span>Override a Fact</span>
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-neutral-50 text-[11px] uppercase font-mono text-neutral-500 border-b border-neutral-200">
-              <tr>
-                <th className="px-3 py-2">Attribute</th>
-                <th className="px-3 py-2">Canonical Value</th>
-                <th className="px-3 py-2">Verification</th>
-                <th className="px-3 py-2">Confidence</th>
-                <th className="px-3 py-2">Evidence & Source</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200">
-              {p.verified_facts.map((fact) => (
-                <tr key={fact.fact_id} className="hover:bg-neutral-50/50">
-                  <td className="px-3 py-2.5 font-mono text-[11px] font-semibold text-neutral-900">
-                    {fact.field_name}
-                  </td>
-                  <td className="px-3 py-2.5 font-medium text-neutral-800 max-w-sm truncate">
-                    {String(fact.value)}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <StatusBadge status={fact.verification_status} size="sm" />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <ConfidenceIndicator score={fact.confidence_score} size="sm" />
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <button
-                      onClick={() =>
-                        openEvidenceDrawer({
-                          factId: fact.fact_id,
-                          claim: `${fact.field_name}: ${fact.value}`,
-                          sourceUrl: fact.source_url,
-                          verificationStatus: fact.verification_status,
-                          confidenceScore: fact.confidence_score,
-                        })
-                      }
-                      className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 underline"
-                    >
-                      <FileSearch className="w-3 h-3" />
-                      <span>Inspect DOM Proof</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Contacts / Target People */}
-      <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-neutral-800" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Matched Buyer Decision Makers ({p.people.length})
-            </h2>
-          </div>
-          <span className="text-[11px] font-mono text-neutral-400">
-            Export ready for outreach
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {p.people.map((person) => (
-            <div
-              key={person.person_id}
-              className="p-4 rounded border border-neutral-200 bg-neutral-50/40 flex items-start justify-between gap-3 text-xs"
-            >
-              <div>
-                <div className="font-semibold text-neutral-900">
-                  {person.full_name}
-                </div>
-                <div className="text-[11px] text-neutral-500 mt-0.5">
-                  {person.job_title}
-                </div>
-                <div className="mt-2 flex items-center gap-2 font-mono text-[10px]">
-                  <span className="px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-800">
-                    {person.seniority}
-                  </span>
-                  <span className="text-neutral-500">{person.department}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end gap-2">
-                <StatusBadge status={person.verification_status} size="sm" />
-                {person.linkedin_url && (
-                  <a
-                    href={person.linkedin_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-neutral-400 hover:text-blue-600"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Score History */}
-      {p.score_history && p.score_history.length > 0 && (
-        <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-neutral-800" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Scorecard History & Calibration Log
-            </h2>
-          </div>
-
-          <div className="space-y-2">
-            {p.score_history.map((hist, hIdx) => (
-              <div
-                key={hIdx}
-                className="p-3 bg-neutral-50 rounded border border-neutral-200 flex items-center justify-between text-xs font-mono"
-              >
+          <div className="space-y-3 text-xs">
+            {p.score_history.map((hist, idx) => (
+              <div key={idx} className="p-3 bg-neutral-50 rounded border border-neutral-200 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-neutral-900 mr-2">
-                    {Math.round(hist.score * 100)}% ({hist.rank_tier})
-                  </span>
-                  <span className="text-neutral-600 font-sans">{hist.change_reason}</span>
+                  <span className="font-semibold text-neutral-900">{hist.change_reason}</span>
+                  <div className="text-[11px] text-neutral-500 mt-0.5">
+                    Priority updated to {formatPriority(hist.rank_tier).label}
+                  </div>
                 </div>
                 <span className="text-[11px] text-neutral-400">
                   {new Date(hist.timestamp).toLocaleDateString()}

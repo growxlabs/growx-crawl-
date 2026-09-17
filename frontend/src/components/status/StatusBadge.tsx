@@ -22,9 +22,14 @@ export type StatusType =
   | "Stale"
   | "Conflicting"
   | "Invalid"
+  | "Needs refresh"
+  | "Needs research"
+  | "Blocked"
   // Priority / Ranking states
+  | "High"
   | "Priority"
   | "Strong"
+  | "Potential"
   | "Possible"
   | "Research More"
   | "Reverify"
@@ -49,7 +54,7 @@ export function StatusBadge({
   size = "sm",
   showIcon = true,
 }: StatusBadgeProps) {
-  const norm = (status || "").toLowerCase().trim();
+  const norm = (status || "").toLowerCase().trim().replace(/_/g, " ");
 
   let label = status;
   let bg = "bg-neutral-100";
@@ -65,15 +70,16 @@ export function StatusBadge({
       text = "text-emerald-700";
       border = "border-emerald-200";
       IconComponent = CheckCircle2;
-      label = status === "completed" ? "Completed" : status;
+      label = status === "completed" ? "Completed" : "Verified";
       break;
 
+    case "high":
     case "priority":
       bg = "bg-purple-50";
       text = "text-purple-700";
       border = "border-purple-200";
       IconComponent = Flame;
-      label = "Priority";
+      label = "High";
       break;
 
     case "strong":
@@ -92,29 +98,40 @@ export function StatusBadge({
       label = "Supported";
       break;
 
+    case "potential":
     case "possible":
       bg = "bg-neutral-100";
       text = "text-neutral-800";
       border = "border-neutral-300";
       IconComponent = Sparkles;
-      label = "Possible";
+      label = "Potential";
       break;
 
+    case "needs research":
     case "research more":
       bg = "bg-amber-50";
       text = "text-amber-800";
       border = "border-amber-200";
       IconComponent = Search;
-      label = "Research More";
+      label = "Needs research";
       break;
 
+    case "needs refresh":
     case "reverify":
-    case "uncertain":
+    case "needs sync":
       bg = "bg-amber-50";
       text = "text-amber-800";
       border = "border-amber-200";
       IconComponent = RefreshCw;
-      label = norm === "reverify" ? "Reverify" : "Uncertain";
+      label = "Needs refresh";
+      break;
+
+    case "uncertain":
+      bg = "bg-neutral-100";
+      text = "text-neutral-600";
+      border = "border-neutral-200";
+      IconComponent = HelpCircle;
+      label = "Uncertain";
       break;
 
     case "stale":
@@ -125,6 +142,7 @@ export function StatusBadge({
       label = "Stale";
       break;
 
+    case "blocked":
     case "conflicting":
     case "invalid":
     case "failed":
@@ -133,12 +151,7 @@ export function StatusBadge({
       text = "text-rose-700";
       border = "border-rose-200";
       IconComponent = XCircle;
-      label =
-        norm === "not eligible"
-          ? "Not Eligible"
-          : norm === "failed"
-          ? "Failed"
-          : status;
+      label = norm === "not eligible" ? "Not Eligible" : norm === "failed" ? "Failed" : "Blocked";
       break;
 
     case "draft":

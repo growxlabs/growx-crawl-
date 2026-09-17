@@ -7,15 +7,15 @@ import {
 } from "@/lib/api/company";
 import { useEvidence } from "@/components/inspector/EvidenceContext";
 import {
-  Sparkles,
   CheckCircle2,
-  Users,
-  Target,
   FileSearch,
+  Users,
   ShieldCheck,
-  Tag,
+  Target,
+  Sparkles,
+  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
-import { StatusBadge } from "@/components/status/StatusBadge";
 
 export function SellerAnalysis() {
   const [analysis, setAnalysis] = useState<SellerAnalysisType | null>(null);
@@ -30,137 +30,145 @@ export function SellerAnalysis() {
   }, []);
 
   const data: SellerAnalysisType = analysis || {
-    company_name: "GrowxLabs Intelligence",
+    company_name: "GrowxLabs",
     domain: "growxlabs.tech",
     positioning:
-      "Autonomous GTM intelligence platform turning unstructured company crawl data into verified canonical buyer graphs.",
+      "GrowxLabs builds AI-native enterprise software, autonomous systems, and custom engineering platforms for industrial, manufacturing, and enterprise organizations.",
     value_props: [
       {
-        title: "Canonical Fact Verification",
+        title: "Autonomous Entity Resolution & Crawling",
         description:
-          "Zero hallucination GTM data verified directly against authoritative company websites and DOM citations.",
+          "Zero hallucination company research and verification directly backed by authoritative website sources.",
       },
       {
-        title: "Temporal Intelligence & Change Detection",
+        title: "Continuous Change Detection",
         description:
-          "Detect when prospect tech stacks, executive hiring, or pricing models change in real-time.",
+          "Detect changes in corporate leadership, hiring surges, operational expansion, and technology adoption.",
       },
       {
-        title: "Explainable Prospect Ranking",
+        title: "Explainable Prospect Prioritization",
         description:
-          "Transparent scorecards showing exact ICP fit percentages, readiness factors, and evidence provenance.",
+          "Transparent qualification scorecards linking buyer fit with evidence and current timing.",
       },
     ],
     ideal_use_cases: [
-      "Mid-market B2B outbound campaign acceleration",
-      "Account-based intelligence and buyer graph mapping",
-      "Competitive switch campaigns targeting legacy data providers",
+      "Targeted account intelligence for industrial and enterprise sales",
+      "Continuous market monitoring and competitor tracking",
+      "Executive buyer discovery and role verification",
     ],
     target_buyer_roles: [
       {
-        role: "VP of Sales / Head of Revenue Operations",
-        departments: ["Sales", "Revenue Operations"],
+        role: "Chief Technology Officer / Head of Engineering",
+        departments: ["Technology", "Engineering"],
+        seniority: "C-Level",
+      },
+      {
+        role: "Head of Operations / COO",
+        departments: ["Operations", "Manufacturing"],
         seniority: "VP+",
       },
       {
-        role: "Director of Demand Generation / GTM",
-        departments: ["Marketing", "Growth"],
+        role: "Director of Digital Transformation & Innovation",
+        departments: ["Strategy", "IT"],
         seniority: "Director",
       },
-      {
-        role: "Chief Commercial Officer",
-        departments: ["Executive", "Sales"],
-        seniority: "C-Level",
-      },
     ],
-    pricing_model: "Usage-based tiering + Platform subscription per seat",
+    pricing_model: "Enterprise Platform License + Engineering Services",
     differentiators: [
-      "Automated continuous re-crawling with temporal diff engine",
-      "Explainable algorithmic ICP scoring vs opaque black boxes",
-      "Native first-party DOM proof inspector for every single attribute",
+      "Native first-party evidence inspection for every single business claim",
+      "Continuous monitoring and timeline changes vs static stale databases",
+      "Explainable algorithmic target ranking instead of black-box opaque lead scoring",
     ],
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white border border-neutral-200 rounded p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-neutral-800" />
-            <span className="text-xs font-semibold uppercase tracking-wider font-mono text-neutral-900">
-              Seller Capability Analysis
-            </span>
-          </div>
-          <StatusBadge status="Verified" size="sm" />
-        </div>
-        <p className="text-xs text-neutral-500">
-          Synthesized seller value proposition, commercial positioning, and ICP
-          foundational inputs derived from deep crawls.
+    <div className="max-w-4xl space-y-8 py-2">
+      {/* Page Header */}
+      <div className="border-b border-neutral-200 pb-5">
+        <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
+          Positioning
+        </h1>
+        <p className="text-xs text-neutral-500 mt-1">
+          How GrowX understands your company
         </p>
+      </div>
 
-        {/* Positioning Box */}
-        <div className="mt-4 p-4 bg-neutral-50 rounded border border-neutral-200">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] uppercase font-mono text-neutral-400">
-              Core Strategic Positioning
-            </span>
+      {/* 1. Core Strategic Positioning */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+          Positioning
+        </div>
+        <div className="p-5 bg-white border border-neutral-200 rounded-md space-y-3">
+          <p className="text-base font-semibold text-neutral-900 leading-relaxed">
+            "{data.positioning}"
+          </p>
+
+          <div className="flex items-center justify-between pt-2 border-t border-neutral-100 text-xs text-neutral-500">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Verified</span>
+              </span>
+              <span>•</span>
+              <span>Updated today</span>
+            </div>
+
             <button
               onClick={() =>
                 openEvidenceDrawer({
                   claim: data.positioning,
-                  sourceUrl: "https://growxlabs.com",
+                  sourceUrl: `https://${data.domain}`,
                   verificationStatus: "Verified",
                   confidenceScore: 0.99,
                 })
               }
-              className="text-[11px] text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+              className="text-xs text-neutral-600 hover:text-neutral-900 underline inline-flex items-center gap-1"
             >
-              <FileSearch className="w-3 h-3" />
-              <span>Inspect Source</span>
+              <FileSearch className="w-3.5 h-3.5 text-neutral-400" />
+              <span>View sources</span>
             </button>
-          </div>
-          <div className="text-sm font-semibold text-neutral-900 leading-relaxed font-sans">
-            "{data.positioning}"
           </div>
         </div>
       </div>
 
-      {/* Value Propositions */}
-      <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-        <h2 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider font-mono">
-          Core Value Propositions ({data.value_props.length})
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <hr className="border-neutral-200" />
+
+      {/* 2. Capabilities */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+          Capabilities
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {data.value_props.map((vp, idx) => (
             <div
               key={idx}
-              className="p-4 rounded border border-neutral-200 bg-neutral-50/40 space-y-2 flex flex-col justify-between"
+              className="p-4 bg-white border border-neutral-200 rounded-md flex flex-col justify-between space-y-3"
             >
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <div className="font-semibold text-xs text-neutral-900">
-                    {vp.title}
-                  </div>
+              <div className="space-y-1.5">
+                <div className="font-semibold text-xs text-neutral-900">
+                  {vp.title}
                 </div>
-                <p className="text-xs text-neutral-600 leading-normal">
+                <p className="text-xs text-neutral-500 leading-relaxed">
                   {vp.description}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-neutral-200/60 flex justify-end">
+              <div className="pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500">
+                <span className="text-emerald-700 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <span>Verified</span>
+                </span>
                 <button
                   onClick={() =>
                     openEvidenceDrawer({
                       claim: `${vp.title}: ${vp.description}`,
-                      sourceUrl: "https://growxlabs.com/platform",
+                      sourceUrl: `https://${data.domain}/platform`,
                       verificationStatus: "Verified",
                     })
                   }
-                  className="text-[10px] text-neutral-500 hover:text-neutral-900 underline"
+                  className="hover:text-neutral-900 underline"
                 >
-                  Verify Proof
+                  View sources
                 </button>
               </div>
             </div>
@@ -168,22 +176,80 @@ export function SellerAnalysis() {
         </div>
       </div>
 
-      {/* Target Buyer Personas & Differentiators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Buyer Roles */}
-        <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-neutral-700" />
-            <h2 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider font-mono">
-              Target Buyer Personas
-            </h2>
-          </div>
+      <hr className="border-neutral-200" />
 
-          <div className="space-y-3">
+      {/* 3. What you solve */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+          What you solve
+        </div>
+        <div className="space-y-2">
+          {data.ideal_use_cases.map((useCase, idx) => (
+            <div
+              key={idx}
+              className="p-3 bg-neutral-50 border border-neutral-200 rounded-md flex items-center justify-between text-xs"
+            >
+              <div className="flex items-center gap-2 text-neutral-800 font-medium">
+                <div className="w-1.5 h-1.5 rounded-full bg-neutral-900" />
+                <span>{useCase}</span>
+              </div>
+              <button
+                onClick={() =>
+                  openEvidenceDrawer({
+                    claim: useCase,
+                    sourceUrl: `https://${data.domain}/solutions`,
+                    verificationStatus: "Verified",
+                  })
+                }
+                className="text-[11px] text-neutral-500 hover:text-neutral-900 underline"
+              >
+                View sources
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <hr className="border-neutral-200" />
+
+      {/* 4. Who you sell to & Buyer roles */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Who you sell to */}
+        <div className="space-y-3">
+          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+            Who you sell to
+          </div>
+          <div className="space-y-2">
+            {[
+              { market: "Manufacturing", detail: "Precision engineering, automotive components, discrete manufacturing" },
+              { market: "Industrial Companies", detail: "Heavy equipment, robotics, automation supply chains" },
+              { market: "Legacy Enterprises", detail: "Organizations modernizing core business software and manual workflows" },
+            ].map((m, idx) => (
+              <div
+                key={idx}
+                className="p-3 bg-white border border-neutral-200 rounded-md space-y-1"
+              >
+                <div className="font-semibold text-xs text-neutral-900">
+                  {m.market}
+                </div>
+                <div className="text-xs text-neutral-500">
+                  {m.detail}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Buyer roles */}
+        <div className="space-y-3">
+          <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+            Buyer roles
+          </div>
+          <div className="space-y-2">
             {data.target_buyer_roles.map((br, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-neutral-50 rounded border border-neutral-200 flex items-center justify-between text-xs"
+                className="p-3 bg-white border border-neutral-200 rounded-md flex items-center justify-between text-xs"
               >
                 <div>
                   <div className="font-semibold text-neutral-900">
@@ -193,43 +259,49 @@ export function SellerAnalysis() {
                     {br.departments.join(", ")}
                   </div>
                 </div>
-                <span className="font-mono text-[10px] px-2 py-0.5 bg-neutral-200 text-neutral-700 rounded font-medium">
+                <span className="text-[10px] px-2 py-0.5 bg-neutral-100 text-neutral-700 rounded font-medium">
                   {br.seniority}
                 </span>
               </div>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Differentiators & Pricing */}
-        <div className="bg-white border border-neutral-200 rounded p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-neutral-700" />
-            <h2 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider font-mono">
-              Verified Differentiators
-            </h2>
-          </div>
+      <hr className="border-neutral-200" />
 
-          <div className="space-y-2.5">
-            {data.differentiators.map((diff, idx) => (
-              <div
-                key={idx}
-                className="p-2.5 rounded bg-neutral-50 border border-neutral-200 text-xs text-neutral-700 flex items-start gap-2"
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-1.5 flex-shrink-0" />
-                <span className="leading-snug">{diff}</span>
+      {/* 5. Differentiators */}
+      <div className="space-y-3">
+        <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+          Differentiators
+        </div>
+        <div className="space-y-2.5">
+          {data.differentiators.map((diff, idx) => (
+            <div
+              key={idx}
+              className="p-3.5 bg-white border border-neutral-200 rounded-md flex items-start justify-between gap-4 text-xs"
+            >
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <span className="font-medium text-neutral-800 leading-relaxed">
+                  {diff}
+                </span>
               </div>
-            ))}
-          </div>
 
-          <div className="pt-2 border-t border-neutral-200">
-            <div className="text-[10px] uppercase font-mono text-neutral-400 mb-1">
-              Commercial Pricing Model
+              <button
+                onClick={() =>
+                  openEvidenceDrawer({
+                    claim: diff,
+                    sourceUrl: `https://${data.domain}/platform`,
+                    verificationStatus: "Verified",
+                  })
+                }
+                className="text-xs text-neutral-500 hover:text-neutral-900 underline flex-shrink-0"
+              >
+                View sources
+              </button>
             </div>
-            <div className="text-xs font-mono text-neutral-800 bg-neutral-100 p-2 rounded border border-neutral-200">
-              {data.pricing_model}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
