@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { SellerAnalysis } from "@/features/company/SellerAnalysis";
+import { AutoGTMCockpit } from "@/features/cockpit/AutoGTMCockpit";
 
-export default function AnalysisRedirectPage() {
-  return <SellerAnalysis />;
+export default function AnalysisPage() {
+  return <AutoGTMCockpit />;
 }

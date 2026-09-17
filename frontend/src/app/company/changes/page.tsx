@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { CompanyHistory } from "@/features/company/CompanyHistory";
+import { AutoGTMCockpit } from "@/features/cockpit/AutoGTMCockpit";
 
 export default function ChangesPage() {
-  return <CompanyHistory />;
+  return <AutoGTMCockpit />;
 }

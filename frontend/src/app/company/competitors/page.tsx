@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { CompetitorView } from "@/features/company/CompetitorView";
+import { AutoGTMCockpit } from "@/features/cockpit/AutoGTMCockpit";
 
 export default function CompetitorsPage() {
-  return <CompetitorView />;
+  return <AutoGTMCockpit />;
 }
