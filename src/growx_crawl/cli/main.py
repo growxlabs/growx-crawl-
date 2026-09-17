@@ -18,6 +18,8 @@ from growx_crawl.scoring.scorer import LeadScorer
 from growx_crawl.storage import ErrorRepository, JobRepository, LeadRepository
 from growx_crawl.utils import console, log_error, log_info, log_success, log_warning, render_table
 
+from growx_crawl.cli.db import db_cli
+
 app = typer.Typer(
     name="growx-crawl",
     help="GrowX Crawl - High-performance lead intelligence crawler, extraction, normalization, deduplication & scoring.",
@@ -26,6 +28,7 @@ app = typer.Typer(
 
 agent_app = typer.Typer(help="Autonomous GrowX Crawl AI Agent Runtime commands")
 app.add_typer(agent_app, name="agent")
+app.add_typer(db_cli, name="db")
 
 
 @agent_app.command("run")
