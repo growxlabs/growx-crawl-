@@ -192,7 +192,7 @@ async def test_verification_boundary_and_adapters():
     dom_res = await verification_service.verify_domain("google.com")
     assert dom_res.status == VerificationStatus.VERIFIED
 
-    comp_res = await verification_service.verify_company("cmp_1", {"name": "Test Co", "domain": "test.com"})
+    comp_res = await verification_service.verify_company("cmp_1", {"name": "Test Co", "domain": "google.com"})
     assert comp_res.status == VerificationStatus.VERIFIED
 
     emp_res = await verification_service.verify_employment("per_1", "cmp_1", "alex@growxlabs.com", "growxlabs.com")

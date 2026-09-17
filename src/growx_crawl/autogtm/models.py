@@ -56,6 +56,8 @@ class ProspectLead(BaseModel):
     canonical_company_id: Optional[str] = None
     canonical_domain_id: Optional[str] = None
     canonical_person_id: Optional[str] = None
+    verification_gate_decision: Optional[str] = None
+    verification_status: Optional[str] = None
 
 
 class AutoGTMResult(BaseModel):

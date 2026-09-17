@@ -499,6 +499,70 @@ CREATE TABLE IF NOT EXISTS fact_events (
 
 CREATE INDEX IF NOT EXISTS idx_fact_events_fact ON fact_events(fact_id);
 CREATE INDEX IF NOT EXISTS idx_fact_events_type ON fact_events(event_type);
+
+CREATE TABLE IF NOT EXISTS verification_policies (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(128) NOT NULL UNIQUE,
+    subject_type VARCHAR(64) NOT NULL,
+    version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    min_confidence DOUBLE PRECISION DEFAULT 0.80,
+    required_checks JSONB DEFAULT '[]'::jsonb,
+    ttl_hours INTEGER DEFAULT 168,
+    config_json JSONB DEFAULT '{}'::jsonb,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS verification_runs (
+    id VARCHAR(64) PRIMARY KEY,
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(128) NOT NULL,
+    verification_type VARCHAR(64) NOT NULL,
+    policy_id VARCHAR(64) NOT NULL,
+    policy_version VARCHAR(32) NOT NULL DEFAULT 'v1',
+    status VARCHAR(32) NOT NULL,
+    confidence DOUBLE PRECISION NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ,
+    valid_until TIMESTAMPTZ,
+    error_code VARCHAR(64),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_ver_runs_subj ON verification_runs(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_ver_runs_status ON verification_runs(status);
+
+CREATE TABLE IF NOT EXISTS verification_checks (
+    id VARCHAR(64) PRIMARY KEY,
+    verification_run_id VARCHAR(64) NOT NULL REFERENCES verification_runs(id) ON DELETE CASCADE,
+    check_type VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    score DOUBLE PRECISION NOT NULL,
+    reason_code VARCHAR(64) NOT NULL,
+    evidence_ids JSONB DEFAULT '[]'::jsonb,
+    duration_ms INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_ver_checks_run ON verification_checks(verification_run_id);
+
+CREATE TABLE IF NOT EXISTS verification_state (
+    subject_type VARCHAR(64) NOT NULL,
+    subject_id VARCHAR(128) NOT NULL,
+    verification_type VARCHAR(64) NOT NULL,
+    latest_run_id VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    confidence DOUBLE PRECISION NOT NULL,
+    last_verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    valid_until TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    metadata_json JSONB DEFAULT '{}'::jsonb,
+    PRIMARY KEY (subject_type, subject_id, verification_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ver_state_lookup ON verification_state(subject_type, subject_id);
 """
 
 

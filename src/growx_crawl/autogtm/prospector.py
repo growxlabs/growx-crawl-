@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from growx_crawl.autogtm.models import CompanyAnalysis, ICPProfile, ProspectLead
 from growx_crawl.verification.email import email_verifier
+from growx_crawl.verification.gate import VerificationGate
 from growx_crawl.identity import identity_service
 
 logger = logging.getLogger("growx_crawl.autogtm.prospector")
@@ -111,6 +112,11 @@ class ProspectHarvester:
             except Exception as e:
                 logger.warning("Failed to resolve canonical identity for %s: %s", full_name, e)
 
+            # Run verification gate
+            gate_eval = VerificationGate.evaluate(
+                email_res=await self.verifier.verify_entity(primary_email)
+            )
+
             lead = ProspectLead(
                 id=f"lead_{uuid.uuid4().hex[:10]}",
                 name=full_name,
@@ -130,6 +136,8 @@ class ProspectHarvester:
                 canonical_company_id=canon_cmp_id,
                 canonical_domain_id=canon_dom_id,
                 canonical_person_id=canon_per_id,
+                verification_gate_decision=gate_eval.decision.value,
+                verification_status=status,
             )
             leads.append(lead)
 

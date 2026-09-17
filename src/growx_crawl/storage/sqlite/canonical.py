@@ -523,6 +523,71 @@ CREATE TABLE IF NOT EXISTS canonical_fact_events (
 
 CREATE INDEX IF NOT EXISTS idx_canon_fact_events_fact ON canonical_fact_events(fact_id);
 CREATE INDEX IF NOT EXISTS idx_canon_fact_events_type ON canonical_fact_events(event_type);
+
+CREATE TABLE IF NOT EXISTS canonical_verification_policies (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    subject_type TEXT NOT NULL,
+    version TEXT NOT NULL DEFAULT 'v1',
+    min_confidence REAL DEFAULT 0.80,
+    required_checks TEXT DEFAULT '[]',
+    ttl_hours INTEGER DEFAULT 168,
+    config_json TEXT DEFAULT '{}',
+    enabled INTEGER DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS canonical_verification_runs (
+    id TEXT PRIMARY KEY,
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    verification_type TEXT NOT NULL,
+    policy_id TEXT NOT NULL,
+    policy_version TEXT NOT NULL DEFAULT 'v1',
+    status TEXT NOT NULL,
+    confidence REAL NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    valid_until TEXT,
+    error_code TEXT,
+    metadata_json TEXT DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_ver_runs_subj ON canonical_verification_runs(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_canon_ver_runs_status ON canonical_verification_runs(status);
+
+CREATE TABLE IF NOT EXISTS canonical_verification_checks (
+    id TEXT PRIMARY KEY,
+    verification_run_id TEXT NOT NULL,
+    check_type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    score REAL NOT NULL,
+    reason_code TEXT NOT NULL,
+    evidence_ids TEXT DEFAULT '[]',
+    duration_ms INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    FOREIGN KEY (verification_run_id) REFERENCES canonical_verification_runs(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_ver_checks_run ON canonical_verification_checks(verification_run_id);
+
+CREATE TABLE IF NOT EXISTS canonical_verification_state (
+    subject_type TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    verification_type TEXT NOT NULL,
+    latest_run_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    confidence REAL NOT NULL,
+    last_verified_at TEXT NOT NULL,
+    valid_until TEXT,
+    updated_at TEXT NOT NULL,
+    metadata_json TEXT DEFAULT '{}',
+    PRIMARY KEY (subject_type, subject_id, verification_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_canon_ver_state_lookup ON canonical_verification_state(subject_type, subject_id);
 """
 
 
