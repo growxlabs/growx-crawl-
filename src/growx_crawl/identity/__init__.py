@@ -28,6 +28,9 @@ from growx_crawl.identity.normalization import (
 from growx_crawl.identity.repository import BaseIdentityRepository, SqliteIdentityRepository
 from growx_crawl.identity.service import IdentityService, identity_service
 
+from growx_crawl.identity.aliases import create_person_alias
+from growx_crawl.identity.relationships import create_company_relationship
+
 __all__ = [
     "IDENTITY_PREFIXES",
     "generate_identity_id",
@@ -42,6 +45,8 @@ __all__ = [
     "create_entity_merge",
     "resolve_canonical_id_chain",
     "create_identity_event",
+    "create_person_alias",
+    "create_company_relationship",
     "LocationEntity",
     "CompanyLocationEntity",
     "BrandEntity",

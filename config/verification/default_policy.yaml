@@ -1,0 +1,8 @@
+# GrowX Default Verification Policy Configuration
+policy:
+  name: standard
+  min_confidence: 0.80
+  required_checks:
+    - syntax
+    - mx_dns
+  ttl_hours: 168

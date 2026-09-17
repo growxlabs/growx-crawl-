@@ -1,0 +1,8 @@
+# GrowX Default Entity Resolution Thresholds Configuration
+thresholds:
+  auto_merge: 0.90
+  review_required: 0.70
+  no_match: 0.40
+blocking:
+  company_prefix_length: 4
+  min_company_name_len: 4

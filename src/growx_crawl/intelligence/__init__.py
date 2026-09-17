@@ -44,6 +44,18 @@ from growx_crawl.intelligence.observations import (
     observation_service,
 )
 
+from growx_crawl.intelligence.history import (
+    HistoryService,
+    detect_value_change,
+    history_service,
+)
+from growx_crawl.intelligence.signals import (
+    SignalEntity,
+    SignalService,
+    detect_signals_from_company,
+    signal_service,
+)
+
 __all__ = [
     "FactEntity",
     "FactPredicateEntity",
@@ -82,4 +94,11 @@ __all__ = [
     "extractor_adapter",
     "AutoGTMAdapter",
     "autogtm_adapter",
+    "HistoryService",
+    "history_service",
+    "detect_value_change",
+    "SignalEntity",
+    "SignalService",
+    "signal_service",
+    "detect_signals_from_company",
 ]

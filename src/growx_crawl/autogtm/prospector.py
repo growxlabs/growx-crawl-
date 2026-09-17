@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from growx_crawl.autogtm.models import CompanyAnalysis, ICPProfile, ProspectLead
-from growx_crawl.autogtm.verifier import email_verifier
+from growx_crawl.verification.email import email_verifier
 from growx_crawl.identity import identity_service
 
 logger = logging.getLogger("growx_crawl.autogtm.prospector")

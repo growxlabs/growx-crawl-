@@ -1,13 +1,23 @@
+"""
+GrowX Deduplication Engine (Compatibility Adapter).
+Migrated to delegate matching logic to entity_resolution/ and normalization/.
+Preserves 100% backward-compatible API for existing job and pipeline callers.
+"""
+
 from typing import Optional, Tuple
 from growx_crawl.core.enums import MatchDecision
+from growx_crawl.entity_resolution.company.matcher import CompanyMatcher
+from growx_crawl.entity_resolution.thresholds import AUTO_MERGE_THRESHOLD, REVIEW_THRESHOLD
 from growx_crawl.models.lead import Company, DedupeRecord
-from growx_crawl.normalization.normalizer import Normalizer
 from growx_crawl.storage.repository import LeadRepository
 
 
 class DeduplicationEngine:
+    """Compatibility adapter forwarding deduplication requests to the Entity Resolution Subsystem."""
+
     def __init__(self, lead_repo: LeadRepository):
         self.lead_repo = lead_repo
+        self.matcher = CompanyMatcher()
 
     def evaluate(self, company: Company) -> Tuple[bool, Optional[DedupeRecord], Optional[str]]:
         """
@@ -17,52 +27,37 @@ class DeduplicationEngine:
         """
         existing_companies = self.lead_repo.list_job_companies(company.job_id)
 
+        c1_dict = {
+            "name": company.name,
+            "domain": company.domain,
+            "emails": company.emails,
+            "phones": company.phones,
+            "social_profiles": company.social_profiles,
+            "city": company.city,
+        }
+
         for existing in existing_companies:
             if existing.id == company.id:
                 continue
 
-            signals = []
-            confidence = 0.0
+            c2_dict = {
+                "name": existing.name,
+                "domain": existing.domain,
+                "emails": existing.emails,
+                "phones": existing.phones,
+                "social_profiles": existing.social_profiles,
+                "city": existing.city,
+            }
 
-            # Signal 1: Same domain
-            if company.domain and existing.domain and company.domain == existing.domain:
-                signals.append("same_domain")
-                confidence = 1.0
+            confidence, explanation = self.matcher.match(c1_dict, c2_dict)
 
-            # Signal 2: Same normalized email
-            if not confidence:
-                company_emails = {e.normalized_email for e in company.emails if e.normalized_email}
-                existing_emails = {e.normalized_email for e in existing.emails if e.normalized_email}
-                if company_emails and existing_emails and company_emails.intersection(existing_emails):
-                    signals.append("same_normalized_email")
-                    confidence = 0.95
-
-            # Signal 3: Same normalized phone
-            if not confidence:
-                company_phones = {p.normalized_phone for p in company.phones if p.normalized_phone}
-                existing_phones = {p.normalized_phone for p in existing.phones if p.normalized_phone}
-                if company_phones and existing_phones and company_phones.intersection(existing_phones):
-                    signals.append("same_normalized_phone")
-                    confidence = 0.95
-
-            # Signal 4: Same social profile URL
-            if not confidence:
-                company_soc = {s.normalized_url for s in company.social_profiles if s.normalized_url}
-                existing_soc = {s.normalized_url for s in existing.social_profiles if s.normalized_url}
-                if company_soc and existing_soc and company_soc.intersection(existing_soc):
-                    signals.append("same_social_url")
-                    confidence = 0.90
-
-            # Signal 5: Same name + city
-            if not confidence:
-                k1 = Normalizer.normalize_company_name_key(company.name)
-                k2 = Normalizer.normalize_company_name_key(existing.name)
-                if k1 and k1 == k2 and company.city and existing.city and company.city.lower() == existing.city.lower():
-                    signals.append("same_name_and_city")
-                    confidence = 0.75
-
-            if confidence >= 0.70:
-                decision = MatchDecision.AUTO_MERGED if confidence >= 0.90 else MatchDecision.REVIEW_REQUIRED
+            if confidence >= REVIEW_THRESHOLD:
+                decision = (
+                    MatchDecision.AUTO_MERGED
+                    if confidence >= AUTO_MERGE_THRESHOLD
+                    else MatchDecision.REVIEW_REQUIRED
+                )
+                signals = [s.name for s in explanation.signals]
                 rec = DedupeRecord(
                     canonical_company_id=existing.id,
                     duplicate_company_id=company.id,
