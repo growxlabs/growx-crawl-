@@ -8,6 +8,7 @@ import { CockpitHeader } from "@/features/cockpit/CockpitHeader";
 import { EvidenceProvider } from "../inspector/EvidenceContext";
 import { EvidenceInspector } from "../inspector/EvidenceInspector";
 import { FactCorrectionModal } from "../inspector/FactCorrectionModal";
+import { CompetitorModal } from "@/features/cockpit/CompetitorModal";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -44,9 +45,10 @@ export function AppShell({ children }: AppShellProps) {
             </main>
           </div>
 
-          {/* Global Slide-out Drawer and Modal */}
+          {/* Global Slide-out Drawer and Modals */}
           <EvidenceInspector />
           <FactCorrectionModal />
+          <CompetitorModal />
         </div>
       </CockpitProvider>
     </EvidenceProvider>
