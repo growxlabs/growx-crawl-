@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=2.7.0">
+    <link rel="stylesheet" href="/static/style.css?v=2.8.3">
 </head>
 <body class="app-body">
 
@@ -145,7 +145,7 @@
                         <span>Systems Operational</span>
                     </div>
 
-                    <a href="/home" class="topbar-action-btn" style="text-decoration: none; color: #93c5fd; background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.25);" title="Go to GrowxLabs Studio Landing Page">
+                    <a href="/home" class="topbar-action-btn studio-link" title="Go to GrowxLabs Studio Landing Page">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -179,11 +179,9 @@
 
                 <!-- 1. OVERVIEW VIEW -->
                 <div id="view-dashboard" class="view-panel active">
-                    <div class="page-heading">
-                        <div>
-                            <h1 class="page-title">Platform Overview</h1>
-                            <p class="page-description">High-throughput web extraction, headless browser sessions, and pipeline health.</p>
-                        </div>
+                    <div class="page-heading overview-heading">
+                        <h1 class="overview-kicker">// Overview</h1>
+                        <p class="overview-statement">One API, seven capabilities. Scrape pages with fast, browser, or stealth fetching; extract fields with CSS or XPath; and crawl up to 50 pages, five levels deep. Batch up to 100 URLs, capture screenshots, generate PDFs, and audit SEO. Async jobs, webhooks, proxies, robots.txt controls, and caching are built in.</p>
                     </div>
 
                     <!-- 4 Metric Cards Grid -->
@@ -199,7 +197,7 @@
 
                         <div class="metric-box">
                             <div class="metric-top">
-                                <span class="metric-label">Browser Concurrency</span>
+                                <span class="metric-label">Browser Capacity</span>
                                 <span class="metric-badge">Headless</span>
                             </div>
                             <div class="metric-number" id="metric-dynamic-slots">64 Sessions</div>
@@ -245,7 +243,7 @@
                                 </select>
                             </div>
                             <button class="btn-action-primary" onclick="executeQuickScrape()">
-                                <span>Execute Request</span>
+                                <span>Extract URL</span>
                             </button>
                         </div>
 

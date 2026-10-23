@@ -24,6 +24,12 @@ from growx_crawl.storage.entities import (
 )
 from growx_crawl.storage.factory import StorageFactory, get_active_backend
 from growx_crawl.storage.postgres.db import StorageConnectionError
+from growx_crawl.storage.turso import (
+    get_turso_client,
+    get_turso_endpoint,
+    check_turso_health,
+    init_turso_schema,
+)
 
 __all__ = [
     # Legacy Storage Exports (Preserved 100%)
@@ -50,4 +56,9 @@ __all__ = [
     "StorageFactory",
     "get_active_backend",
     "StorageConnectionError",
+    # Turso Exports
+    "get_turso_client",
+    "get_turso_endpoint",
+    "check_turso_health",
+    "init_turso_schema",
 ]

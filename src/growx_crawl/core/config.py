@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Optional
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +14,14 @@ class Settings(BaseSettings):
     )
 
     db_path: str = Field(default="data/growx-crawl.db")
+    turso_database_url: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("TURSO_DATABASE_URL", "GROWX_CRAWL_TURSO_DATABASE_URL", "LIBSQL_URL"),
+    )
+    turso_auth_token: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("TURSO_AUTH_TOKEN", "GROWX_CRAWL_TURSO_AUTH_TOKEN"),
+    )
     workers: int = Field(default=10)
     max_depth: int = Field(default=2)
     max_pages_per_domain: int = Field(default=10)
@@ -38,6 +46,15 @@ class Settings(BaseSettings):
     datacenter_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "DATACENTER_PROXIES"})
     residential_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "RESIDENTIAL_PROXIES"})
     mobile_proxies: Optional[str] = Field(default=None, json_schema_extra={"env": "MOBILE_PROXIES"})
+
+    @property
+    def is_turso_configured(self) -> bool:
+        return bool(
+            self.turso_database_url
+            and self.turso_database_url.strip()
+            and self.turso_auth_token
+            and self.turso_auth_token.strip()
+        )
 
     @property
     def config_dir(self) -> Path:

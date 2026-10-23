@@ -1,0 +1,100 @@
+1. Asian Dental Hospital | Vijayawada
+2. Happy Dental Health Care | Vijayawada
+3. Sri Sai Swarna Dental Clinic | Vijayawada
+4. Dr. Sushma Dental & Implant Clinic | Vijayawada
+5. Oracle Dental Care | Vijayawada
+6. Myla Dental Care | Guntur
+7. Confydentz Dental Implant & Maxillofacial Centre | Guntur
+8. Brundavan Dental Care | Guntur
+9. Vision Dental Hospital | Guntur
+10. Krishna Super Speciality Dental Hospital | Mangalagiri
+11. Sri Balaji Dental Clinic Mangalagiri | Mangalagiri
+12. Smile Care Multi-Speciality Dental Clinic | Vijayawada
+13. Skin First Dermatology & Laser Clinic | Vijayawada
+14. Oliva Skin & Hair Clinic Vijayawada | Vijayawada
+15. REWIND Skin & Laser Clinic | Vijayawada
+16. Sasha Luxe Aesthetic Clinic | Vijayawada
+17. Vipula Hair & Skin Clinic | Vijayawada
+18. Leelavathi Advanced Skin & Laser Centre | Guntur
+19. Dr. Sowmya Skin, Hair & Laser Clinic | Guntur
+20. Dr. Sneha Kovi Skin & Hair Clinic | Guntur
+21. Kolors Healthcare Guntur | Guntur
+22. Neelakanta Skin & Hair Clinic | Vijayawada
+23. Maxivision Super Speciality Eye Hospital Vijayawada | Vijayawada
+24. Centre for Sight Vijayawada | Vijayawada
+25. D Eye Care | Vijayawada
+26. Sai Varnha Eye Hospital | Vijayawada
+27. Dr. Agarwals Eye Hospital Vijayawada | Vijayawada
+28. Sankara Eye Hospital Guntur | Guntur
+29. Netra Eye Hospital Guntur | Guntur
+30. Vasan Eye Care Hospital Guntur | Guntur
+31. Dr. Mohan Eye Hospital Mangalagiri | Mangalagiri
+32. Suraksha Eye Care Hospital | Vijayawada
+33. Oasis Fertility Vijayawada | Vijayawada
+34. Nova IVF Fertility Vijayawada | Vijayawada
+35. Sudha Fertility Centre Vijayawada | Vijayawada
+36. Ferty9 Fertility Center Vijayawada | Vijayawada
+37. KIMS Fertility IVF Centre Guntur | Guntur
+38. Komali Fertility Centre | Guntur
+39. Bhavya IVF & Fertility Clinic | Guntur
+40. Dr. M J Naidu Super Speciality Orthopaedic Hospital | Vijayawada
+41. Roopa Orthopaedic and MultiSpeciality Hospital | Vijayawada
+42. Pavan Ortho Care | Vijayawada
+43. Happy Hospitals (Shri Ramchandra Joint Replacement Center) | Guntur
+44. Dr. Kolli Jayakishan Orthopaedic Clinic | Guntur
+45. Sanjivi Orthopaedic & Super Speciality Hospital | Guntur
+46. Sreshta Orthopaedic & Trauma Centre | Guntur
+47. Sai Bhaskar Orthopaedic Hospital | Guntur
+48. Little Champs Children's Clinic | Vijayawada
+49. EndoKids Children's & Endocrine Clinic | Vijayawada
+50. Peekaboo Children's Clinic | Vijayawada
+51. Rainbow Children’s Hospital & Birthright Vijayawada | Vijayawada
+52. Blossoms Mother & Child Care Hospital | Guntur
+53. Krishna Children's Hospital Guntur | Guntur
+54. Ratnam Child Clinic | Guntur
+55. Bala Tripura Sundari Child Clinic Mangalagiri | Mangalagiri
+56. Sudha Hospitals Tadepalle | Amaravati Region (Tadepalle)
+57. Anu Hospitals Women Care Centre | Vijayawada
+58. Gouthami Women & Fertility Clinic | Vijayawada
+59. Dr. Padmaja Clinic for Women | Vijayawada
+60. Citizen Super Speciality Women & Child Hospital | Guntur
+61. Matrusri Maternity and Nursing Home | Guntur
+62. Sri Lakshmi Maternity & Surgical Clinic | Mangalagiri
+63. Kamineni Diagnostics Vijayawada | Vijayawada
+64. Vijaya Diagnostic Centre Vijayawada | Vijayawada
+65. Vijaya Laboratory Suryaraopet | Vijayawada
+66. Kamaraju Diagnostic Centre | Guntur
+67. Konacc Diagnostic Center Guntur | Guntur
+68. Mangalagiri Scans and Diagnostics | Mangalagiri
+69. Sri Sai Diagnostic & Clinical Lab Tadepalle | Amaravati Region (Tadepalle)
+70. Sagar ENT Hospital Vijayawada | Vijayawada
+71. Dr. Rao's ENT Super Speciality Hospital | Vijayawada
+72. Vijaya ENT Care Centre | Vijayawada
+73. Andhra ENT Clinic Guntur | Guntur
+74. Brundavan ENT Clinic Guntur | Guntur
+75. Mangalagiri ENT Speciality Clinic | Mangalagiri
+76. Dr. Mohan’s Diabetes Specialities Centre Vijayawada | Vijayawada
+77. Apollo Sugar Clinic Vijayawada | Vijayawada
+78. Krishna Institute of Diabetes and Endocrinology | Vijayawada
+79. Guntur Diabetes and Thyroid Care Centre | Guntur
+80. Relive Medical Rehabilitation & Physiotherapy | Vijayawada
+81. Dr. Sudhamaye Physiotherapy & Pain Relief Clinic | Guntur
+82. Sri Balaji Physiotherapy Clinic Guntur | Guntur
+83. Sri Balaji Physiotherapy Clinic Mangalagiri | Mangalagiri
+84. Apollo Physiotherapy & Sports Rehabilitation | Vijayawada
+85. Medstar Hospitals Tadepalle | Amaravati Region (Tadepalle)
+86. Aayush Hospitals Vijayawada | Vijayawada
+87. Sentini Dr. Srimannarayana Hospital | Amaravati Region (Tadepalle)
+88. Sri Anjali Multispeciality Hospital | Mangalagiri
+89. Tulasi Multispeciality Hospital Mangalagiri | Mangalagiri
+90. Sree Prathima Super Speciality Hospital | Mangalagiri
+91. Lalitha Super Specialities Hospital Guntur | Guntur
+92. Capital Hospital Vijayawada | Vijayawada
+93. Trust Hospital Vijayawada | Vijayawada
+94. Liberty Hospitals Vijayawada | Vijayawada
+95. Sita Memorial Hospital Guntur | Guntur
+96. Pooja Dental & Implant Centre | Vijayawada
+97. Kavya Skin & Cosmetology Centre | Guntur
+98. Amaravati Eye Care Hospital | Mangalagiri
+99. Prasad Orthopaedic & Trauma Care | Guntur
+100. Sai Physiotherapy & Rehabilitation Centre | Amaravati Region (Tadepalle)

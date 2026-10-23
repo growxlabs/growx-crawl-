@@ -41,6 +41,7 @@ storage/*.db
 data/
 .env
 .env.*
+!.env.example
 
 # Exports & Output
 exports/
