@@ -238,8 +238,10 @@ async function executeQuickScrape() {
         respect_robots: false
     };
 
+    const btn = document.getElementById("dash-quick-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "Extracting…"; }
     resultBox.style.display = "block";
-    jsonPre.textContent = "// Initiating live extraction request...";
+    jsonPre.textContent = "// Fetching " + payload.url + " …";
 
     try {
         const res = await fetch("/v1/scrape", {
@@ -254,7 +256,9 @@ async function executeQuickScrape() {
         jsonPre.textContent = JSON.stringify(data, null, 2);
         refreshDashboardData();
     } catch (err) {
-        jsonPre.textContent = "// Request Failed: " + err.message;
+        jsonPre.textContent = "// Request failed: " + err.message;
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "Extract"; }
     }
 }
 
@@ -478,71 +482,109 @@ async function runPlaygroundTest() {
 }
 
 // ── Refresh Dashboard Data ──
-async function refreshDashboardData() {
-    try {
-        const res = await fetch("/v1/admin/keys", {
-            headers: { "Authorization": "Bearer gx_live_sandbox_master_key" }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const total = data.total_keys || (data.keys ? data.keys.length : 0);
-            const totalJobsEl = document.getElementById("metric-total-jobs");
-            if (totalJobsEl) totalJobsEl.textContent = (total * 3 + 6) + " Runs";
-        }
-    } catch(e) {}
+const AUTH_HEADERS = { "Authorization": "Bearer gx_live_sandbox_master_key" };
+const numberFmt = new Intl.NumberFormat();
 
-    // Load recent jobs
-    const tbody = document.getElementById("dash-jobs-tbody");
-    if (!tbody) return;
-
-    try {
-        const res = await fetch("/v1/jobs?limit=5", {
-            headers: { "Authorization": "Bearer gx_live_sandbox_master_key" }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const jobs = data.jobs || [];
-            if (jobs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="table-cell-muted">No recent extractions recorded.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = jobs.map(j => `
-                <tr>
-                    <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">${j.job_id || j.id}</code></td>
-                    <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${j.seed_url || j.url}">${j.seed_url || j.url || '—'}</td>
-                    <td><span class="badge-status ${j.status.toLowerCase()}">${j.status.toUpperCase()}</span></td>
-                    <td>${j.pages_crawled !== undefined ? j.pages_crawled : (j.pages_count !== undefined ? j.pages_count : 1)}</td>
-                    <td>${formatTimestamp(j.created_at || j.started_at)}</td>
-                    <td class="text-right"><button class="table-action-btn" onclick="inspectJobDetails('${j.id}')">Inspect</button></td>
-                </tr>
-            `).join("");
-        } else {
-            loadFallbackDashboardJobs(tbody);
-        }
-    } catch (e) {
-        loadFallbackDashboardJobs(tbody);
-    }
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
 }
 
-function loadFallbackDashboardJobs(tbody) {
-    tbody.innerHTML = `
-        <tr>
-            <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">single_efa232bf</code></td>
-            <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://growxlabs.tech</td>
-            <td><span class="badge-status completed">COMPLETED</span></td>
-            <td>1</td>
-            <td>Just now</td>
-            <td class="text-right"><button class="table-action-btn" onclick="switchAppTab('playground')">Inspect</button></td>
-        </tr>
-        <tr>
-            <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">crawljobs_8d26846e</code></td>
-            <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">https://httpbin.org/html</td>
-            <td><span class="badge-status completed">COMPLETED</span></td>
-            <td>2</td>
-            <td>10 mins ago</td>
-            <td class="text-right"><button class="table-action-btn" onclick="switchAppTab('playground')">Inspect</button></td>
-        </tr>
-    `;
+async function fetchJson(url) {
+    const res = await fetch(url, { headers: AUTH_HEADERS });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+}
+
+async function refreshDashboardData() {
+    const [health, usage, jobsData] = await Promise.allSettled([
+        fetchJson("/v1/health"),
+        fetchJson("/v1/usage"),
+        fetchJson("/v1/jobs?limit=100")
+    ]);
+
+    // System status
+    const statusEl = document.getElementById("system-status");
+    const isUp = health.status === "fulfilled" && health.value.status === "healthy";
+    if (statusEl) statusEl.classList.toggle("is-down", !isUp);
+    setText("system-status-text", isUp ? "Operational" : "Unreachable");
+
+    // Requests this cycle
+    if (usage.status === "fulfilled") {
+        const used = usage.value.requests_used || 0;
+        const quota = usage.value.monthly_quota || 0;
+        const pct = quota ? (used / quota) * 100 : 0;
+        setText("ov-requests", numberFmt.format(used));
+        setText("ov-requests-note", quota ? `${pct < 0.1 ? "<0.1" : pct.toFixed(1)}% of ${numberFmt.format(quota)}` : "No quota set");
+        const bar = document.getElementById("ov-requests-bar");
+        if (bar) bar.style.width = Math.min(pct, 100) + "%";
+    } else {
+        setText("ov-requests-note", "Usage unavailable");
+    }
+
+    // Job stats and recent jobs table
+    const tbody = document.getElementById("dash-jobs-tbody");
+    if (jobsData.status !== "fulfilled") {
+        ["ov-jobs-note", "ov-pages-note", "ov-success-note"].forEach(id => setText(id, "Jobs unavailable"));
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="table-cell-muted">Couldn't load jobs. Check the server and refresh.</td></tr>`;
+        return;
+    }
+
+    const jobs = jobsData.value.jobs || [];
+    const capped = jobs.length >= 100;
+    const pages = jobs.reduce((sum, j) => sum + (j.pages_crawled || 0), 0);
+    const finished = jobs.filter(j => ["completed", "failed", "error"].includes((j.status || "").toLowerCase()));
+    const completed = finished.filter(j => j.status.toLowerCase() === "completed").length;
+    const failed = finished.length - completed;
+
+    setText("ov-jobs", numberFmt.format(jobs.length) + (capped ? "+" : ""));
+    setText("ov-jobs-note", jobs.length ? "Last run " + formatTimestamp(jobs[0].created_at || jobs[0].started_at) : "No runs yet");
+    setText("ov-pages", numberFmt.format(pages));
+    setText("ov-pages-note", jobs.length ? `${(pages / jobs.length).toFixed(1)} per job on average` : "—");
+    setText("ov-success", finished.length ? Math.round((completed / finished.length) * 100) + "%" : "—");
+    setText("ov-success-note", finished.length ? `${failed} failed of ${finished.length} finished` : "No finished jobs");
+
+    if (!tbody) return;
+    if (jobs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="table-cell-muted">No jobs yet. Run a quick extract above to start.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = jobs.slice(0, 6).map(j => {
+        const id = escapeHtml(j.job_id || j.id || "");
+        const target = j.seed_url || j.url || "";
+        const isUrl = /^https?:\/\//i.test(target);
+        return `
+            <tr>
+                <td><span class="cell-id">${id}</span></td>
+                <td>
+                    <div class="cell-target" title="${escapeHtml(target)}">
+                        ${isUrl || !target ? "" : `<span class="cell-tag">Query</span>`}
+                        <span class="cell-target-text">${escapeHtml(target) || "—"}</span>
+                    </div>
+                </td>
+                <td>${statusBadge(j.status)}</td>
+                <td class="num">${numberFmt.format(j.pages_crawled || 0)}</td>
+                <td class="cell-muted">${formatTimestamp(j.created_at || j.started_at)}</td>
+                <td class="num cell-muted">${formatDuration(j.started_at, j.finished_at)}</td>
+                <td class="text-right"><button type="button" class="table-action-btn" onclick="inspectJobDetails('${id}')">Open</button></td>
+            </tr>`;
+    }).join("");
+}
+
+function statusBadge(status) {
+    const s = (status || "unknown").toLowerCase();
+    const label = s.charAt(0).toUpperCase() + s.slice(1);
+    return `<span class="badge-status ${escapeHtml(s)}">${escapeHtml(label)}</span>`;
+}
+
+function formatDuration(start, end) {
+    if (!start || !end) return "—";
+    const secs = Math.round((new Date(end) - new Date(start)) / 1000);
+    if (isNaN(secs) || secs < 0) return "—";
+    if (secs < 60) return secs + "s";
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m ${secs % 60}s`;
+    return `${Math.floor(mins / 60)}h ${mins % 60}m`;
 }
 
 // ── Jobs Tab ──
@@ -565,12 +607,12 @@ async function loadAllJobs() {
             }
             tbody.innerHTML = jobs.map(j => `
                 <tr>
-                    <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">${j.job_id || j.id}</code></td>
-                    <td style="max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${j.seed_url || j.url}">${j.seed_url || j.url || '—'}</td>
-                    <td><span class="badge-status ${j.status.toLowerCase()}">${j.status.toUpperCase()}</span></td>
+                    <td><span class="cell-id">${escapeHtml(j.job_id || j.id || "")}</span></td>
+                    <td><div class="cell-target" title="${escapeHtml(j.seed_url || j.url || "")}"><span class="cell-target-text">${escapeHtml(j.seed_url || j.url || "") || "—"}</span></div></td>
+                    <td>${statusBadge(j.status)}</td>
                     <td>${j.pages_crawled !== undefined ? j.pages_crawled : 1}</td>
-                    <td>${formatTimestamp(j.created_at || j.started_at)}</td>
-                    <td>${j.finished_at ? formatTimestamp(j.finished_at) : '—'}</td>
+                    <td class="cell-muted">${formatTimestamp(j.created_at || j.started_at)}</td>
+                    <td class="cell-muted">${j.finished_at ? formatTimestamp(j.finished_at) : '—'}</td>
                 </tr>
             `).join("");
         } else {
@@ -601,7 +643,7 @@ async function loadTargets() {
             }
             tbody.innerHTML = targets.map(t => `
                 <tr>
-                    <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">${t.id}</code></td>
+                    <td><span class="cell-id">${t.id}</span></td>
                     <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title || 'Untitled Document'}</td>
                     <td style="max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${t.url}">${t.url}</td>
                     <td><span class="badge-status completed">STORED</span></td>
@@ -686,13 +728,13 @@ async function loadKeys() {
             }
             tbody.innerHTML = keys.map(k => `
                 <tr>
-                    <td><code style="font-family: var(--font-mono); font-size: 12px; color: #93c5fd;">${k.id}</code></td>
+                    <td><span class="cell-id">${k.id}</span></td>
                     <td>
                         <div style="font-weight: 500; color: #f8fafc;">${k.name}</div>
                         <div style="font-size: 11.5px; color: #64748b;">${k.email || '—'}</div>
                     </td>
                     <td><span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #94a3b8;">${k.tier}</span></td>
-                    <td><span class="badge-status ${k.status.toLowerCase()}">${k.status.toUpperCase()}</span></td>
+                    <td>${statusBadge(k.status)}</td>
                     <td>${k.rate_limit_rpm || 60} RPM</td>
                     <td>${k.usage_month || 0} / ${(k.tier === 'enterprise' ? '1,000,000' : '100,000')}</td>
                     <td class="text-right">
@@ -891,7 +933,13 @@ function formatTimestamp(ts) {
     try {
         const d = new Date(ts);
         if (isNaN(d.getTime())) return ts;
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const now = new Date();
+        const sameYear = d.getFullYear() === now.getFullYear();
+        const date = d.toDateString() === now.toDateString()
+            ? "Today"
+            : d.toLocaleDateString([], { day: "numeric", month: "short", year: sameYear ? undefined : "numeric" });
+        const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return `${date}, ${time}`;
     } catch(e) {
         return ts;
     }
@@ -964,7 +1012,7 @@ async function crawlAndIndexNewUrl() {
         if (feedback) {
             feedback.style.display = "block";
             feedback.style.background = "rgba(59, 130, 246, 0.1)";
-            feedback.style.color = "#93c5fd";
+            feedback.style.color = "var(--fg-2)";
             feedback.style.border = "1px solid rgba(59, 130, 246, 0.25)";
             feedback.innerHTML = `Spidering up to <strong>${pagesCount}</strong> sub-pages starting from <code>${escapeHtml(targetUrl)}</code>...`;
         }
@@ -1047,7 +1095,7 @@ async function crawlAndIndexNewUrl() {
     if (feedback) {
         feedback.style.display = "block";
         feedback.style.background = "rgba(59, 130, 246, 0.1)";
-        feedback.style.color = "#93c5fd";
+        feedback.style.color = "var(--fg-2)";
         feedback.style.border = "1px solid rgba(59, 130, 246, 0.25)";
         feedback.innerHTML = `Crawling <code>${escapeHtml(targetUrl)}</code> via ${fetcherMode} mode and indexing into search engine...`;
     }
@@ -1300,7 +1348,7 @@ async function executeWebSearch(page = 1) {
                     </p>
                     ${isPotentialUrl ? `
                     <div style="margin-top: 16px; padding: 14px 20px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-sm); display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center;">
-                        <span style="font-size: 13px; color: #93c5fd;">URL not crawled yet?</span>
+                        <span style="font-size: 13px; color: var(--fg-2);">URL not crawled yet?</span>
                         <button class="btn-action-primary" onclick="crawlSpecificUrl('${escapeHtml(targetCrawlUrl)}')" style="height: 34px; padding: 0 16px; font-size: 12.5px;">
                             <span>+ Crawl &amp; Index ${escapeHtml(query)} Now</span>
                         </button>

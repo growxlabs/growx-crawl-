@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowX Crawl · Enterprise Web Extraction Platform</title>
+    <title>GrowX Crawl Console</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=2.8.3">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=3.0.2">
 </head>
 <body class="app-body">
 
@@ -140,36 +140,32 @@
                 </div>
 
                 <div class="topbar-right">
-                    <div class="system-status-indicator">
+                    <div class="system-status-indicator" id="system-status" role="status">
                         <span class="status-pulse-dot"></span>
-                        <span>Systems Operational</span>
+                        <span id="system-status-text">Operational</span>
                     </div>
 
-                    <a href="/home" class="topbar-action-btn studio-link" title="Go to GrowxLabs Studio Landing Page">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    <a href="/home" class="topbar-action-btn" title="Studio home">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/>
                         </svg>
-                        <span>Studio Home</span>
+                        <span>Studio</span>
                     </a>
-                    
-                    <a href="/v1/brochure" target="_blank" class="topbar-action-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                    <a href="/v1/brochure" target="_blank" rel="noopener" class="topbar-action-btn" title="Download specification PDF">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
                             <line x1="12" y1="15" x2="12" y2="3"/>
                         </svg>
-                        <span>Specifications PDF</span>
+                        <span>Spec PDF</span>
                     </a>
 
-                    <a href="/docs" target="_blank" class="topbar-action-btn secondary">
-                        <span>Interactive Docs</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                            <polyline points="15 3 21 3 21 9"/>
-                            <line x1="10" y1="14" x2="21" y2="3"/>
+                    <a href="/docs" target="_blank" rel="noopener" class="topbar-action-btn" title="Open interactive API docs">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M7 17 17 7M8 7h9v9"/>
                         </svg>
+                        <span>API docs</span>
                     </a>
                 </div>
             </header>
@@ -179,108 +175,95 @@
 
                 <!-- 1. OVERVIEW VIEW -->
                 <div id="view-dashboard" class="view-panel active">
-                    <div class="page-heading overview-heading">
-                        <h1 class="overview-kicker">// Overview</h1>
-                        <p class="overview-statement">One API, seven capabilities. Scrape pages with fast, browser, or stealth fetching; extract fields with CSS or XPath; and crawl up to 50 pages, five levels deep. Batch up to 100 URLs, capture screenshots, generate PDFs, and audit SEO. Async jobs, webhooks, proxies, robots.txt controls, and caching are built in.</p>
-                    </div>
+                    <header class="page-heading">
+                        <div>
+                            <h1 class="page-title">Overview</h1>
+                            <p class="page-description">Scrape, crawl and extract web pages with fast, browser or stealth fetching.</p>
+                        </div>
+                    </header>
 
-                    <!-- 4 Metric Cards Grid -->
-                    <div class="metrics-row">
-                        <div class="metric-box">
-                            <div class="metric-top">
-                                <span class="metric-label">Average Latency</span>
-                                <span class="metric-badge">Fast HTTP</span>
+                    <section class="stat-strip" aria-label="Key metrics">
+                        <div class="stat">
+                            <div class="stat-label">Requests this cycle</div>
+                            <div class="stat-value" id="ov-requests">—</div>
+                            <div class="stat-meter" aria-hidden="true"><span id="ov-requests-bar"></span></div>
+                            <div class="stat-note" id="ov-requests-note">&nbsp;</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Crawl jobs</div>
+                            <div class="stat-value" id="ov-jobs">—</div>
+                            <div class="stat-note" id="ov-jobs-note">&nbsp;</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Pages crawled</div>
+                            <div class="stat-value" id="ov-pages">—</div>
+                            <div class="stat-note" id="ov-pages-note">&nbsp;</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Success rate</div>
+                            <div class="stat-value" id="ov-success">—</div>
+                            <div class="stat-note" id="ov-success-note">&nbsp;</div>
+                        </div>
+                    </section>
+
+                    <section class="ov-section" aria-labelledby="ov-extract-title">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="ov-extract-title">Quick extract</h2>
+                                <p class="section-desc">Fetch one page and inspect the JSON response.</p>
                             </div>
-                            <div class="metric-number" id="metric-fast-latency">112 ms</div>
-                            <div class="metric-footer">Global edge node response time</div>
                         </div>
 
-                        <div class="metric-box">
-                            <div class="metric-top">
-                                <span class="metric-label">Browser Capacity</span>
-                                <span class="metric-badge">Headless</span>
-                            </div>
-                            <div class="metric-number" id="metric-dynamic-slots">64 Sessions</div>
-                            <div class="metric-footer">Chromium execution pool active</div>
-                        </div>
-
-                        <div class="metric-box">
-                            <div class="metric-top">
-                                <span class="metric-label">Anti-Bot Evasion</span>
-                                <span class="metric-badge success">Active</span>
-                            </div>
-                            <div class="metric-number">Automated</div>
-                            <div class="metric-footer">TLS fingerprinting &amp; challenge bypass</div>
-                        </div>
-
-                        <div class="metric-box">
-                            <div class="metric-top">
-                                <span class="metric-label">Total Extractions</span>
-                                <span class="metric-badge">Indexed</span>
-                            </div>
-                            <div class="metric-number" id="metric-total-jobs">--</div>
-                            <div class="metric-footer">Persisted in database storage</div>
-                        </div>
-                    </div>
-
-                    <!-- Live Instant Extraction -->
-                    <div class="section-card">
-                        <div class="card-header-clean">
-                            <div class="card-title-main">Run Live Extraction</div>
-                            <div class="card-desc-sub">Test single-page URL extraction directly against the live edge fetcher.</div>
-                        </div>
-
-                        <div class="form-row-extraction">
-                            <div class="input-wrapper">
-                                <input type="url" id="dash-quick-url" class="form-control" value="https://growxlabs.tech" placeholder="https://example.com" />
-                            </div>
-                            <div class="select-wrapper">
-                                <select id="dash-quick-fetcher" class="form-control select-control">
-                                    <option value="auto">Auto-Detect (Recommended)</option>
-                                    <option value="fast">Fast HTTP (Direct HTML)</option>
-                                    <option value="dynamic">Headless Chromium (JavaScript)</option>
-                                    <option value="stealth">Stealth Mode (Anti-Bot Bypass)</option>
-                                </select>
-                            </div>
-                            <button class="btn-action-primary" onclick="executeQuickScrape()">
-                                <span>Extract URL</span>
-                            </button>
-                        </div>
+                        <form class="extract-form" onsubmit="event.preventDefault(); executeQuickScrape();">
+                            <label class="sr-only" for="dash-quick-url">Page URL</label>
+                            <input type="url" id="dash-quick-url" class="form-control" value="https://growxlabs.tech" placeholder="https://example.com" required />
+                            <label class="sr-only" for="dash-quick-fetcher">Fetcher</label>
+                            <select id="dash-quick-fetcher" class="form-control select-control">
+                                <option value="auto">Auto</option>
+                                <option value="fast">Fast HTTP</option>
+                                <option value="dynamic">Headless browser</option>
+                                <option value="stealth">Stealth</option>
+                            </select>
+                            <button type="submit" class="btn-action-primary" id="dash-quick-btn">Extract</button>
+                        </form>
 
                         <div id="dash-quick-result" class="result-box-container" style="display: none;">
                             <div class="result-box-header">
-                                <span>Extraction Response Payload</span>
-                                <button class="copy-text-btn" onclick="copyQuickJson()">Copy Output</button>
+                                <span>Response</span>
+                                <button type="button" class="copy-text-btn" onclick="copyQuickJson()">Copy</button>
                             </div>
                             <pre id="dash-quick-json" class="code-output-block"></pre>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Recent Extractions Table -->
-                    <div class="section-card">
-                        <div class="card-header-clean">
-                            <div class="card-title-main">Recent Extractions</div>
-                            <div class="card-desc-sub">History of single-page and multi-page crawl executions.</div>
+                    <section class="ov-section" aria-labelledby="ov-recent-title">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="ov-recent-title">Recent jobs</h2>
+                                <p class="section-desc">The latest crawl and search runs.</p>
+                            </div>
+                            <button type="button" class="text-link" onclick="switchAppTab('jobs')">View all</button>
                         </div>
 
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Execution ID</th>
-                                        <th>Target URL</th>
+                                        <th>Job</th>
+                                        <th>Target</th>
                                         <th>Status</th>
-                                        <th>Pages</th>
-                                        <th>Created At</th>
-                                        <th class="text-right">Actions</th>
+                                        <th class="num">Pages</th>
+                                        <th>Started</th>
+                                        <th class="num">Duration</th>
+                                        <th><span class="sr-only">Actions</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="dash-jobs-tbody">
-                                    <tr><td colspan="6" class="table-cell-muted">Loading extraction logs...</td></tr>
+                                    <tr><td colspan="7" class="table-cell-muted">Loading jobs…</td></tr>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
                 <!-- 2. PLAYGROUND VIEW -->
@@ -695,6 +678,6 @@
         </main>
     </div>
 
-    <script src="/static/app.js?v=3.1.0"></script>
+    <script src="/static/app.js?v=3.2.1"></script>
 </body>
 </html>
